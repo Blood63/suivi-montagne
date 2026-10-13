@@ -227,6 +227,69 @@ nav .tab:active{transform:scale(.9)}
 body.pg-equip nav .fab,body.pg-data nav .fab{transform:translate3d(0,24px,0) scale(.7);opacity:0;pointer-events:none}
 input[type=file]{padding:8px}
 input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--snow);background:rgba(124,200,234,.14);border:1px solid rgba(124,200,234,.35);border-radius:10px;padding:8px 12px;margin-right:10px}
+/* ===== v5 : import Mi Fitness, conseils, fiches sommet, poids ===== */
+.adv h4,.h4{margin:14px 0 6px;font-size:14px;font-weight:650;color:var(--snow)}
+.adv-sec{margin-top:12px}
+.warnl{font-size:13.5px;padding:8px 10px;border-radius:12px;background:rgba(251,146,60,.10);border:1px solid rgba(251,146,60,.28);margin-top:6px}
+.tipl{display:flex;gap:10px;font-size:13.5px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-top:6px}
+.tipl>span{flex:none;font-size:16px;line-height:1.2}
+.planl{display:flex;flex-direction:column;font-size:13.5px;padding:8px 10px;border-left:3px solid var(--glacier);background:rgba(124,200,234,.06);border-radius:0 12px 12px 0;margin-top:6px}
+.planl span{color:var(--mut)}
+.gap{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:6px 0;border-top:1px solid var(--line)}
+.gap:first-of-type{border-top:0}.gap em{font-style:normal;font-size:12px;color:var(--warn);white-space:nowrap}.gap.buy em{color:var(--glacier)}
+.adv[data-sum]{cursor:pointer}
+.sumlink{cursor:pointer;border-radius:14px;transition:background .2s}.sumlink:active{background:rgba(255,255,255,.04)}
+.sumlink h3 .go{color:var(--glacier);font-weight:500;font-size:13px;margin-left:6px}
+/* fiche sommet */
+.sumhero{position:relative;padding-top:52px}
+.sumhero .back{position:absolute;left:12px;top:12px;font-size:24px;line-height:30px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:14px}.kv b{color:var(--mut);font-weight:600}
+.steps{margin:0;padding-left:20px;font-size:14px}.steps li{margin:6px 0}
+.season{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}
+.season i{font-style:normal;text-align:center;font-size:11.5px;font-weight:650;padding:7px 0;border-radius:8px;background:rgba(255,255,255,.08);color:var(--mut)}
+.season i.s1{background:rgba(251,146,60,.35);color:#ffe7d1}.season i.s2{background:rgba(52,179,138,.55);color:#eafff6}
+.season i.now{outline:2px solid var(--glacier);outline-offset:1px}
+.mapf{border-radius:16px;overflow:hidden;border:1px solid var(--line);height:230px;background:rgba(255,255,255,.04)}
+.mapf iframe{width:100%;height:100%;border:0;display:block}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.links .btn{text-decoration:none}
+.unc{display:inline-block;font-size:11px;font-weight:650;color:#fde68a;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);border-radius:999px;padding:0 6px;margin:0 2px;white-space:nowrap}
+.warnc{border-color:rgba(248,113,113,.45)!important;background:linear-gradient(165deg,rgba(248,113,113,.16),rgba(16,32,29,.92))!important;font-size:14px}
+.gear{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}.gear:first-of-type{border-top:0}
+.gear .gi{width:26px;height:26px;flex:none;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;background:rgba(255,255,255,.07)}
+.gear.ok .gi{background:rgba(74,222,128,.18);color:var(--good)}.gear.missing .gi{color:var(--warn)}.gear .nm{flex:1;min-width:0}
+body.pg-sum nav .fab,body.pg-poids nav .fab{transform:translate3d(0,24px,0) scale(.7);opacity:0;pointer-events:none}
+/* poids */
+.wh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
+.wbig b{font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1}.wbig small{font-size:18px;color:var(--mut);margin-left:4px}
+.kpi .u{font-size:12px;color:var(--mut);font-weight:500;margin-left:2px}.kpi .dl{font-size:12px;margin-top:2px}
+/* feuille d'import */
+#p-imp{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:720px;margin:0 auto;max-height:94vh;overflow-y:auto;overscroll-behavior:contain;padding:0 14px env(safe-area-inset-bottom);
+  border-radius:28px 28px 0 0;background:linear-gradient(180deg,#183430,#0f2320);border:1px solid var(--line);border-bottom:0;box-shadow:0 -20px 50px rgba(0,0,0,.5);
+  transform:translate3d(0,105%,0);visibility:hidden;transition:transform .42s cubic-bezier(.2,.9,.25,1),visibility 0s .42s}
+body.imp-open #p-imp{transform:none;visibility:visible;transition:transform .42s cubic-bezier(.2,.9,.25,1),visibility 0s}
+body.imp-open #sheetBg{opacity:1;pointer-events:auto}body.imp-open{overflow:hidden}
+body.imp-open nav .fab{transform:scale(.6);opacity:0;pointer-events:none}
+#p-imp .sheet-head{position:sticky;top:0;z-index:3;padding:16px 2px 10px;background:linear-gradient(180deg,#183430 75%,rgba(24,52,48,0))}
+.impc{background:rgba(8,20,18,.45)!important;box-shadow:none!important;animation:none!important}
+.impc.saved{border-color:rgba(74,222,128,.4)!important}.impc.skipped{opacity:.6}
+.imph{display:flex;gap:12px;align-items:center}
+.imph img{width:46px;height:64px;object-fit:cover;object-position:top;border-radius:10px;border:1px solid var(--line);flex:none;background:#000}
+.ell{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imptype{display:grid;grid-template-columns:1fr;gap:4px;margin-top:12px;padding:10px;border-radius:14px;background:rgba(124,200,234,.07);border:1px solid rgba(124,200,234,.25)}
+.cf{font-style:normal;display:inline-block;font-size:10.5px;font-weight:700;padding:0 6px;border-radius:999px;margin-left:4px;vertical-align:1px;border:1px solid}
+.cf.hi{color:#bbf7d0;background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.35)}
+.cf.mid{color:#fed7aa;background:rgba(251,146,60,.14);border-color:rgba(251,146,60,.4)}
+.cf.lo{color:#fecaca;background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.45)}
+.cf.ed{color:#cdeefc;background:rgba(124,200,234,.14);border-color:rgba(124,200,234,.35)}
+.cf.calc{color:#e9d5ff;background:rgba(192,132,252,.14);border-color:rgba(192,132,252,.35)}
+.lowc input,.lowc select{border-color:rgba(248,113,113,.6)}
+.dup{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.3);font-size:13.5px}
+.rad{display:flex;gap:8px;align-items:flex-start;color:var(--txt);font-size:13.5px;margin-top:8px}.rad input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--glacier)}
+.impbtn{width:100%;margin:12px 0 4px}
+details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14px}
+.snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
+@media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
+.grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
 </style>
 </head>
 <body>
@@ -253,10 +316,11 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
   <div class="card">
     <div class="kpis" id="kpiMonth"><div class="hero"><div class="sk" style="width:120px;height:24px"></div></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div></div>
   </div>
+  <div id="jAdv"></div>
   <div class="card">
     <div class="row" style="justify-content:space-between;margin-bottom:6px">
       <h2 style="margin:0">Séances</h2>
-      <select id="fltType" style="width:auto;padding:6px 8px;font-size:14px"></select>
+      <div class="row"><button class="btn sec sm" data-imp-open aria-label="Importer des captures Mi Fitness">📷 Mi Fitness</button><select id="fltType" style="width:auto;padding:6px 8px;font-size:14px"></select></div>
     </div>
     <div id="sessList"><div class="sess"><div class="sk" style="width:54px;height:58px"></div><div style="flex:1"><div class="sk" style="height:16px;width:60%;margin:4px 0 8px"></div><div class="sk" style="height:22px"></div></div></div><div class="sess"><div class="sk" style="width:54px;height:58px"></div><div style="flex:1"><div class="sk" style="height:16px;width:60%;margin:4px 0 8px"></div><div class="sk" style="height:22px"></div></div></div><div class="sess"><div class="sk" style="width:54px;height:58px"></div><div style="flex:1"><div class="sk" style="height:16px;width:60%;margin:4px 0 8px"></div><div class="sk" style="height:22px"></div></div></div></div>
   </div>
@@ -267,11 +331,14 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
   <div class="grab" aria-hidden="true"><i></i></div>
   <div class="card">
     <div class="sheet-head"><h2 id="formTitle">Nouvelle séance</h2><button type="button" class="xbtn" id="btnSheetX" aria-label="Fermer">✕</button></div>
+    <button type="button" class="btn sec impbtn" data-imp-open id="btnFormImp">📷 Importer une capture Mi Fitness</button>
     <form id="fSess" autocomplete="off">
       <input type="hidden" id="f_id">
       <div class="grid">
         <div><label for="f_date">Date</label><input type="date" id="f_date" required></div>
         <div><label for="f_type">Type</label><select id="f_type"></select></div>
+        <div><label for="f_heure">Heure (optionnel)</label><input type="time" id="f_heure"></div>
+        <div id="w_incl"><label for="f_incline">Inclinaison du tapis (%)</label><input id="f_incline" inputmode="decimal" placeholder="6"></div>
         <div><label for="f_dist">Distance (km)</label><input id="f_dist" inputmode="decimal" placeholder="ex. 5,2"></div>
         <div><label for="f_dur">Durée (h:mm:ss)</label><input id="f_dur" inputmode="numeric" placeholder="1:00:00"></div>
         <div><label for="f_dplus">D+ (m)</label><input id="f_dplus" inputmode="decimal"></div>
@@ -282,6 +349,7 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
         <div><label for="f_sac">Sac à dos (kg)</label><input id="f_sac" inputmode="decimal"></div>
         <div><label for="f_sauts">Sauts corde</label><input id="f_sauts" inputmode="numeric"></div>
         <div><label for="f_ress">Ressenti (1-10)</label><select id="f_ress"><option value="">–</option></select></div>
+        <details class="full more" id="f_more"><summary>Détails montre (calories, cadence, altitude, effet…)</summary><div class="grid" style="margin-top:10px"><div><label for="f_x_kcal" id="l_x_kcal">Calories actives (kcal)</label><input id="f_x_kcal" inputmode="numeric"></div><div><label for="f_x_kcalTot" id="l_x_kcalTot">Calories totales (kcal)</label><input id="f_x_kcalTot" inputmode="numeric"></div><div><label for="f_x_cadence" id="l_x_cadence">Cadence (pas/min)</label><input id="f_x_cadence" inputmode="numeric"></div><div><label for="f_x_foulee" id="l_x_foulee">Foulée (cm)</label><input id="f_x_foulee" inputmode="numeric"></div><div><label for="f_x_altMin" id="l_x_altMin">Altitude min (m)</label><input id="f_x_altMin" inputmode="decimal"></div><div><label for="f_x_altMax" id="l_x_altMax">Altitude max (m)</label><input id="f_x_altMax" inputmode="decimal"></div><div><label for="f_x_te" id="l_x_te">Effet d’entraînement (/5)</label><input id="f_x_te" inputmode="decimal"></div><div><label for="f_x_tl" id="l_x_tl">Charge d’entraînement (TL)</label><input id="f_x_tl" inputmode="numeric"></div><div><label for="f_x_recup" id="l_x_recup">Récupération (h)</label><input id="f_x_recup" inputmode="numeric"></div><div><label for="f_x_pauses" id="l_x_pauses">Pauses</label><input id="f_x_pauses" inputmode="numeric"></div></div></details>
         <div class="full" id="w_exos"><label for="f_exos">Exercices (séries × répétitions, charges…)</label><textarea id="f_exos" rows="3" placeholder="ex. Squats 4×12 à 20 kg&#10;Fentes 3×10/jambe&#10;Gainage 3×45 s"></textarea></div>
         <div class="full"><label for="f_notes">Notes</label><textarea id="f_notes" rows="2"></textarea></div>
         <div class="full auto" id="f_auto">Vitesse : – · Vitesse ascensionnelle : –</div>
@@ -290,14 +358,14 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
         <button class="btn" type="submit" id="btnSave">Enregistrer</button>
         <button class="btn sec" type="button" id="btnCancel">Annuler</button>
       </div>
-      <p class="small mut" style="margin:8px 0 0">Décimales avec virgule ou point. Vitesse = distance / durée ; vitesse ascensionnelle = D+ / durée (m/h).</p>
+      <p class="small mut" style="margin:8px 0 0">Décimales avec virgule ou point. Vitesse = distance / durée ; vitesse ascensionnelle = D+ / durée (m/h). Tapis : D+ calculé automatiquement = distance × inclinaison (modifiable).</p>
     </form>
   </div>
 </section>
 
 <!-- OBJECTIFS -->
 <section class="page" id="p-obj">
-  <div class="card small mut">Valeurs <b>approximatives</b> issues de topos en ligne (sources sous chaque sommet). D+, distance et durée = sortie complète (aller-retour ou boucle) sauf mention.</div>
+  <div class="card small mut">Valeurs <b>approximatives</b> issues de topos en ligne (sources sous chaque sommet). D+, distance et durée = sortie complète (aller-retour ou boucle) sauf mention. <b style="color:var(--glacier)">Touche un sommet pour ouvrir sa fiche détaillée.</b></div>
   <div id="objList"></div>
 </section>
 
@@ -310,7 +378,9 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
     <div class="mut" style="margin-top:6px">Fenêtre : 4 dernières semaines (28 jours jusqu’à aujourd’hui).<br>
     <b>A – Grosse séance</b> = D+ max d’une séance ÷ (65 % du D+ cible), plafonné à 100 %.<br>
     <b>B – Volume</b> = D+ hebdo moyen (total 28 j ÷ 4) ÷ D+ cible, plafonné à 100 %.<br>
-    <b>Indice</b> = moyenne de A et B. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
+    <b>C – Endurance</b> = durée de ta plus longue séance ÷ (60 % de la durée de l’objectif).<br>
+    <b>D – Régularité</b> = nombre de séances sur 28 jours ÷ 12 (3 par semaine).<br>
+    <b>Indice</b> = 35 % A + 30 % B + 20 % C + 15 % D. Itinérance (GR 441) : cible = D+ moyen d’une étape, volume hebdo visé = 1,5 × ce D+. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
     ⚠️ Altitude : sommet ≥ 2 500 m → prévoir acclimatation, météo, vêtements chauds ; l’indice ne mesure pas cela.</div></details>
   </div>
   <div id="prepList"></div>
@@ -332,6 +402,12 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
 </div>
   </div>
 </section>
+
+<!-- POIDS -->
+<section class="page" id="p-poids"><div id="poidsBody"></div></section>
+
+<!-- FICHE SOMMET -->
+<section class="page" id="p-sum"><div id="sumBody"></div></section>
 
 <!-- EQUIPEMENT -->
 <section class="page" id="p-equip">
@@ -355,6 +431,7 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
       <button class="btn" id="btnExpJson">Exporter JSON</button>
       <button class="btn sec" id="btnExpCsv">Exporter CSV (séances)</button>
       <button class="btn sec" id="btnExpCsvM">Exporter CSV (mois)</button>
+      <button class="btn sec" id="btnExpCsvW">Exporter CSV (pesées)</button>
     </div>
     <div style="margin-top:12px">
       <label for="impFile">Importer une sauvegarde JSON (remplace les données actuelles)</label>
@@ -390,6 +467,11 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
     </details>
   </div>
   <div class="card">
+    <h2>Copies de sécurité</h2>
+    <p class="small mut" style="margin-top:0">L’app garde sur ce téléphone 5 copies automatiques (une par jour, et avant chaque import, restauration ou réinitialisation). Si la synchronisation est active, une copie restaurée est ensuite fusionnée avec le gist.</p>
+    <div id="snapList"></div>
+  </div>
+  <div class="card">
     <h2>Réinitialiser</h2>
     <p class="small mut">Remet les données de départ (séances de septembre et octobre 2026, liste d’équipement par défaut). Toutes les modifications seront perdues sur cet appareil (si la synchronisation est active, la prochaine synchro récupérera les données du gist).</p>
     <button class="btn bad" id="btnReset">Réinitialiser les données</button>
@@ -405,49 +487,273 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
   <button class="tab" data-p="obj" aria-label="Objectifs"><svg viewBox="0 0 24 24"><path d="M3 20l6-10 4 6 2-3 6 7z"/><path d="M9 10V4l5 2-5 2"/></svg>Objectifs</button>
   <button class="tab" data-p="prep" aria-label="Préparation"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>Prépa</button>
   <button class="tab" data-p="evo" aria-label="Évolution"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M5 16l4-5 4 3 6-8"/><path d="M15 6h4v4"/></svg>Évolution</button>
+  <button class="tab" data-p="poids" aria-label="Poids"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="5"/><path d="M8.5 10a5 5 0 0 1 7 0"/><path d="M12 10l1.5-2"/></svg>Poids</button>
   <button class="tab" data-p="equip" aria-label="Équipement"><svg viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2"/><rect x="5" y="7" width="14" height="14" rx="4"/><path d="M9 13h6v4H9z"/></svg>Équip.</button>
   <button class="tab" data-p="data" aria-label="Données"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>Données</button>
 </nav>
 <div id="sheetBg"></div>
+<section id="p-imp" role="dialog" aria-modal="true" aria-labelledby="impTitle" aria-hidden="true">
+  <div class="sheet-head"><h2 id="impTitle">Import Mi Fitness</h2><button type="button" class="xbtn" id="btnImpClose" aria-label="Fermer">✕</button></div>
+  <p class="small mut" style="margin:0 2px 10px">Captures longues de séance ou de « Composition corporelle » (pesée), une ou plusieurs à la fois. Lecture sur ton téléphone ; <b>rien n’est enregistré sans ta validation</b>. La 1<sup>re</sup> fois, le moteur de lecture (≈ 6 Mo) est téléchargé puis gardé hors-ligne.</p>
+  <input type="file" id="impFiles" accept="image/*" multiple hidden>
+  <div class="row" style="margin-bottom:12px"><button class="btn" id="btnImpPick" style="flex:1">📷 Choisir des captures</button><button class="btn sec" data-w-new id="btnImpW">⚖️ Saisir une pesée</button></div>
+  <div id="impList"></div>
+  <div class="row sheet-actions" style="margin:6px -14px 0!important"><button class="btn" id="btnImpAll" style="display:none">Tout enregistrer</button><button class="btn sec" id="btnImpDone" onclick="IMP.close()">Fermer</button></div>
+</section>
 <div class="toast" id="toast"></div>
 
 <script>
 'use strict';
 const KEY = 'suiviMontagne.v1';
-const TYPES = ['Tapis 12%','Tapis 6%','Tapis 0%','Marche','Randonnée','Course','Corde à sauter','Musculation','Vélo','Autre'];
-const DATA_VERSION = 3;
+// v5 : « Tapis » (inclinaison libre) + Trail, Escaliers, Elliptique. Les anciens types sont conservés tels quels.
+const TYPES = ['Tapis','Tapis 12%','Tapis 6%','Tapis 0%','Marche','Randonnée','Trail','Course','Corde à sauter','Musculation','Escaliers','Elliptique','Vélo','Autre'];
+const isTapis=t=>/^Tapis/.test(t||'');
+function typeIncline(t){ const m=/^Tapis (\d+)%$/.exec(t||''); return m?+m[1]:null; }
+const DATA_VERSION = 4;
 const STATUTS = ['À préparer','Prêt','Fait'];
 
-/* ---------- Objectifs (valeurs approximatives, recherche oct. 2026) ---------- */
+/* ---------- Objectifs (valeurs approximatives, recherche oct. 2026) ----------
+   Sources principales (consultées le 13/10/2026) :
+   - Puy de Dôme : puydedome-tourisme.com (fiche chemin des Muletiers ; « État des chemins de randonnée »),
+     puy-de-dome.ffrandonnee.fr/post/chemin-des-muletiers/ (travaux 5–16/10/2026), volcan.puy-de-dome.fr (accès au sommet),
+     clermontauvergnevolcans.com (chemins des Muletiers et des Chèvres), travelinauvergne.fr/guides/monter-au-puy-de-dome.
+   - Sancy : sancy.com (fiches « Le puy de Sancy », « Les crêtes du Sancy », « Téléphérique du Sancy » mise à jour 07/10/2026),
+     puy-de-dome.gouv.fr (avalanche du Val d'Enfer, 25/02/2024), auvergnevolcansancy.com (bivouac, réserve Chastreix-Sancy).
+   - La Rhune : rhune.com (FAQ, horaires 2026 : train du 28/03 au 01/11/2026, 736 m D+, 2 h–2 h 30 de montée), mapirando.fr, visorando.com.
+   - Pic du Midi : altituderando.com, picdumidi.com/en/page/adventur (accès à pied été 2026, chutes de pierres côté Tourmalet),
+     tourmaletpicdumidi.com (col fermé en général du 1er nov. au 31 mai), rando-marche.fr, mapetiterando.fr (sentier des Muletiers d'Artigues).
+   - Barrhorn : sac-cas.ch (Turtmannhütte : gardiennée de juin à septembre), outtrip.fr, novo-monde.com/ascension-barrhorn-valais-suisse/,
+     gipfelbuch.online, bergwelten.com.
+   - Grande Sassière : altituderando.com, tignes.net (réserve, parking du Saut), vanoise-parcnational.fr (réglementation de la réserve), randobase.fr.
+   - GR 441 : topo-de-rando.com/gr-441/ (114 km, 2 752 m D+, 6 jours), gr-go.fr (115 km, 3 050 m D+), randonnees.info et randozone.com (étapes),
+     cadre de pratique du bivouac en Chaîne des Puys (Parc des Volcans / puydedome-tourisme.com, 2025).
+   Coordonnées : OpenStreetMap / Nominatim (approximatives, à ± 100 m). Tout ce qui est marqué « ⚠︎ à vérifier » est incertain. */
 const OBJECTIFS = [
- {n:1,sommet:'Puy de Dôme',iti:'Sentier des Muletiers (GR 441)',depart:'Col de Ceyssat',altDep:1078,altSom:1465,dplus:390,dist:3.8,duree:'≈ 50 min montée · 1 h 30 A/R',diff:'Facile à moyenne (court mais raide)',conf:'Élevée',
-  note:'Montée seule : 1,9 km / ≈ 365–390 m D+. Accès fermé du 6 au 17/10/2026 (travaux).',
-  src:[['Puy-de-Dôme Tourisme – chemin des Muletiers','https://www.puydedome-tourisme.com/fr/fiche/equipement/le-chemin-des-muletiers-orcines_TFO6453685/'],['Clermont Auvergne Volcans','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-muletiers/']]},
- {n:2,sommet:'Puy de Dôme',iti:'Sentier des Chèvres (PR puis GR 441)',depart:'Gare du Panoramique des Dômes',altDep:980,altSom:1465,dplus:530,dist:10,duree:'1 h 15–2 h montée · ≈ 3 h–3 h 30 A/R',diff:'Moyenne',conf:'Élevée',
+ {n:1,sommet:'Puy de Dôme',iti:'Sentier des Muletiers (GR 441)',depart:'Col de Ceyssat',altDep:1078,altSom:1465,dplus:390,dist:3.8,duree:'≈ 50 min montée · 1 h 30 A/R',h:1.5,diff:'Facile à moyenne (court mais raide)',conf:'Élevée',
+  note:'Montée seule : 1,9 km / ≈ 350–390 m D+. Chemin fermé pour travaux du 5 au 16/10/2026 (parking du col de Ceyssat inaccessible).',
+  src:[['Puy-de-Dôme Tourisme – chemin des Muletiers','https://www.puydedome-tourisme.com/fr/fiche/equipement/le-chemin-des-muletiers-orcines_TFO6453685/'],['Clermont Auvergne Volcans','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-muletiers/'],['FFRandonnée 63 – travaux d’octobre 2026','https://puy-de-dome.ffrandonnee.fr/post/chemin-des-muletiers/'],['État des chemins (Puy-de-Dôme Tourisme)','https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/']]},
+ {n:2,sommet:'Puy de Dôme',iti:'Sentier des Chèvres (PR puis GR 441)',depart:'Gare du Panoramique des Dômes',altDep:980,altSom:1465,dplus:530,dist:10,duree:'1 h 15–2 h montée · ≈ 3 h–3 h 30 A/R',h:3.25,diff:'Moyenne',conf:'Élevée',
   note:'Montée : ≈ 5 km / 526–532 m D+ (fiche officielle). Fin par des escaliers puis la route de service.',
-  src:[['Clermont Auvergne Volcans – chemin des Chèvres','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-chevres/'],['Chaîne des Puys en rando','https://chainedespuysenrando.fr/le-puy-de-dome-par-le-sentier-des-chevres/']]},
- {n:3,sommet:'Puy de Sancy',iti:'Boucle Val d’Enfer / Val de Courre',depart:'Station du Mont-Dore (téléphérique)',altDep:1340,altSom:1885,dplus:560,dist:7,duree:'≈ 3 h (boucle)',diff:'Difficile (Val d’Enfer raide)',conf:'Élevée',
-  note:'Boucle PDIPR officielle « Le puy de Sancy » : 7 km, 560 m, 3 h.',
-  src:[['Sancy.com – Le puy de Sancy','https://www.sancy.com/fr/fiche/equipement/le-puy-de-sancy-mont-dore_TFO890393/'],['Visorando – Sancy par le Val de Courre','https://www.visorando.com/randonnee-le-puy-de-sancy-par-le-val-de-courre/']]},
- {n:4,sommet:'La Rhune',iti:'Voie normale du Col de Saint-Ignace',depart:'Col de Saint-Ignace',altDep:169,altSom:905,dplus:740,dist:9.8,duree:'≈ 2 h 15–2 h 30 montée · 4 h A/R',diff:'Difficile (raide, rocailleux)',conf:'Élevée',
-  note:'Descente possible en petit train (selon places).',
-  src:[['Mapirando – La Rhune depuis le col de Saint-Ignace','https://www.mapirando.fr/topo/la-rhune-depuis-le-col-de-saint-ignace/'],['Les plus beaux villages – Sare','https://www.les-plus-beaux-villages.com/randonnees/sare/la-rhune-depuis-le-col-de-saint-ignace/']]},
- {n:5,sommet:'Puy de Sancy',iti:'Grande boucle des Crêtes via la Grande Cascade',depart:'Centre-ville du Mont-Dore',altDep:1050,altSom:1885,dplus:1050,dist:18,duree:'≈ 7 h (boucle)',diff:'Difficile',conf:'Élevée',
-  note:'Boucle officielle « Les crêtes du Sancy » ; variantes 15,6–17 km / ≈ 990–1 030 m.',
+  src:[['Clermont Auvergne Volcans – chemin des Chèvres','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-chevres/'],['Chaîne des Puys en rando','https://chainedespuysenrando.fr/le-puy-de-dome-par-le-sentier-des-chevres/'],['Accès au sommet (site officiel du puy de Dôme)','https://volcan.puy-de-dome.fr/infos-pratiques/acces-au-sommet.html']]},
+ {n:3,sommet:'Puy de Sancy',iti:'Boucle Val d’Enfer / Val de Courre',depart:'Station du Mont-Dore (téléphérique)',altDep:1340,altSom:1885,dplus:560,dist:7,duree:'≈ 3 h (boucle)',h:3.25,diff:'Difficile (Val d’Enfer raide)',conf:'Élevée',
+  note:'Boucle PDIPR « Le puy de Sancy » : 7 km, 560 m, 3 h (la fiche « patrimoine » de sancy.com annonce 8 km, 546 m, 3 h 30).',
+  src:[['Sancy.com – Le puy de Sancy (boucle)','https://www.sancy.com/fr/fiche/equipement/le-puy-de-sancy-mont-dore_TFO890393/'],['Sancy.com – accès au puy de Sancy','https://www.sancy.com/fr/fiche/patrimoine-naturel/le-puy-de-sancy-mont-dore_TFO4638613/'],['Visorando – Sancy par le Val de Courre','https://www.visorando.com/randonnee-le-puy-de-sancy-par-le-val-de-courre/']]},
+ {n:4,sommet:'La Rhune',iti:'Voie normale du Col de Saint-Ignace',depart:'Col de Saint-Ignace',altDep:169,altSom:905,dplus:740,dist:9.8,duree:'≈ 2 h 15–2 h 30 montée · 4 h A/R',h:4,diff:'Difficile (raide, rocailleux)',conf:'Élevée',
+  note:'Descente possible en petit train (du 28/03 au 01/11/2026, selon places).',
+  src:[['Mapirando – La Rhune depuis le col de Saint-Ignace','https://www.mapirando.fr/topo/la-rhune-depuis-le-col-de-saint-ignace/'],['Les plus beaux villages – Sare','https://www.les-plus-beaux-villages.com/randonnees/sare/la-rhune-depuis-le-col-de-saint-ignace/'],['Train de la Rhune – FAQ 2026','https://www.rhune.com/fr/faq']]},
+ {n:5,sommet:'Puy de Sancy',iti:'Grande boucle des Crêtes via la Grande Cascade',depart:'Centre-ville du Mont-Dore',altDep:1050,altSom:1885,dplus:1050,dist:18,duree:'≈ 7 h (boucle)',h:6.5,diff:'Difficile',conf:'Élevée',
+  note:'Boucle officielle « Les crêtes du Sancy » ; variantes 15,6–17 km / ≈ 990–1 050 m (sancy.com : 17 km, 1 050 m, ≈ 6 h).',
   src:[['Sancy.com – Les crêtes du Sancy','https://www.sancy.com/fr/fiche/equipement/les-cretes-du-sancy-mont-dore_TFO890509/'],['Les Terres du Milieu – crêtes du Sancy','https://www.lesterresdumilieu.fr/sancy-cretes']]},
- {n:6,sommet:'Pic du Midi de Bigorre',iti:'Voie du Tourmalet (col de Sencours, Laquets)',depart:'Col du Tourmalet',altDep:2115,altSom:2877,dplus:800,dist:13,duree:'≈ 2 h 30 montée · 5–6 h A/R',diff:'Moyenne (haute montagne, sans neige)',conf:'Moyenne-élevée',
+ {n:6,sommet:'Pic du Midi de Bigorre',iti:'Voie du Tourmalet (col de Sencours, Laquets)',depart:'Col du Tourmalet',altDep:2115,altSom:2877,dplus:800,dist:13,duree:'≈ 2 h 30 montée · 5–6 h A/R',h:5.5,diff:'Moyenne (haute montagne, sans neige)',conf:'Moyenne-élevée',
   note:'Piste jusqu’à ≈ 2 637 m puis sentier ; éboulis sur la fin. D+ annoncé 760–850 m.',
-  src:[['Altituderando – Pic du Midi par le Tourmalet','https://www.altituderando.com/Pic-du-Midi-de-Bigorre-2876m-par-le-col-du-Tourmalet'],['Iris-Pyrénées','https://iris-py.fr/randonnee-pyrenees/le-pic-du-midi-de-bigorre-depuis-le-col-du-tourmalet/']]},
- {n:7,sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
+  src:[['Altituderando – Pic du Midi par le Tourmalet','https://www.altituderando.com/Pic-du-Midi-de-Bigorre-2876m-par-le-col-du-Tourmalet'],['Iris-Pyrénées','https://iris-py.fr/randonnee-pyrenees/le-pic-du-midi-de-bigorre-depuis-le-col-du-tourmalet/'],['Pic du Midi – accès à pied (été 2026)','https://picdumidi.com/en/page/adventur']]},
+ {n:7,sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',h:7,diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
   note:'Topos : 1 600–1 700 m D+, 19–20 km A/R. Certains départs (virage des Arizes) sont à ≈ 1 280 m.',
-  src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21']]},
- {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'≈ 8 h 30–10 h (ou 2 jours via la cabane)',diff:'Difficile (T3, très physique, altitude)',conf:'Moyenne',
-  note:'Plus haut sommet randonnable de Suisse. Sources : 1 760–1 982 m D+, 19,8–21,2 km. Nuit à la Turtmannhütte (2 519 m) conseillée.',
-  src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097']]},
- {n:9,sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
+  src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21'],['Ma petite rando – sentier des Muletiers','https://mapetiterando.fr/randonnee/ce-sentier-historique-mene-au-sommet-du-pic-du-midi-1700-m-de-denivele-et-une-vue-a-couper-le-souffle/']]},
+ {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'≈ 8 h 30–10 h (ou 2 jours via la cabane)',h:9,diff:'Difficile (T3, très physique, altitude)',conf:'Moyenne',
+  note:'Longtemps présenté comme le plus haut sommet randonnable des Alpes (un sentier vers le Gross Bigerhorn, 3 625 m, existe depuis 2024). Sources : 1 660–1 980 m D+, 18,6–21,2 km. Nuit à la Turtmannhütte (2 519 m) conseillée.',
+  src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097'],['Novo-monde – Monter au Barrhorn','https://www.novo-monde.com/ascension-barrhorn-valais-suisse/'],['CAS – Turtmannhütte','https://www.sac-cas.ch/fr/cabanes-et-courses/portail-des-courses-du-cas/turtmannhuette-sac-2147000281/']]},
+ {n:9,sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',h:7.5,diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
   note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable.',
-  src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – rando Grande Sassière','https://www.tignes.net/magazine/randonnee-aiguille-sassiere']]}
+  src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – la Grande Sassière','https://www.tignes.net/decouvrir/la-station/grande-sassiere'],['Parc national de la Vanoise – réserve de la Grande Sassière','https://www.vanoise-parcnational.fr/fr/des-actions/gerer-et-proteger-les-patrimoines/les-reserves-naturelles-nationales/la-reserve-0']]},
+ // GR 441 ajouté en dernière position (n° 10) : itinérance de 6 jours, de nature différente des ascensions à la journée ; les numéros 1–9 restent inchangés (l'état « fait / prévu » est stocké par numéro).
+ {n:10,sommet:'GR 441 – Tour de la Chaîne des Puys',iti:'Boucle en 6 étapes au départ de Volvic',depart:'Volvic (573 m)',altDep:573,altSom:1465,dplus:2900,dist:114,duree:'6 jours (étapes de 15 à 23 km, 4 h–5 h 40)',h:5.7,multi:{jours:6,dpJ:520,distJ:23,hJ:5.7},diff:'Moyenne (itinérance, étapes longues)',conf:'Moyenne-élevée',
+  note:'114–115 km, ≈ 2 750–3 050 m D+ cumulé selon les tracés ; point culminant le puy de Dôme (1 465 m) si le tracé passe au sommet (certains topos donnent 1 415 m). D+ moyen ≈ 460–510 m par jour (estimation : total ÷ 6).',
+  src:[['Topo de Rando – GR 441','https://topo-de-rando.com/gr-441/'],['GR-Go – GR 441','https://gr-go.fr/grande-randonnee/gr441-tour-de-la-chaine-des-puys/'],['Randonnées.info – étapes du GR 441','https://randonnees.info/gr-441/'],['Randozone – GR 441','https://www.randozone.com/fiche/13935/sentier-de-grande-randonnee-gr-441-tour-de-la-chaine-des-puys.html'],['Cadre de pratique du bivouac (Chaîne des Puys)','https://www.puydedome-tourisme.com/uploads/2026/01/cadre-de-pratique-bivouac-randonnee-mars25.pdf']]}
 ];
+// Saison : 0 = déconseillé, 1 = possible selon conditions, 2 = idéal (janv. → déc.) — indicatif, d'après les sources ci-dessus.
+const SEASON = {
+ 1:[1,1,1,2,2,2,2,2,2,2,1,1], 2:[1,1,1,2,2,2,2,2,2,2,1,1], 3:[0,0,0,0,1,2,2,2,2,2,1,0], 4:[1,1,2,2,2,1,1,1,2,2,2,1],
+ 5:[0,0,0,0,1,2,2,2,2,2,1,0], 6:[0,0,0,0,0,1,2,2,2,1,0,0], 7:[0,0,0,0,0,1,2,2,2,1,0,0], 8:[0,0,0,0,0,0,2,2,2,0,0,0],
+ 9:[0,0,0,0,0,0,2,2,2,0,0,0], 10:[0,0,0,1,2,2,2,2,2,2,1,0]
+};
+// Fermetures connues (dates incluses)
+const CLOSURES = {
+ 1:[{from:'2026-10-05',to:'2026-10-16',txt:'Chemin des Muletiers fermé pour travaux (parking du col de Ceyssat inaccessible) — la fiche Puy-de-Dôme Tourisme indique 6–17/10. Montée possible par le chemin des Chèvres.'},
+    {from:'2026-03-16',to:'2026-03-27',txt:'Chemin des Muletiers fermé pour travaux.'}],
+ 10:[{from:'2026-10-05',to:'2026-10-16',txt:'Tronçon col de Ceyssat → sommet du puy de Dôme (chemin des Muletiers) fermé pour travaux : variante par le chemin des Chèvres.'}],
+ 3:[{from:'2026-08-31',to:'2026-12-18',txt:'Téléphérique du Sancy fermé pour maintenance (la boucle à pied reste possible hors neige ; pas de descente en cabine).'}]
+};
+// Matériel conseillé (clés de GEAR) par objectif
+const OBJ_GEAR = {
+ 1:['chauss','veste','polaire','eau','frontale','trousse','couverture','bonnet'],
+ 2:['chauss','veste','polaire','eau','frontale','trousse','couverture','bonnet','batons'],
+ 3:['chauss','veste','polaire','eau','batons','frontale','trousse','couverture','lunettes','creme','bonnet','carte'],
+ 4:['chauss','veste','eau','batons','creme','lunettes','frontale','trousse','couverture','carte'],
+ 5:['chauss','veste','polaire','eau','batons','frontale','trousse','couverture','lunettes','creme','bonnet','carte','sac'],
+ 6:['chauss','veste','polaire','doudoune','eau','batons','lunettes','creme','bonnet','frontale','trousse','couverture','carte','sac'],
+ 7:['chauss','veste','polaire','doudoune','eau','batons','lunettes','creme','bonnet','frontale','trousse','couverture','carte','sac'],
+ 8:['chauss','veste','polaire','doudoune','eau','batons','glacier','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','assurance','cabane','casque','crampons'],
+ 9:['chaussRig','veste','polaire','doudoune','eau','batons','glacier','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','crampons','piolet','casque'],
+ 10:['chauss','veste','polaire','eau','batons','frontale','trousse','couverture','carte','creme','sac45','tente','duvet','matelas','rechaud','filtre']
+};
+const GEAR = {
+ chauss:{l:'Chaussures de randonnée tige haute',re:/chaussures de randonn/i,cat:/chaussures/i},
+ chaussRig:{l:'Chaussures semi-rigides compatibles crampons',re:/semi-rigides/i,cat:/haute montagne/i},
+ veste:{l:'Veste imperméable-respirante',re:/veste imperm/i,cat:/v[êe]tements/i},
+ polaire:{l:'Polaire ou doudoune légère',re:/polaire/i,cat:/v[êe]tements/i},
+ doudoune:{l:'Doudoune chaude',re:/doudoune chaude/i,cat:/haute montagne|v[êe]tements/i},
+ bonnet:{l:'Bonnet et gants',re:/bonnet|gants fins/i,cat:/v[êe]tements/i},
+ gantsChauds:{l:'Gants chauds imperméables',re:/gants chauds/i,cat:/haute montagne/i},
+ lunettes:{l:'Lunettes de soleil (cat. 3)',re:/lunettes de soleil/i,cat:/v[êe]tements/i},
+ glacier:{l:'Lunettes de glacier (cat. 4)',re:/lunettes de glacier/i,cat:/haute montagne/i},
+ eau:{l:'Gourdes / poche à eau (≥ 2 L)',re:/gourde|poche [àa] eau/i,cat:/sac/i},
+ sac:{l:'Sac à dos 25–30 L',re:/sac [àa] dos 25/i,cat:/sac/i},
+ sac45:{l:'Sac à dos 40–50 L (itinérance)',re:/sac [àa] dos 4\d/i,cat:/bivouac/i},
+ batons:{l:'Bâtons télescopiques',re:/b[âa]tons/i,cat:/b[âa]tons/i},
+ frontale:{l:'Lampe frontale',re:/frontale/i,cat:/s[ée]curit[ée]/i},
+ trousse:{l:'Trousse de secours',re:/trousse/i,cat:/s[ée]curit[ée]/i},
+ couverture:{l:'Couverture de survie',re:/couverture de survie/i,cat:/s[ée]curit[ée]/i},
+ carte:{l:'Carte + boussole ou GPS hors-ligne',re:/carte ign|appli gps|boussole/i,cat:/s[ée]curit[ée]/i},
+ creme:{l:'Crème solaire',re:/cr[èe]me solaire/i,cat:/s[ée]curit[ée]/i},
+ assurance:{l:'Assurance secours en montagne',re:/assurance/i,cat:/s[ée]curit[ée]/i},
+ cabane:{l:'Réservation Turtmannhütte',re:/turtmann/i,cat:/haute montagne/i},
+ casque:{l:'Casque (chutes de pierres)',re:/casque/i,cat:/haute montagne/i},
+ crampons:{l:'Crampons / micro-crampons',re:/^(micro-)?crampons/i,cat:/haute montagne/i},
+ piolet:{l:'Piolet',re:/piolet/i,cat:/haute montagne/i},
+ tente:{l:'Tente légère (ou nuits en gîte)',re:/tente/i,cat:/bivouac/i},
+ duvet:{l:'Sac de couchage',re:/sac de couchage|duvet/i,cat:/bivouac/i},
+ matelas:{l:'Matelas isolant',re:/matelas/i,cat:/bivouac/i},
+ rechaud:{l:'Réchaud à gaz (feux interdits)',re:/r[ée]chaud/i,cat:/bivouac/i},
+ filtre:{l:'Filtre ou pastilles pour l’eau',re:/filtre|pastilles/i,cat:/bivouac/i}
+};
+/* Fiches détaillées (page « sommet »). ⚠︎ = information incertaine ou variable : à vérifier avant de partir. */
+const OBJ_INFO = {
+ 1:{type:'Aller-retour',sum:[45.7725,2.9644],start:{nm:'Col de Ceyssat (auberge des Muletiers)',ll:[45.7639,2.9559],q:'Col de Ceyssat, Orcines'},
+  parking:'Parking du col de Ceyssat (gratuit, sature vite en saison ; stationnement interdit le long de la D68). Alternative : parking de la Maison de site du Panoramique des Dômes (≈ 1 000 places) puis variante de 6 km (1 h 30–2 h de montée).',
+  access:'Depuis Clermont-Ferrand : D941 puis D68 vers Ceyssat (≈ 20 min). Bus P36 (Clermont ↔ Maison de site) ⚠︎ horaires à vérifier. La route de service du sommet est interdite aux piétons et cyclistes.',
+  route:['Du parking, monter vers l’auberge des Muletiers et prendre le GR 441 (balisage rouge et blanc).','Sentier en lacets réguliers, raide et sans replat, en sous-bois puis à découvert (pupitres d’interprétation).','Arrivée au sommet près du temple de Mercure et de la gare du Panoramique (table d’orientation).','Retour par le même chemin (ou descente en train à crémaillère, payant).'],
+  water:'Pas de point d’eau sur le sentier. Au sommet : restaurant / snack et toilettes près de la gare du Panoramique (eau à acheter).',
+  refuges:'Aucun refuge. Abri possible dans les bâtiments du sommet aux heures d’ouverture.',
+  dangers:['Pente soutenue : glissant par temps humide ; neige et verglas possibles de novembre à mars (micro-crampons conseillés).','Vent et brouillard fréquents au sommet : prévoir une couche chaude même l’été.','Forte affluence le week-end ; rester sur le sentier (érosion).'],
+  winter:'En hiver, l’accès au sommet peut être délicat (verglas ou neige) : vérifier les conditions (Puy-de-Dôme Tourisme).',
+  seasonTxt:'Toute l’année ; idéal d’avril à octobre. Partir tôt l’été (sentier exposé au soleil en haut).',
+  uncertain:['Horaires du bus P36','Tarifs de la descente en train']},
+ 2:{type:'Aller-retour',sum:[45.7725,2.9644],start:{nm:'Maison de site du Panoramique des Dômes',ll:[45.7706,2.9857],q:'Panoramique des Dômes, Orcines'},
+  parking:'Grand parking gratuit de la Maison de site du Panoramique des Dômes (chemin du Couleyras, Orcines).',
+  access:'Depuis Clermont-Ferrand : D941 direction Orcines / La Font de l’Arbre (≈ 15–20 min). Bus P36 depuis Clermont ⚠︎ horaires à vérifier.',
+  route:['De la gare du Panoramique, suivre le PR « chemin des Chèvres » en forêt.','Montée régulière puis plus raide sur le flanc est ; rejoindre le GR 441.','Fin par des escaliers puis un court tronçon de route de service jusqu’au sommet.','Retour par le même chemin ou en train (payant).'],
+  water:'Point d’eau / commerces à la Maison de site et au sommet (eau à acheter). Rien sur le sentier.',
+  refuges:'Aucun refuge.',
+  dangers:['Escaliers et marches glissants par temps humide ou gel.','Brouillard et vent au sommet.','Pendant la fermeture des Muletiers (5–16/10/2026), c’est l’unique montée à pied : forte fréquentation.'],
+  winter:'Neige et verglas possibles en hiver sur le haut du sentier.',
+  seasonTxt:'Toute l’année ; idéal d’avril à octobre.',
+  uncertain:['Horaires du bus P36']},
+ 3:{type:'Boucle',sum:[45.5282,2.8140],start:{nm:'Station du Mont-Dore – téléphérique du Sancy',ll:[45.5449,2.8090],q:'Téléphérique du Sancy, Le Mont-Dore'},
+  parking:'Parkings de la station du Mont-Dore, au pied du Sancy (3 km du village) : payants du 1er mai au 31 octobre (≈ 4 € la demi-journée, 7 € la journée), gratuits en hiver.',
+  access:'Depuis Le Mont-Dore, suivre « Sancy / Station du Mont-Dore » (D983). ⚠︎ Le téléphérique est fermé pour maintenance du 31/08 au 18/12/2026.',
+  route:['De la station, monter dans le Val d’Enfer (sentier raide, éboulis).','Rejoindre la crête puis le sommet du puy de Sancy (1 885 m, table d’orientation).','Descendre par les escaliers en bois vers la gare supérieure du téléphérique, puis par le Val de Courre jusqu’à la station.'],
+  water:'Aucun point d’eau sur la boucle. Restaurant « Le Sommet » à la gare supérieure quand le téléphérique fonctionne.',
+  refuges:'Pas de refuge gardé sur la boucle. Abri à la gare supérieure (horaires du téléphérique).',
+  dangers:['Val d’Enfer : pente forte et terrain instable ; couloir avalancheux en hiver (avalanche mortelle le 25/02/2024).','De décembre à avril (domaine skiable ouvert), l’accès piéton au sommet est interdit.','Crêtes exposées au vent et au brouillard ; orages l’été.'],
+  winter:'Accès à pied interdit pendant l’ouverture du domaine skiable (≈ décembre–avril) ; date d’accès selon l’enneigement.',
+  seasonTxt:'De mai/juin à octobre selon l’enneigement ; idéal juin–octobre.',
+  uncertain:['Date d’ouverture à pied au printemps (selon neige)']},
+ 4:{type:'Aller-retour',sum:[43.3090,-1.6355],start:{nm:'Col de Saint-Ignace (gare du train de la Rhune)',ll:[43.3271,-1.6015],q:'Col de Saint-Ignace, Sare'},
+  parking:'Deux parkings gratuits près de la gare du train, vite pleins (vacances, beaux jours). Sinon parkings gratuits à Sare ou Ascain (≈ 3 km) ou Chantaco (Saint-Jean-de-Luz) et bus.',
+  access:'D4 entre Ascain et Sare. Bus Txik Txak lignes 44 et 45 (arrêt « Col de Saint Ignace »). Train de la Rhune du 28/03 au 01/11/2026 (montée ou descente en 35 min, billet descente seule ≈ 23,50 €).',
+  route:['Du col, suivre le sentier balisé en jaune (ne jamais marcher sur les rails).','Montée raide à travers landes et pâturages (pottoks et brebis en liberté), très peu d’ombre.','Passages rocailleux sur la partie haute, puis arrivée au sommet (905 m) : antenne, ventas, gare supérieure.','Retour par le même chemin ou en train selon les places.'],
+  water:'Aucun point d’eau fiable sur la montée : 2 L minimum. Ventas (bars-restaurants) au sommet ⚠︎ ouverture selon la saison.',
+  refuges:'Pas de refuge ; ventas au sommet.',
+  dangers:['Brouillard soudain : renoncer en cas de brouillard épais, orage ou vent fort.','Chaleur et soleil (peu d’ombre) : partir tôt en été.','Rochers glissants par temps humide, surtout à la descente.'],
+  winter:'Praticable en hiver hors épisodes neigeux ; train arrêté de novembre à fin mars.',
+  seasonTxt:'Toute l’année ; idéal au printemps et à l’automne (éviter les après-midi chauds de juillet–août).',
+  uncertain:['Ouverture des ventas du sommet hors saison']},
+ 5:{type:'Boucle',sum:[45.5282,2.8140],start:{nm:'Le Mont-Dore (centre-ville)',ll:[45.5755,2.8095],q:'Le Mont-Dore 63240'},
+  parking:'Parkings du centre du Mont-Dore (gratuits ou payants selon les zones ⚠︎).',
+  access:'Le Mont-Dore : D983 / D996. Gare SNCF du Mont-Dore (ligne Clermont – Le Mont-Dore ⚠︎ selon les périodes).',
+  route:['Du centre, monter à la Grande Cascade puis rejoindre le plateau.','Suivre le GR 4 par les crêtes (puy de Cliergue, Pan de la Grange…) jusqu’au puy de Sancy.','Redescendre par les crêtes vers le Salon du Capucin (GR 30) puis Le Mont-Dore.'],
+  water:'Pas de point d’eau fiable sur les crêtes : 2–3 L. Restaurant à la gare supérieure du téléphérique quand il fonctionne (fermé du 31/08 au 18/12/2026).',
+  refuges:'Buron / abris ponctuels ⚠︎ ; pas de refuge gardé sur l’itinéraire. Le bivouac est interdit dans la réserve naturelle de Chastreix-Sancy.',
+  dangers:['Sentier de la Grande Cascade interdit du 15 novembre au 1er avril (arrêté municipal).','Crêtes très exposées au vent, au brouillard et aux orages ; itinéraire impraticable en hiver (domaine skiable).','Réserve naturelle de Chastreix-Sancy : chiens interdits hors GR, bivouac et feu interdits.'],
+  winter:'Non praticable en saison hivernale (domaine skiable alpin).',
+  seasonTxt:'Juin à octobre ; partir tôt (6–7 h de marche).',
+  uncertain:['Stationnement au centre du Mont-Dore','Trains Clermont – Le Mont-Dore']},
+ 6:{type:'Aller-retour',sum:[42.9368,0.1416],start:{nm:'Col du Tourmalet',ll:[42.9084,0.1453],q:'Col du Tourmalet'},
+  parking:'Parking au col du Tourmalet (2 115 m) ⚠︎ très fréquenté l’été. Variante : départ de la cabane de Toue (1 940 m, au-dessus de Barèges).',
+  access:'D918 par Barèges ou La Mongie. Le col est fermé à la circulation en général du 1er novembre au 31 mai (en 2026, réouverture totale début juin).',
+  route:['Du col, suivre la piste vers le lac d’Oncet puis le col de Sencours (2 378 m).','Continuer sur la piste en lacets jusqu’à l’Hôtellerie des Laquets (2 620 m) puis le collet (2 637 m).','Large sentier en lacets jusqu’au sommet ; éboulis sur les 100 derniers mètres. Terrasse randonneurs (accès limité).'],
+  water:'Pas de point d’eau fiable : au moins 2 L. ⚠︎ Hôtellerie des Laquets en travaux en 2025 ; restaurant du sommet accessible aux piétons selon conditions.',
+  refuges:'Hôtellerie des Laquets (2 620 m) ⚠︎ ouverture à vérifier.',
+  dangers:['Itinéraire à ne faire qu’en l’absence de neige.','Chutes de pierres signalées entre le Tourmalet et le sommet ; en 2025 l’accès Sencours → Pic a été interdit pendant des travaux.','Altitude (2 877 m) : froid, vent, coups de soleil ; orages fréquents l’après-midi.'],
+  winter:'Col fermé et itinéraire enneigé de novembre à mai/juin : hors de portée en randonnée.',
+  seasonTxt:'Juillet à septembre (début octobre si sec et sans neige).',
+  uncertain:['Accès piéton Sencours → sommet selon les travaux','Ouverture de l’Hôtellerie des Laquets']},
+ 7:{type:'Aller-retour',sum:[42.9368,0.1416],start:{nm:'Artigues (Campan)',ll:[42.9284,0.2025],q:'Artigues, Campan'},
+  parking:'Petit parking au hameau d’Artigues (≈ 1 190 m) ⚠︎ ; certains départs se font au virage des Arizes (≈ 1 280 m).',
+  access:'D918 depuis Bagnères-de-Bigorre / Campan, direction La Mongie. Accès possible toute l’année jusqu’à La Mongie (versant Campan).',
+  route:['D’Artigues, monter le vallon par le sentier historique des Muletiers.','Rejoindre le lac d’Oncet puis le col de Sencours (2 378 m) où arrive la piste du Tourmalet.','Finir par les Laquets et le sentier en lacets jusqu’au sommet (2 877 m).'],
+  water:'Ruisseaux dans la partie basse (eau à traiter ⚠︎) ; rien de fiable au-dessus du lac d’Oncet : 2–3 L.',
+  refuges:'Hôtellerie des Laquets (2 620 m) ⚠︎ ouverture à vérifier.',
+  dangers:['Très long (≈ 1 700 m D+ et D-) : gérer l’effort, partir à l’aube.','Mêmes risques que la voie du Tourmalet au-dessus de Sencours (pierres, neige tardive, orages).','Descente longue : genoux et quadriceps très sollicités (bâtons).'],
+  winter:'Enneigé de novembre à mai/juin : non praticable en randonnée.',
+  seasonTxt:'Juillet à septembre.',
+  uncertain:['Parking d’Artigues','Eau des ruisseaux']},
+ 8:{type:'Aller-retour (1 ou 2 jours)',sum:[46.1564,7.7354],start:{nm:'Parking de Sänntum (Turtmanntal)',ll:[46.1858,7.6966],q:'Sänntum, Gruben, Turtmanntal'},
+  parking:'Parking de Sänntum (≈ 1 900 m), au bout de la route du Turtmanntal (≈ 22 km depuis Tourtemagne) ; payant (≈ 4 CHF / 12 h selon un récit ⚠︎).',
+  access:'Route du Turtmanntal depuis Turtmann (vallée du Rhône). Transports publics quasi inexistants ⚠︎ (car postal estival jusqu’à Gruben à vérifier).',
+  route:['De Sänntum, monter au lac et au barrage de Tourtemagne (gorges ou sentier panoramique).','Rejoindre la Turtmannhütte (2 519 m) par le Steinmannliweg (moins raide) ou le Sommerweg.','Passer le couloir du Gässi (vires équipées de mains courantes, T3), puis la longue moraine du vallon de Barr (≈ 2 km).','Pentes d’éboulis puis montée finale très raide (> 40 %) jusqu’à l’Üssers Barrhorn (3 610 m). Retour possible par le Schöllijoch, puis même chemin.'],
+  water:'Eau à la Turtmannhütte (gardiennée) ; rien de fiable au-dessus : 2–3 L depuis la cabane.',
+  refuges:'Turtmannhütte CAS (2 519 m) : gardiennée du 1er week-end de juin au 3e week-end de septembre (et au printemps pour le ski) ; réservation conseillée. Nuit + demi-pension ≈ 80–90 CHF ⚠︎.',
+  dangers:['Altitude 3 610 m : essoufflement, risque de mal aigu des montagnes ; nuit à la cabane conseillée.','Gässi : passage aérien équipé (pied sûr nécessaire) ; à éviter par pluie, vent ou orage.','Éboulis instables, névés tardifs (crampons utiles en début de saison), chutes de pierres.','Grande falaise derrière la croix sommitale. Secours en Suisse payants (REGA) : assurance indispensable.'],
+  winter:'Haute montagne enneigée hors été : réservé au ski de randonnée.',
+  seasonTxt:'Mi-juillet à mi-septembre (cabane gardiennée, neige fondue).',
+  uncertain:['Prix du parking de Sänntum','Bus jusqu’à Gruben','Tarifs de la cabane']},
+ 9:{type:'Aller-retour',sum:[45.5050,6.9998],start:{nm:'Parking du Saut (barrage du Saut, Tignes)',ll:[45.4861,6.9675],q:'Parking du Saut, Tignes'},
+  parking:'Parking du Saut (≈ 2 280 m), gratuit mais limité (plein en fin de matinée en août) ; stationnement interdit le long de la route.',
+  access:'Route du Saut depuis Tignes-les-Brévières (≈ 8 km, étroite, non déneigée) : ouverte en général de juin à fin octobre (fermée dès les premières neiges).',
+  route:['Du parking, entrer dans la réserve naturelle et suivre le sentier de la Grande Sassière vers l’ouest du sommet.','Longue montée en lacets dans les pierriers et les cairns (≈ 1 500 m D+).','Pente finale raide (éboulis, parfois neige ou glace) puis courte arête jusqu’au sommet (3 747 m).','Descente par le même itinéraire.'],
+  water:'Pas d’eau fiable au-dessus des alpages : 2–3 L. Rien à acheter au parking (chalet d’alpage vendant du fromage l’été).',
+  refuges:'Aucun refuge sur l’itinéraire. Bivouac uniquement sur l’aire dédiée en rive gauche du barrage, de juin à août, 19 h – 7 h.',
+  dangers:['Pente finale raide : piolet et crampons si neige ou gel.','Altitude 3 747 m (mal aigu des montagnes), froid et vent au sommet.','Orages d’été : partir très tôt et être redescendu en début d’après-midi.','Réserve naturelle : chiens en laisse, feu et cueillette interdits.'],
+  winter:'Route fermée et itinéraire enneigé d’octobre/novembre à juin.',
+  seasonTxt:'Juillet à septembre, par beau temps stable.',
+  uncertain:['Enneigement de la pente finale selon l’année']},
+ 10:{type:'Itinérance (6 étapes)',sum:[45.7725,2.9644],start:{nm:'Volvic (parking de la société des eaux)',ll:[45.8725,3.0376],q:'Volvic'},
+  parking:'Volvic : parkings du centre / de la société des eaux (départ du GR à l’ouest du bourg). ⚠︎ Vérifier le stationnement autorisé pour 6 jours.',
+  access:'Volvic : à ≈ 20 min de Clermont-Ferrand ; gare TER de Volvic (ligne Clermont – Volvic ⚠︎ horaires à vérifier).',
+  route:['Étape 1 : Volvic → Les Fontêtes (≈ 16 km, 4 h) par le puy de la Nugère.','Étape 2 : Les Fontêtes → Laschamps (≈ 21 km, 5 h 30) par le puy de Dôme selon le tracé.','Étape 3 : Laschamps → lac de Servières (≈ 23 km, 5 h 40).','Étape 4 : lac de Servières → Mazaye (≈ 15 km, 4 h 50) par Orcival.','Étape 5 : Mazaye → Saint-Ours (≈ 15 km, 4 h 30).','Étape 6 : Saint-Ours → Volvic (≈ 22 km, 5 h 30).'],
+  water:'Fontaines et villages traversés (Volvic, Orcival, Mazaye…), mais peu de points d’eau sur les puys : 2 L par étape ⚠︎ et un filtre ou des pastilles.',
+  refuges:'Hébergements en dur à chaque étape (gîtes, chambres d’hôte, hôtels : Volvic, Laschamps, Aydat, Pessade, Orcival, Olby, Mazaye, Saint-Ours…). Bivouac seulement toléré : une nuit, tente montée après 20 h et démontée avant 8 h en été, en lisière forestière, jamais sur les pentes, cratères ou sommets, avec l’accord du propriétaire ; feux interdits, réchaud à gaz seulement.',
+  dangers:['Étapes longues (jusqu’à 23 km) répétées 6 jours : ampoules et fatigue cumulée.','Brouillard et vent sur les puys ; orages l’été.','La plupart des puys sont privés : rester sur les sentiers balisés ; sommet du puy de Côme interdit.'],
+  winter:'Possible hors neige mais jours courts et hébergements parfois fermés ; neige possible au-dessus de 1 000 m.',
+  seasonTxt:'Mai à octobre (idéal mai–juin et septembre–octobre).',
+  uncertain:['Stationnement longue durée à Volvic','Points d’eau précis par étape','Ouverture des hébergements hors saison']}
+};
+
+// Catégorie « Bivouac » (v4) : identifiants stables, identiques sur tous les appareils (évite les doublons à la synchro)
+const BIV_ID='eqc-bivouac';
+function bivouacCat(){ const it=[['Tente légère 1–2 places','ou nuits en gîte/refuge selon l’itinéraire'],['Sac de couchage','température confort ≤ 5 °C (nuits fraîches en moyenne montagne)'],['Matelas isolant','indice R ≥ 2 au printemps et en automne'],
+   ['Sac à dos 40–50 L','pour l’itinérance (GR 441…)'],['Réchaud à gaz + cartouche + briquet','feux interdits dans la Chaîne des Puys'],'Popote, couverts et tasse',['Filtre à eau ou pastilles de purification','points d’eau rares sur les puys'],
+   'Repas lyophilisés / repas du soir',['Sacs étanches','duvet et vêtements de rechange'],['Sac poubelle','tout redescendre'],['Petite pelle / truelle + papier','toilettes à 50 m des points d’eau'],
+   ['Vérifier la réglementation du bivouac','Chaîne des Puys : une nuit, tente montée après 20 h, démontée avant 8 h, hors sommets et cratères']];
+  return {id:BIV_ID,name:'Bivouac',updatedAt:0,items:it.map((x,i)=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:'eqi-bivouac-'+i,name:n,note,price:null,bought:false,updatedAt:0}; })}; }
+// Pesée réelle du 13/10/2026 (capture Mi Fitness « Composition corporelle ») — id stable, updatedAt 0 (donnée de départ)
+const SEED_WEIGH={id:'seed-w-2026-10-13',updatedAt:0};
+function untouchedDefaultCat(c){ return c&&c.id===BIV_ID&&!c.updatedAt&&c.items.every(i=>!i.updatedAt&&!i.bought&&i.price==null)&&c.items.length===bivouacCat().items.length; }
+// Si l'utilisateur a déjà sa propre catégorie « Bivouac », la catégorie par défaut (non modifiée) est retirée (pierre tombale).
+function dedupeBivouac(db){ const mine=db.equip.find(c=>c.id!==BIV_ID&&/bivouac/i.test(c.name)), def=db.equip.find(c=>c.id===BIV_ID);
+  if(!mine||!def||!untouchedDefaultCat(def)) return false;
+  db.equip=db.equip.filter(c=>c!==def); db.tomb.c[BIV_ID]=1; def.items.forEach(i=>db.tomb.i[i.id]=1); return true; }
+function normalizeDB(db){
+  db.tomb=Object.assign(newTomb(),db.tomb||{}); for(const k of ['s','c','i','w']) if(!db.tomb[k]||typeof db.tomb[k]!=='object') db.tomb[k]={};
+  if(!Array.isArray(db.weights)) db.weights=[];
+  db.weights=db.weights.filter(w=>w&&typeof w==='object'&&typeof w.date==='string');
+  db.weights.forEach(w=>{ if(!w.id) w.id=uid(); if(typeof w.updatedAt!=='number') w.updatedAt=1; });
+  if(!db.prefs||typeof db.prefs!=='object') db.prefs={}; if(!db.prefs.actMap||typeof db.prefs.actMap!=='object') db.prefs.actMap={};
+  return db; }
+/* Copies de sécurité locales (5 max) : une par jour à l'ouverture + avant import, restauration ou réinitialisation */
+const SNAP_KEY=KEY+'.snapshots';
+function snapshots(){ try{ const a=JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function snapshot(reason,force){ const today=todayISO(); let a=snapshots(); if(!force&&a.some(x=>x.day===today&&x.auto)) return;
+  a.unshift({t:Date.now(),day:today,auto:!force,reason,n:DB.sessions.length,w:(DB.weights||[]).length,data:JSON.stringify(DB)}); a=a.slice(0,5);
+  for(;;){ try{ localStorage.setItem(SNAP_KEY,JSON.stringify(a)); return; }catch(e){ if(a.length<=1) return; a.pop(); } } }
+function renderSnaps(){ const a=snapshots(), el=$('snapList'); if(!el) return;
+  el.innerHTML=a.length? a.map((s,i)=>`<div class="snaprow"><div class="nm"><b>${fmtDT(s.t)}</b><div class="small mut">${esc(s.reason)} · ${s.n} séances${s.w!=null?' · '+s.w+' pesée(s)':''}</div></div><button class="btn sm sec" data-snap="${i}">Restaurer</button></div>`).join('') : '<div class="small mut">Aucune copie pour l’instant.</div>'; }
+function restoreSnap(i){ const s=snapshots()[i]; if(!s) return; let o; try{ o=JSON.parse(s.data); }catch(e){ alert('Copie illisible.'); return; }
+  if(!validImport(o)){ alert('Copie illisible.'); return; }
+  if(!confirm('Restaurer la copie du '+fmtDT(s.t)+' ('+s.n+' séances) ? Les données actuelles sont d’abord sauvegardées dans une nouvelle copie.')) return;
+  snapshot('avant restauration',true); DB=normalizeDB(o); if((DB.version||1)<DATA_VERSION) migrate(DB); save(); renderAll(); renderSnaps(); toast('Copie restaurée'); }
 
 /* ---------- Seed ---------- */
 const mk = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:'seed-'+date+'-'+(dist==null?'x':Math.round(dist*100)),date,type,dist,dplus,dminus:null,dur,bpm,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:'',updatedAt:0},extra);
@@ -455,7 +761,7 @@ const mk = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:'seed-'+
 const SEPT_RAW = [];
 function septSessions(){ return SEPT_RAW.map(([d,t,k,p,du,b,sa])=>mk(d,t,k,p,hms(du),b,{sauts:sa||null})); }
 function octSessions(){ return []; }
-function defaultEquip(){
+function defaultEquip(withBivouac=true){
   let ci=0; const C=(name,items)=>{ const cid='eqc-'+(ci++); return {id:cid,name,updatedAt:0,items:items.map((x,ii)=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:cid.replace('eqc','eqi')+'-'+ii,name:n,note,price:null,bought:false,updatedAt:0}; })}; };
   return [
    C('Chaussures',[['Chaussures de randonnée tige haute','semelle crantée type Vibram, imperméables'],'Chaussettes de randonnée (×3 paires)',['Guêtres','pierriers, neige, boue'],['Chaussures d’approche / trail','optionnel, pour les sorties courtes']]),
@@ -464,16 +770,16 @@ function defaultEquip(){
    C('Bâtons',['Paire de bâtons télescopiques',['Rondelles neige','pour bâtons']]),
    C('Sécurité & orientation',['Trousse de premiers secours (+ pansements ampoules)','Couverture de survie','Lampe frontale + piles de rechange','Carte IGN / Swisstopo + boussole',['Appli GPS hors-ligne + traces GPX','ex. IGNrando, Visorando, SwitzerlandMobility'],'Batterie externe + câble','Crème solaire indice 50 + stick lèvres','Sifflet','Couteau / multi-outil',['Assurance secours en montagne','indispensable en Suisse (hélicoptère payant)']]),
    C('Haute montagne (Barrhorn, Grande Sassière)',[['Crampons','compatibles avec les chaussures ; micro-crampons au minimum'],['Piolet','si pente finale enneigée ou gelée'],['Casque','chutes de pierres'],'Chaussures semi-rigides compatibles crampons',['Doudoune chaude','au-delà de 3 500 m il peut geler en été'],'Gants chauds imperméables',['Lunettes de glacier','catégorie 4'],['Réservation Turtmannhütte','si le Barrhorn se fait en 2 jours']])
-  ];
+  ].concat(withBivouac?[bivouacCat()]:[]);
 }
 function seed(){
-  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip(), tomb:{s:{},c:{},i:{}} };
+  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip(), weights:[Object.assign({},SEED_WEIGH)], prefs:{actMap:{}}, tomb:newTomb() };
 }
 const sessKey = s => s.date+'|'+(s.dist==null?'':Math.round(s.dist*100));
 const SESS_FIELDS=['type','dist','dplus','dminus','dur','bpm','bpmMax','pas','sac','sauts','ress','exos','notes'];
 const nz=v=>(v===''||v===undefined||v===0)?null:v;
 function sameSession(a,b){ return SESS_FIELDS.every(k=>nz(a[k])===nz(b[k])); }
-function newTomb(){ return {s:{},c:{},i:{}}; }
+function newTomb(){ return {s:{},c:{},i:{},w:{}}; }
 /* Migration non destructive : ne supprime rien de ce que l'utilisateur a saisi. */
 function migrate(db){
   const log=[]; db.version = db.version||1;
@@ -499,7 +805,7 @@ function migrate(db){
     }
     for(const sd of seeds) if(!matched.has(sd.id)) db.tomb.s[sd.id]=1;
     if(!equipCreated){
-      const D=defaultEquip(); const usedC=new Set();
+      const D=defaultEquip(false); const usedC=new Set(); // liste v3 (sans Bivouac, ajouté en v4)
       for(const c of db.equip){
         const dc=D.find(x=>x.name===c.name&&!usedC.has(x.id));
         if(!dc){ if(typeof c.updatedAt!=='number') c.updatedAt=1; c.items.forEach(i=>{ if(typeof i.updatedAt!=='number') i.updatedAt=1; }); continue; }
@@ -513,7 +819,13 @@ function migrate(db){
     }
     for(const [n,o] of Object.entries(db.objectifs)){ if(o&&typeof o.updatedAt!=='number') o.updatedAt=(o.statut&&o.statut!=='À préparer')||o.datePrevue||o.dateRealisee?1:0; }
   }
-  db.tomb = Object.assign(newTomb(), db.tomb||{});
+  if(db.version < 4){
+    // v4 : pesées (DB.weights + tomb.w), préférences (DB.prefs.actMap), catégorie Bivouac, pesée réelle du 13/10/2026
+    normalizeDB(db);
+    if(!db.weights.some(w=>w.id===SEED_WEIGH.id) && db.tomb.w[SEED_WEIGH.id]==null){ db.weights.push(Object.assign({},SEED_WEIGH)); log.push('pesée du 13/10/2026 ajoutée'); }
+    if(!db.equip.some(c=>c.id===BIV_ID||/bivouac/i.test(c.name||'')) && db.tomb.c[BIV_ID]==null){ db.equip.push(bivouacCat()); log.push('catégorie Bivouac ajoutée'); }
+  }
+  normalizeDB(db);
   db.sessions.forEach(s=>{ if(!s.id) s.id=uid(); if(s.exos==null) s.exos=''; if(typeof s.updatedAt!=='number') s.updatedAt=1; });
   db.equip.forEach(c=>{ if(!c.id) c.id=uid(); if(typeof c.updatedAt!=='number') c.updatedAt=1; if(!Array.isArray(c.items)) c.items=[]; c.items.forEach(i=>{ if(!i.id) i.id=uid(); if(typeof i.updatedAt!=='number') i.updatedAt=1; }); });
   db.version = Math.max(db.version, DATA_VERSION);
@@ -525,7 +837,7 @@ function migrate(db){
 // Une suppression (pierre tombale) l'emporte sur toute version modifiée avant ou au moment de la suppression.
 function mergeDB(L,R){
   const tomb=newTomb();
-  for(const k of ['s','c','i']) for(const src of [L.tomb,R.tomb]) for(const [id,ts] of Object.entries((src&&src[k])||{})) tomb[k][id]=Math.max(tomb[k][id]||0,+ts||0);
+  for(const k of ['s','c','i','w']) for(const src of [L.tomb,R.tomb]) for(const [id,ts] of Object.entries((src&&src[k])||{})) tomb[k][id]=Math.max(tomb[k][id]||0,+ts||0);
   const ts=x=>x&&typeof x.updatedAt==='number'?x.updatedAt:0;
   const pick=(a,b)=>!a?b:!b?a:(ts(b)>=ts(a)?b:a);
   const alive=(k,x)=>!(tomb[k][x.id]!=null && tomb[k][x.id]>=ts(x));
@@ -541,7 +853,13 @@ function mergeDB(L,R){
   }
   const equip=corder.map(id=>cm.get(id)).filter(c=>alive('c',c)).map(c=>{ const {items,...rest}=c;
     return Object.assign({},rest,{items:iorder.map(id=>im.get(id)).filter(x=>x.cat===c.id&&alive('i',x.it)).map(x=>Object.assign({},x.it))}); });
-  return Object.assign({}, R, L, {version:Math.max(L.version||1,R.version||1,DATA_VERSION), sessions, objectifs, equip, tomb});
+  // v4 : pesées (union par id, comme les séances) et préférences (par clé, la plus récente gagne)
+  const wm=new Map(); for(const w of L.weights||[]) if(w&&w.id) wm.set(w.id,w); for(const w of R.weights||[]) if(w&&w.id) wm.set(w.id,pick(wm.get(w.id),w));
+  const weights=[...wm.values()].filter(w=>alive('w',w)).map(w=>Object.assign({},w));
+  const LA=(L.prefs&&L.prefs.actMap)||{}, RA=(R.prefs&&R.prefs.actMap)||{}, actMap={};
+  for(const k of new Set([...Object.keys(LA),...Object.keys(RA)])){ const v=pick(LA[k],RA[k]); if(v) actMap[k]=Object.assign({},v); }
+  const prefs=Object.assign({},R.prefs||{},L.prefs||{},{actMap});
+  return Object.assign({}, R, L, {version:Math.max(L.version||1,R.version||1,DATA_VERSION), sessions, objectifs, equip, weights, prefs, tomb});
 }
 
 /* ---------- Utils ---------- */
@@ -570,12 +888,18 @@ function todayISO(){ return toISO(new Date()); }
 /* ---------- Store ---------- */
 let DB;
 function load(){ try{ const r=localStorage.getItem(KEY); DB = r? JSON.parse(r) : null; }catch(e){ DB=null; }
-  if(!DB||typeof DB!=='object'||!Array.isArray(DB.sessions)){ DB=seed(); save(); return; }
+  if(!DB||typeof DB!=='object'||!Array.isArray(DB.sessions)){ DB=seed(); save(); snapshot('copie automatique du jour'); return; }
   if((DB.version||1) < DATA_VERSION || !Array.isArray(DB.equip)){
-    try{ localStorage.setItem(KEY+'.backup.v'+(DB.version||1), JSON.stringify(DB)); }catch(e){}
+    // copie intégrale AVANT toute migration (jamais écrasée si elle existe déjà pour cette version)
+    const bk=KEY+'.backup.v'+(DB.version||1); try{ if(!localStorage.getItem(bk)) localStorage.setItem(bk, JSON.stringify(DB)); }catch(e){}
     const log=migrate(DB); save(); if(log.length) setTimeout(()=>toast('Mise à jour des données : '+log.join(' · ')),400);
-  } }
-function save(){ localStorage.setItem(KEY, JSON.stringify(DB)); }
+  }
+  normalizeDB(DB); if(dedupeBivouac(DB)) save();
+  snapshot('copie automatique du jour'); }
+function save(){ const j=JSON.stringify(DB);
+  try{ localStorage.setItem(KEY, j); }
+  catch(e){ // stockage plein : on libère d'abord les copies de sécurité locales, jamais les données
+    try{ localStorage.removeItem(KEY+'.snapshots'); localStorage.setItem(KEY, j); }catch(e2){ alert('Stockage du navigateur plein : exporte tes données (Données → Exporter JSON).'); throw e2; } } }
 function objState(n){ return Object.assign({datePrevue:'',statut:'À préparer',dateRealisee:''}, DB.objectifs[n]||{}); }
 
 /* ---------- Aggregation ---------- */
@@ -611,14 +935,16 @@ function chart(el, labels, series, opt={}){
   const axes={left:[],right:[]}; series.forEach(s=>axes[s.axis||'left'].push(...s.values.filter(v=>v!=null&&isFinite(v))));
   const nice=v=>{ if(!v||v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const k=v/p; return (k<=1?1:k<=2?2:k<=2.5?2.5:k<=5?5:10)*p; };
   const mn={left:0,right:0};
+  if(opt.fitLeft&&axes.left.length){ const lo=Math.min(...axes.left), hi=Math.max(...axes.left), sp=Math.max(hi-lo,Math.abs(hi)*0.03,1); mn.left=Math.max(0,Math.floor(lo-sp*0.6)); }
   if(opt.rightMin!=null&&axes.right.length){ const lo=Math.min(...axes.right); mn.right=Math.max(0,Math.floor((lo*0.9)/10)*10); }
   const top=ax=>{ const hi=Math.max(mn[ax],...axes[ax]); const st=nice((hi-mn[ax])*1.05/4||1); return mn[ax]+st*4; };
   const mx={left:top('left'), right:top('right')};
   const y=(v,ax)=>T+ih-(v-mn[ax])/(mx[ax]-mn[ax]||1)*ih; const xc=i=>L+iw*(i+0.5)/n;
   let g=`<svg viewBox="0 0 ${W} ${H}" role="img" xmlns="http://www.w3.org/2000/svg" font-family="Outfit,system-ui,sans-serif" font-size="11.5">`;
   for(let k=0;k<=4;k++){ const yy=T+ih*k/4; g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="rgba(255,255,255,.07)"/>`;
-    const vl=mx.left-(mx.left-mn.left)*k/4; g+=`<text x="${L-6}" y="${yy+4}" text-anchor="end" fill="#a9b8b5">${f(vl,vl<10?1:0)}</text>`;
-    if(axes.right.length){ const vr=mx.right-(mx.right-mn.right)*k/4; g+=`<text x="${W-R+6}" y="${yy+4}" fill="#a9b8b5">${f(vr,vr<10?1:0)}</text>`; } }
+    const dl=(mx.left-mn.left)/4<1||(mx.left<10)?1:0, dr=(mx.right-mn.right)/4<1||(mx.right<10)?1:0;
+    const vl=mx.left-(mx.left-mn.left)*k/4; g+=`<text x="${L-6}" y="${yy+4}" text-anchor="end" fill="#a9b8b5">${f(vl,dl)}</text>`;
+    if(axes.right.length){ const vr=mx.right-(mx.right-mn.right)*k/4; g+=`<text x="${W-R+6}" y="${yy+4}" fill="#a9b8b5">${f(vr,dr)}</text>`; } }
   const gid='cg'+(el.id||'x'); g+='<defs>'+series.map((s,k)=>`<linearGradient id="${gid}${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}"/><stop offset="1" stop-color="${s.color}" stop-opacity=".35"/></linearGradient>`).join('')+'</defs>';
   const bars=series.filter(s=>s.type==='bar'); const bw=Math.min(28,iw/n*0.7)/Math.max(1,bars.length);
   bars.forEach((s,bi)=>{ s.values.forEach((v,i)=>{ if(v==null||!v) return; const ax=s.axis||'left'; const x=xc(i)-bw*bars.length/2+bi*bw; const yy=y(v,ax);
@@ -642,6 +968,7 @@ function renderJournal(){
   const ma=monthAgg(ymNow); const [yy,mm]=ymNow.split('-');
   document.getElementById('kpiMonth').innerHTML=`<div class="hero"><h2>${MOIS[+mm-1]} ${yy}</h2><span class="tag">${ma.n??0} séances</span></div>`+
     [['km',f(ma.dist,1),'k-dist',ma.dist,1],['D+ m',f(ma.dplus,0),'k-dplus',ma.dplus,0],['durée',fmtDur(ma.dur),''],['km/h moy.',f(ma.speed,2),'',ma.speed,2],['BPM moy.',f(ma.bpm,0),'',ma.bpm,0],['sauts',f(ma.sauts,0),'',ma.sauts,0]].map(([k,v,c,n,d])=>`<div class="kpi ${c}"><b${(n!=null&&isFinite(n))?` data-count="${n}" data-dec="${d}"`:''}>${v}</b><small>${k}</small></div>`).join('');
+  const nx=nextObjective(); $('jAdv').innerHTML= nx? adviceCard(advise(nx),{compact:true}) : '';
   const box=document.getElementById('sessList');
   if(!list.length){ box.innerHTML=`<div class="empty"><svg viewBox="0 0 120 80" aria-hidden="true"><circle cx="92" cy="22" r="10" fill="#fb923c" opacity=".8"/><path d="M4 74l30-40 14 18 16-24 28 46z" fill="#8b9a97" opacity=".55"/><path d="M34 34l-8 11 6-2 3 4 4-5 5 3z" fill="#f3f7f6"/><path d="M0 74h120v6H0z" fill="#1f6f54"/></svg><h3>${flt?'Aucune séance « '+esc(flt)+' »':'Aucune séance pour l’instant'}</h3><p class="small mut">Chaque montée compte. Ajoute ta première séance.</p><button class="btn" data-open-add>Ajouter une séance</button></div>`; return; }
   let html='',cur='';
@@ -651,9 +978,10 @@ function renderJournal(){
     const d=parseISO(s.date); const sp=speed(s), va=vasc(s);
     const chips=[ s.dist!=null?f(s.dist,2)+' km':null, s.dplus!=null?'D+ '+f(s.dplus,0)+' m':null, s.dminus!=null?'D- '+f(s.dminus,0)+' m':null, s.dur?fmtDur(s.dur):null,
       sp!=null?f(sp,2)+' km/h':null, va!=null&&s.dplus>0?f(va,0)+' m/h':null, s.bpm?'♥ '+s.bpm+(s.bpmMax?' / '+s.bpmMax:''):null,
-      s.pas?f(s.pas,0)+' pas':null, s.sac?'🎒 '+f(s.sac)+' kg':null, s.sauts?'🪢 '+f(s.sauts,0):null, s.ress?'ressenti '+s.ress+'/10':null ].filter(Boolean);
+      s.pas?f(s.pas,0)+' pas':null, s.sac?'🎒 '+f(s.sac)+' kg':null, s.sauts?'🪢 '+f(s.sauts,0):null, s.ress?'ressenti '+s.ress+'/10':null,
+      isTapis(s.type)&&s.incline!=null&&s.type==='Tapis'?'pente '+f(s.incline,1)+' %':null, s.kcal?'🔥 '+f(s.kcal,0)+' kcal':null, s.te?'TE '+f(s.te,1):null ].filter(Boolean);
     html+=`<div class="sess" data-id="${s.id}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
-      <div class="b"><span class="tag">${esc(s.type)}</span> <span class="small mut">${dFR(s.date)} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
+      <div class="b"><span class="tag">${esc(s.type)}</span> <span class="small mut">${dFR(s.date)}${s.heure?' '+esc(s.heure):''} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
       <div class="acts"><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`; }
   box.innerHTML=html;
 }
@@ -667,8 +995,13 @@ function fillForm(s){
   const v=x=>x==null?'':String(x).replace('.',',');
   $('f_dist').value=s?v(s.dist):''; $('f_dur').value=s&&s.dur?fmtDur(s.dur):''; $('f_dplus').value=s?v(s.dplus):''; $('f_dminus').value=s?v(s.dminus):'';
   $('f_bpm').value=s?v(s.bpm):''; $('f_bpmmax').value=s?v(s.bpmMax):''; $('f_pas').value=s?v(s.pas):''; $('f_sac').value=s?v(s.sac):''; $('f_sauts').value=s?v(s.sauts):'';
-  $('f_ress').value=s&&s.ress?String(s.ress):''; $('f_notes').value=s?s.notes||'':''; $('f_exos').value=s?s.exos||'':''; updExos(); updAuto();
+  $('f_ress').value=s&&s.ress?String(s.ress):''; $('f_notes').value=s?s.notes||'':''; $('f_exos').value=s?s.exos||'':'';
+  $('f_heure').value=s&&s.heure?s.heure:''; $('f_incline').value=s?v(s.incline!=null?s.incline:typeIncline(s.type)):'';
+  FX.forEach(k=>$('f_x_'+k).value=s?v(s[k]):''); $('f_more').open=!!(s&&FX.some(k=>s[k]!=null));
+  $('f_dplus').dataset.auto=(s&&s.dplus!=null)?'0':'1'; updExos(); updAuto();
 }
+const FX=['kcal','kcalTot','cadence','foulee','altMin','altMax','te','tl','recup','pauses'];
+const FX_INT=new Set(['kcal','kcalTot','cadence','foulee','tl','recup','pauses']);
 function readForm(){
   const errs=[]; const n=(id,lab,int)=>{ const x=num($(id).value); if(x!=null&&(isNaN(x)||x<0)){ errs.push(lab); return null;} return x==null?null:(int?Math.round(x):x); };
   const dur=hms($('f_dur').value); if(dur!=null&&isNaN(dur)) errs.push('Durée (format h:mm:ss)');
@@ -676,54 +1009,52 @@ function readForm(){
   const s={ date, type:$('f_type').value, dist:n('f_dist','Distance'), dur:(dur!=null&&!isNaN(dur)&&dur>0)?dur:null, dplus:n('f_dplus','D+'), dminus:n('f_dminus','D-'),
     bpm:n('f_bpm','BPM moyen',1), bpmMax:n('f_bpmmax','BPM max',1), pas:n('f_pas','Pas',1), sac:n('f_sac','Sac'), sauts:n('f_sauts','Sauts',1),
     ress:$('f_ress').value?+$('f_ress').value:null, exos:$('f_exos').value.trim(), notes:$('f_notes').value.trim() };
+  const hr=$('f_heure').value; if(hr&&!/^\d{2}:\d{2}$/.test(hr)) errs.push('Heure'); s.heure=hr||null;
+  s.incline=isTapis(s.type)? n('f_incline','Inclinaison') : null; if(s.incline!=null&&s.incline>40) errs.push('Inclinaison (0–40 %)');
+  FX.forEach(k=>{ s[k]=n('f_x_'+k,($('l_x_'+k)||{}).textContent||k,FX_INT.has(k)); });
   return {s,errs};
 }
-function updExos(){ $('w_exos').style.display = ($('f_type').value==='Musculation' || $('f_exos').value.trim()) ? '' : 'none'; }
-function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s);
-  $('f_auto').textContent='Vitesse : '+(sp!=null?f(sp,2)+' km/h':'–')+' · Vitesse ascensionnelle : '+(va!=null?f(va,0)+' m/h':'–'); }
+function updExos(){ const t=$('f_type').value; $('w_exos').style.display = (t==='Musculation' || $('f_exos').value.trim()) ? '' : 'none';
+  $('w_incl').style.display = isTapis(t) ? '' : 'none'; const ti=typeIncline(t); if(ti!=null) $('f_incline').value=String(ti); $('f_incline').readOnly=ti!=null;
+  if(t==='Tapis'&&!$('f_incline').value) $('f_incline').value='6';
+  const cl=$('l_x_cadence'); if(cl) cl.textContent= t==='Corde à sauter'?'Sauts par minute':t==='Vélo'?'Cadence (tr/min)':'Cadence (pas/min)'; }
+// Tapis : D+ = distance × inclinaison, tant que l'utilisateur n'a pas saisi le D+ lui-même
+function autoTapisDplus(){ const t=$('f_type').value; if(!isTapis(t)||$('f_dplus').dataset.auto!=='1') return;
+  const d=num($('f_dist').value), i=num($('f_incline').value); if(d>0&&i!=null&&!isNaN(i)) $('f_dplus').value=String(Math.round(d*i*10)); }
+function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s), pc=sp?3600/sp:null;
+  $('f_auto').textContent='Vitesse : '+(sp!=null?f(sp,2)+' km/h':'–')+(pc?' · allure '+Math.floor(pc/60)+'\''+String(Math.round(pc%60)).padStart(2,'0')+'"/km':'')+' · Vitesse ascensionnelle : '+(va!=null?f(va,0)+' m/h':'–'); }
 
 /* ---------- Objectifs ---------- */
 function renderObj(){
   $('objList').innerHTML=OBJECTIFS.map(o=>{ const st=objState(o.n);
-    return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}</h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
+    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
     <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
     <div class="kpis" style="margin:8px 0">
       <div class="kpi"><b>${f(o.altDep,0)} m</b><small>alt. départ</small></div><div class="kpi"><b>${f(o.altSom,0)} m</b><small>alt. sommet</small></div><div class="kpi"><b>≈ ${f(o.dplus,0)} m</b><small>D+ estimé</small></div>
-      <div class="kpi"><b>≈ ${f(o.dist,1)} km</b><small>distance</small></div><div class="kpi" style="grid-column:span 2"><b style="font-size:13.5px">${esc(o.duree)}</b><small>durée estimée</small></div></div>
+      <div class="kpi"><b>≈ ${f(o.dist,1)} km</b><small>distance</small></div><div class="kpi" style="grid-column:span 2"><b style="font-size:13.5px">${esc(o.duree)}</b><small>durée estimée</small></div></div></div>
     <div class="small"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Confiance :</span> ${esc(o.conf)}</div>
-    <div class="small mut" style="margin:3px 0 8px">${esc(o.note)}</div>
+    <div class="small mut" style="margin:3px 0 8px">${esc(o.note)}</div>${(CLOSURES[o.n]||[]).filter(c=>c.to>=todayISO()).map(c=>`<div class="warnl" style="margin:0 0 8px">⛔ ${c.from<=todayISO()?'Fermé':'Fermeture'} du ${dFR(c.from)} au ${dFR(c.to)}</div>`).join('')}
     <div class="grid">
       <div><label>Statut</label><select data-obj="${o.n}" data-k="statut">${STATUTS.map(x=>`<option${x===st.statut?' selected':''}>${x}</option>`).join('')}</select></div>
       <div><label>Date prévue</label><input type="date" data-obj="${o.n}" data-k="datePrevue" value="${st.datePrevue}"></div>
       <div><label>Date réalisée</label><input type="date" data-obj="${o.n}" data-k="dateRealisee" value="${st.dateRealisee}"></div></div>
-    <details style="margin-top:8px" class="small"><summary>Sources</summary>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}</details></div>`; }).join('');
+    <div class="row" style="margin-top:10px;justify-content:space-between"><details class="small"><summary>Sources</summary>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}</details><button class="btn sm sec" data-sum="${o.n}">Fiche détaillée ›</button></div></div>`; }).join('');
 }
 
 /* ---------- Préparation ---------- */
 function readinessWindow(){ const end=new Date(); const start=new Date(end.getFullYear(),end.getMonth(),end.getDate()-27); return [toISO(start),toISO(end)]; }
 function renderPrep(){
-  const [A,B]=readinessWindow(); const win=DB.sessions.filter(s=>s.date>=A&&s.date<=B);
-  const maxD=Math.max(0,...win.map(s=>s.dplus||0)); const tot=win.reduce((t,s)=>t+(s.dplus||0),0); const wk=tot/4;
-  const best=win.find(s=>(s.dplus||0)===maxD&&maxD>0);
-  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${win.length} séances · D+ total ${f(tot,0)} m · D+ hebdo moyen <b>${f(wk,0)} m</b> · plus grosse séance <b>${f(maxD,0)} m</b>${best?' ('+dFR(best.date)+')':''}`;
-  $('prepList').innerHTML=OBJECTIFS.map(o=>{ const a=Math.min(1,maxD/(0.65*o.dplus)), b=Math.min(1,wk/o.dplus), r=(a+b)/2;
-    const c=r>=0.8?'green':r>=0.5?'orange':'red'; const st=objState(o.n);
-    const R=33, C=2*Math.PI*R, col=c==='green'?'#4ade80':c==='orange'?'#fb923c':'#f87171';
-    return `<div class="card"><div class="prep"><div class="ring" role="img" aria-label="Préparation ${f(r*100,0)} %"><svg viewBox="0 0 78 78"><circle class="trk" cx="39" cy="39" r="${R}"/><circle class="val" cx="39" cy="39" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-r)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>%</small></div></div>
-    <div style="flex:1;min-width:0"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}</h3><div class="small mut">${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(o.dplus,0)} m · sommet ${f(o.altSom,0)} m</div></div></div>
-    <div class="mini"><span>A · grosse séance</span><div class="bar pre"><i style="--v:${a.toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div><b>${f(a*100,0)} %</b>
-      <span>B · volume hebdo</span><div class="bar pre"><i style="--v:${b.toFixed(3)};background:linear-gradient(90deg,#f97316,#fdba74)"></i></div><b>${f(b*100,0)} %</b></div>
-    <div class="small mut" style="margin-top:4px">${f(maxD,0)} / ${f(0.65*o.dplus,0)} m · ${f(wk,0)} / ${f(o.dplus,0)} m/sem</div>
-    <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st.statut)}</span>${st.datePrevue?'<span class="chip">prévu '+dFR(st.datePrevue)+'</span>':''}</div></div>`; }).join('');
-  const nx=OBJECTIFS.find(o=>objState(o.n).statut!=='Fait');
-  if(!nx){ $('prepHero').innerHTML='<div class="card hero-card"><div class="eyebrow2">Tous les objectifs</div><h2 style="margin:4px 0 0">Bravo, les 9 ascensions sont faites 🎉</h2></div>'; return; }
-  { const a=Math.min(1,maxD/(0.65*nx.dplus)), b=Math.min(1,wk/nx.dplus), r=(a+b)/2, c=r>=0.8?'green':r>=0.5?'orange':'red', col=c==='green'?'#4ade80':c==='orange'?'#fb923c':'#f87171';
-    const R=52, C=2*Math.PI*R, st=objState(nx.n), gap=Math.max(0,Math.round(nx.dplus-wk)), big=Math.max(0,Math.round(0.65*nx.dplus-maxD));
-    const tip = r>=0.8 ? 'Tu es prêt : vérifie la météo et le matériel.' : big>0 ? `Vise une sortie d’au moins ${f(Math.round(0.65*nx.dplus),0)} m de D+ (il manque ${f(big,0)} m).` : `Augmente le volume : ${f(gap,0)} m de D+ par semaine en plus.`;
-    $('prepHero').innerHTML=`<div class="card hero-card"><div class="eyebrow2">Prochain objectif</div>
-      <div class="prep" style="margin-top:6px"><div class="ring big" role="img" aria-label="Préparation ${f(r*100,0)} %"><svg viewBox="0 0 124 124"><circle class="trk" cx="62" cy="62" r="${R}"/><circle class="val" cx="62" cy="62" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-r)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>%</small></div></div>
-      <div style="flex:1;min-width:0"><h2 style="margin:0">${esc(nx.sommet)}</h2><div class="small mut">${esc(nx.iti)}</div><div class="row" style="margin-top:8px"><span class="tag">${f(nx.dplus,0)} m D+</span><span class="tag">${f(nx.altSom,0)} m</span>${st.datePrevue?`<span class="tag">${dFR(st.datePrevue)}</span>`:''}</div></div></div>
-      <div class="tip">${tip}</div></div>`; }
+  const [A,B]=readinessWindow(); const st=trainStats(new Date());
+  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse séance <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue <b>${fmtH(st.longest/3600)}</b>`;
+  $('prepList').innerHTML=OBJECTIFS.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
+    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0"><div class="prep">${ringSVG(R.r,78)}
+    <div style="flex:1;min-width:0"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
+    ${barsHTML(R)}
+    <div class="small mut" style="margin-top:4px">${f(st.maxD,0)} / ${f(0.65*R.T,0)} m · ${f(st.wk,0)} / ${f(o.multi?1.5*R.T:R.T,0)} m/sem · ${fmtH(st.longest/3600)} / ${fmtH(0.6*R.H)} · ${st.n28} / 12 séances</div>
+    <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st2.statut)}</span>${st2.datePrevue?'<span class="chip">prévu '+dFR(st2.datePrevue)+'</span>':''}</div></div></div>`; }).join('');
+  const nx=nextObjective();
+  if(!nx){ $('prepHero').innerHTML=`<div class="card hero-card"><div class="eyebrow2">Tous les objectifs</div><h2 style="margin:4px 0 0">Bravo, les ${OBJECTIFS.length} objectifs sont faits 🎉</h2></div>`; return; }
+  $('prepHero').innerHTML=adviceCard(advise(nx));
 }
 
 /* ---------- Évolution ---------- */
@@ -819,11 +1150,12 @@ async function syncNow(opts={}){
       if(txt){ try{ remote=JSON.parse(txt); }catch(e){ throw new SyncError('Le fichier du gist est illisible (JSON invalide).'); }
         if(!validImport(remote)) throw new SyncError('Le fichier du gist n’a pas le format attendu.'); migrate(remote); } }
     const snapshot=JSON.parse(JSON.stringify(DB));
-    const merged=remote? mergeDB(snapshot,remote) : snapshot;
+    const merged=remote? mergeDB(snapshot,remote) : snapshot; normalizeDB(merged); dedupeBivouac(merged);
     const body={files:{[GIST_FILE]:{content:JSON.stringify(merged)}}};
     if(gist){ await gh(c.token,'/gists/'+encodeURIComponent(gist.id),{method:'PATCH',body}); c.gistId=gist.id; }
     else { const g=await gh(c.token,'/gists',{method:'POST',body:Object.assign({description:'Suivi montagne – données (gist secret, ne pas rendre public)',public:false},body)}); c.gistId=g.id; }
     DB=mergeDB(merged,DB); // conserve une éventuelle saisie faite pendant la synchro
+    normalizeDB(DB); dedupeBivouac(DB);
     save(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); saveSyncCfg(c2);
     renderAll(); setSyncStatus('Synchronisé ✔','green'); if(!opts.silent) toast('Synchronisation réussie');
     return true;
@@ -857,12 +1189,753 @@ function initSync(){
 function download(name, text, mime){ const blob=new Blob([text],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }
 const csvN=v=>(v==null||v===''||(typeof v==='number'&&!isFinite(v)))?'':String(typeof v==='number'?Math.round(v*100)/100:v).replace('.',',');
 const csvS=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-function sessionsCSV(){ const h=['Date','Semaine','Mois','Type','Distance km','D+ m','D- m','Durée','Vitesse km/h','Vitesse asc. m/h','BPM moyen','BPM max','Pas','Sac kg','Sauts corde','Ressenti','Exercices','Notes'];
-  const rows=DB.sessions.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const d=parseISO(s.date);return [dFR(s.date),d.getFullYear()+'-S'+String(isoWeek(d)).padStart(2,'0'),s.date.slice(0,7),csvS(s.type),csvN(s.dist),csvN(s.dplus),csvN(s.dminus),s.dur?fmtDur(s.dur):'',csvN(speed(s)),csvN(vasc(s)),csvN(s.bpm),csvN(s.bpmMax),csvN(s.pas),csvN(s.sac),csvN(s.sauts),csvN(s.ress),csvS(s.exos),csvS(s.notes)].join(';')});
+function sessionsCSV(){ const h=['Date','Semaine','Mois','Type','Distance km','D+ m','D- m','Durée','Vitesse km/h','Vitesse asc. m/h','BPM moyen','BPM max','Pas','Sac kg','Sauts corde','Ressenti','Exercices','Notes','Heure','Inclinaison %','Kcal actives','Kcal totales','Cadence','Foulée cm','Alt. min m','Alt. max m','Effet entraînement','Charge TL','Récupération h','Pauses'];
+  const rows=DB.sessions.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const d=parseISO(s.date);return [dFR(s.date),d.getFullYear()+'-S'+String(isoWeek(d)).padStart(2,'0'),s.date.slice(0,7),csvS(s.type),csvN(s.dist),csvN(s.dplus),csvN(s.dminus),s.dur?fmtDur(s.dur):'',csvN(speed(s)),csvN(vasc(s)),csvN(s.bpm),csvN(s.bpmMax),csvN(s.pas),csvN(s.sac),csvN(s.sauts),csvN(s.ress),csvS(s.exos),csvS(s.notes),s.heure||'',csvN(s.incline),...FX.map(k=>csvN(s[k]))].join(';')});
   return '\ufeff'+h.join(';')+'\n'+rows.join('\n'); }
 function monthsCSV(){ const h=['Mois','Séances','Distance km','D+ m','Durée','Vitesse moy km/h','BPM moyen','Sauts'];
   return '\ufeff'+h.join(';')+'\n'+monthsRange().map(m=>{const a=monthAgg(m);return [m,a.n,csvN(a.dist),csvN(a.dplus),fmtDur(a.dur),csvN(a.speed),csvN(a.bpm&&Math.round(a.bpm)),csvN(a.sauts)].join(';')}).join('\n'); }
-function validImport(o){ return o&&Array.isArray(o.sessions)&&o.sessions.every(s=>s&&typeof s.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&typeof s.type==='string'); }
+function validImport(o){ return !!(o&&Array.isArray(o.sessions)&&o.sessions.every(s=>s&&typeof s.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&typeof s.type==='string')
+  && (o.weights==null||(Array.isArray(o.weights)&&o.weights.every(w=>w&&typeof w.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(w.date))))); }
+
+/* ---------- Conseils « Prochaine ascension » (calculés localement, rien n'est enregistré) ---------- */
+// Lever / coucher du soleil (algorithme NOAA simplifié, précision ≈ ±2 min) — heure locale de l'appareil.
+function sunTimes(d,lat,lon){ const rad=Math.PI/180, y=d.getFullYear();
+  const doy=Math.round((Date.UTC(y,d.getMonth(),d.getDate())-Date.UTC(y,0,0))/864e5), g=2*Math.PI/365*(doy-1+0.5);
+  const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const de=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const x=Math.cos(90.833*rad)/(Math.cos(lat*rad)*Math.cos(de))-Math.tan(lat*rad)*Math.tan(de); if(x<-1||x>1) return null;
+  const ha=Math.acos(x)/rad, noon=720-4*lon-eq, base=Date.UTC(y,d.getMonth(),d.getDate());
+  return {rise:new Date(base+(noon-4*ha)*6e4), set:new Date(base+(noon+4*ha)*6e4)}; }
+const hhmm=d=>String(d.getHours()).padStart(2,'0')+'h'+String(d.getMinutes()).padStart(2,'0');
+const WALK_TYPES=/^(Marche|Randonnée|Trail|Tapis)/;
+function trainStats(ref){
+  ref=ref||new Date(); const day=k=>toISO(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()-k));
+  const T=toISO(ref), A28=day(27), A7=day(6), A14=day(13), A56=day(55);
+  const S=DB.sessions.filter(s=>s.date<=T), w28=S.filter(s=>s.date>=A28), w7=S.filter(s=>s.date>=A7), l14=S.filter(s=>s.date>=A14), p14=w28.filter(s=>s.date<A14);
+  const sum=(l,k)=>l.reduce((t,s)=>t+(+s[k]||0),0), mx=(l,f)=>Math.max(0,...l.map(f));
+  const maxD=mx(w28,s=>s.dplus||0), best=w28.find(s=>(s.dplus||0)===maxD&&maxD>0)||null;
+  const last=S.map(s=>s.date).sort().pop()||null;
+  // FC moyenne à allure comparable (séances de marche / tapis avec FC et vitesse) : 14 derniers jours vs 14 précédents
+  const hr=l=>{ const x=l.filter(s=>WALK_TYPES.test(s.type)&&s.bpm&&speed(s)); if(x.length<2) return null; return {bpm:x.reduce((t,s)=>t+s.bpm,0)/x.length, v:x.reduce((t,s)=>t+speed(s),0)/x.length, n:x.length}; };
+  return { ref:T, n28:w28.length, n7:w7.length, dp28:sum(w28,'dplus'), wk:sum(w28,'dplus')/4, dp7:sum(w7,'dplus'), dp14:sum(l14,'dplus'), dpP14:sum(p14,'dplus'),
+    maxD, best, longest:mx(w28,s=>s.dur||0), dur28:sum(w28,'dur'), km28:sum(w28,'dist'), last, daysSince:last?Math.round((parseISO(T)-parseISO(last))/864e5):null,
+    sacMax:mx(S.filter(s=>s.date>=A56),s=>s.sac||0), maxDm:mx(w28,s=>s.dminus!=null?s.dminus:(isTapis(s.type)?0:(s.dplus||0))),
+    hrNow:hr(l14), hrPrev:hr(p14), muscu28:w28.filter(s=>s.type==='Musculation').length };
+}
+// Indice de préparation : A grosse séance (35 %), B volume hebdo (30 %), C endurance (20 %), D régularité (15 %)
+function readiness(o,st){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3;
+  const a=Math.min(1,st.maxD/(0.65*T)), b=Math.min(1,st.wk/(M?1.5*T:T)), c=Math.min(1,st.longest/(0.6*H*3600)), d=Math.min(1,st.n28/12);
+  return {a,b,c,d,r:0.35*a+0.3*b+0.2*c+0.15*d,T,H}; }
+const rCls=r=>r>=0.8?'green':r>=0.5?'orange':'red', rCol=r=>r>=0.8?'#4ade80':r>=0.5?'#fb923c':'#f87171';
+const rLabel=r=>r>=0.8?'Prêt':r>=0.6?'Presque prêt':r>=0.4?'En progression':'Début de préparation';
+function gearStatus(n){
+  return (OBJ_GEAR[n]||[]).map(k=>{ const g=GEAR[k]; let it=null, cat=null;
+    for(const c of DB.equip) for(const i of c.items) if(g.re.test(i.name)){ if(!it||(!it.bought&&i.bought)){ it=i; cat=c; } }
+    return {k, l:g.l, st: it? (it.bought?'ok':'buy') : 'missing', it, cat}; });
+}
+function nextObjective(){ return OBJECTIFS.find(o=>objState(o.n).statut!=='Fait')||null; }
+function closuresFor(o, fromISO, toISO_){ return (CLOSURES[o.n]||[]).filter(c=>c.to>=fromISO && c.from<=toISO_); }
+// Conseils concrets pour un objectif
+function advise(o, ref){
+  ref=ref||new Date(); const st=trainStats(ref), R=readiness(o,st), I=OBJ_INFO[o.n]||{}, S=objState(o.n), M=o.multi;
+  const today=toISO(ref), when=S.datePrevue&&S.datePrevue>=today? S.datePrevue : null, whenD=when?parseISO(when):ref;
+  const tips=[], warn=[], plan=[];
+  const T=R.T, big=Math.round(0.65*T/10)*10, kmT=x=>Math.max(1,Math.round(x/120*2)/2); // km de tapis à 12 % pour x m
+  // 1. grosse séance
+  if(R.a<1) tips.push({ic:'⛰️',t:`Grosse séance : vise au moins <b>${f(big,0)} m de D+</b> en une sortie (meilleure des 4 dernières semaines : ${f(st.maxD,0)} m). Ex. tapis à 12 % : ${f(kmT(big),1)} km ≈ ${f(big,0)} m, ou répétitions de côte.`});
+  // 2. volume
+  const wkT=M?1.5*T:T;
+  if(R.b<1){ const next=st.wk>0? Math.min(wkT, Math.round(st.wk*1.15/10)*10) : Math.round(0.3*wkT/10)*10;
+    tips.push({ic:'📈',t:`Volume : passe de ${f(st.wk,0)} à <b>≈ ${f(next,0)} m de D+ cette semaine</b> (cible ${f(wkT,0)} m/sem ; +10–15 % par semaine maximum pour éviter la blessure).`}); }
+  // 3. endurance
+  if(R.c<1){ const goal=0.6*R.H, next=Math.min(goal, st.longest/3600*1.2+0.25);
+    tips.push({ic:'⏱️',t:`Endurance : allonge ta sortie la plus longue à <b>${fmtH(next)}</b> (actuellement ${fmtH(st.longest/3600)} ; objectif ${fmtH(goal)} avant le jour J${M?', puis deux jours d’affilée':''}).`}); }
+  // 4. régularité
+  if(R.d<1) tips.push({ic:'📅',t:`Régularité : ${st.n28} séances en 4 semaines. Vise <b>3 séances par semaine</b> (une longue, une en côte, une de renforcement).`});
+  // 5. descente
+  if(o.dplus>=500 && st.maxDm<0.5*T) tips.push({ic:'🦵',t:`Descente : le jour J tu descendras ≈ ${f(M?T:o.dplus,0)} m. Prépare les quadriceps : fentes, step-downs, squats lents, et descends tes côtes à pied plutôt qu’en tapis.`});
+  // 6. sac
+  if((R.H>=4||o.altSom>=2500||M) && st.sacMax<5) tips.push({ic:'🎒',t:`Sac : aucune séance avec sac ≥ 5 kg depuis 8 semaines. Fais tes sorties longues avec ton sac chargé (${M?'8–10':'6–8'} kg) pour habituer dos et épaules.`});
+  // 7. récence et charge
+  if(st.daysSince!=null && st.daysSince>=5) tips.push({ic:'🔁',t:`Reprise : dernière séance il y a ${st.daysSince} jours. Reprends en douceur (45–60 min faciles) avant de remettre du D+.`});
+  if(st.wk>0 && st.dp7>1.6*st.wk) tips.push({ic:'🛌',t:`Charge en forte hausse (${f(st.dp7,0)} m de D+ ces 7 jours contre ${f(st.wk,0)} m en moyenne) : garde au moins un jour de récupération.`});
+  if(st.hrNow&&st.hrPrev){ const dB=st.hrNow.bpm-st.hrPrev.bpm, dV=st.hrNow.v-st.hrPrev.v;
+    if(dB<=-3&&dV>=-0.2) tips.push({ic:'❤️',t:`Bonne adaptation : FC moyenne en baisse de ${f(-dB,0)} bpm sur tes marches (14 j) à allure ${dV>=0.05?'plus rapide':'égale'}.`});
+    else if(dB>=5&&dV<=0.1) tips.push({ic:'❤️',t:`FC moyenne en hausse de ${f(dB,0)} bpm à allure égale : fatigue ou manque de sommeil possibles, allège un peu cette semaine.`}); }
+  if(st.muscu28===0 && R.r<0.8) tips.push({ic:'🏋️',t:'Renforcement : aucune séance de musculation en 4 semaines. 2 × 30 min/sem (squats, fentes, step-ups, gainage, mollets) protègent genoux et chevilles.'});
+  if(R.r>=0.8){ tips.unshift({ic:'✅',t:`Tu as le niveau pour cet objectif : entretiens (2–3 séances/sem) et allège la semaine précédente${when?' (dernière grosse séance 4–5 jours avant le '+dFR(when)+')':''}.`});
+    const nx2=OBJECTIFS.find(x=>x.n!==o.n&&OBJECTIFS.indexOf(x)>OBJECTIFS.indexOf(o)&&objState(x.n).statut!=='Fait');
+    if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)} %. ${R2.a<1?'Monte progressivement ta grosse séance vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
+  // Saison, météo, fermetures, jour
+  const m=whenD.getMonth(), sea=(SEASON[o.n]||[])[m];
+  if(sea===0) warn.push(`Saison : ${MOIS_L[m]} est hors saison pour cet itinéraire. ${I.winter||''} Période conseillée : ${I.seasonTxt||'—'}`);
+  else if(sea===1) warn.push(`Saison : ${MOIS_L[m]} est une période « selon conditions ». ${I.winter||''}`);
+  const cl=closuresFor(o, today, when||toISO(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()+14)));
+  cl.forEach(c=>warn.push(`Fermeture du ${dFR(c.from)} au ${dFR(c.to)} : ${c.txt}`));
+  if(I.start){ const s=sunTimes(whenD,I.start.ll[0],I.start.ll[1]); if(s){ const H=(o.h||3)+1, dep=new Date(s.set.getTime()-H*36e5);
+    warn.push(`Lumière${when?' le '+dFR(when):' aujourd’hui'} : lever ${hhmm(s.rise)}, coucher ${hhmm(s.set)} → pars au plus tard vers <b>${hhmm(dep)}</b> (${fmtH(o.h||3)} de marche + 1 h de marge)${m>=9||m<=2?' ; frontale dans le sac (jours courts)':''}.`); } }
+  if(o.altSom>=3000) warn.push('Altitude > 3 000 m : nuit en refuge ou à ≥ 2 000 m la veille, monte lentement, bois beaucoup ; redescends si maux de tête, nausées ou vertiges.');
+  else if(o.altSom>=2500) warn.push('Altitude > 2 500 m : froid et vent au sommet même l’été, essoufflement plus rapide : garde un rythme régulier.');
+  warn.push(`Météo : consulte la prévision montagne la veille et le matin (orages fréquents l’après-midi en été) ; renonce par brouillard épais ou vent fort.`);
+  // Plan de la semaine
+  const hill=Math.round((R.a<1? Math.min(big, Math.max(200, st.maxD*1.15)) : Math.min(Math.max(st.maxD,big), T))/10)*10;
+  plan.push({t:'Côte / tapis incliné',d:`${f(kmT(hill),1)} km à 12 % (≈ ${f(hill,0)} m D+), allure régulière, FC « je peux parler »`});
+  const lh=Math.max(1.5,Math.min(0.6*R.H, st.longest/3600*1.15+0.25));
+  plan.push({t:'Sortie longue',d:`${fmtH(lh)} en extérieur avec du dénivelé${(R.H>=4||o.altSom>=2500)?', sac 6–8 kg':''}${M?' ; le lendemain, 1 h facile (enchaînement)':''}`});
+  plan.push({t:'Renforcement',d:'30–40 min : squats, fentes, step-ups, gainage, mollets ; + 5–10 min de corde à sauter'});
+  const gear=gearStatus(o.n), gaps=gear.filter(g=>g.st!=='ok');
+  return {o,st,R,S,I,when,tips,warn,plan,gear,gaps};
+}
+const MOIS_L=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+function fmtH(h){ if(h==null||!isFinite(h)) return '–'; const m=Math.round(h*60/5)*5; return Math.floor(m/60)+' h'+(m%60?' '+String(m%60).padStart(2,'0'):''); }
+function ringSVG(r,size,o={}){ const big=size>100, R=big?52:33, W=big?124:78, C=2*Math.PI*R, col=o.col||rCol(r), c=o.cls!=null?o.cls:rCls(r), suf=o.suf!=null?o.suf:'%', v=Math.max(0,Math.min(1,r));
+  return `<div class="ring${big?' big':''}" role="img" aria-label="${o.label||'Préparation'} ${f(r*100,0)} ${suf}"><svg viewBox="0 0 ${W} ${W}"><circle class="trk" cx="${W/2}" cy="${W/2}" r="${R}"/><circle class="val" cx="${W/2}" cy="${W/2}" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-v)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>${suf}</small></div></div>`; }
+function barsHTML(R){ const row=(l,v,g)=>`<span>${l}</span><div class="bar pre"><i style="--v:${v.toFixed(3)};background:${g}"></i></div><b>${f(v*100,0)} %</b>`;
+  return `<div class="mini">${row('A · grosse séance',R.a,'linear-gradient(90deg,#4aa8d4,#7cc8ea)')}${row('B · volume hebdo',R.b,'linear-gradient(90deg,#f97316,#fdba74)')}${row('C · endurance',R.c,'linear-gradient(90deg,#1f6f54,#34b38a)')}${row('D · régularité',R.d,'linear-gradient(90deg,#8b9a97,#c9d6d3)')}</div>`; }
+function adviceCard(A, opts={}){
+  const {o,R,st,S,when}=A; const n=opts.compact?2:8;
+  const gapsH=A.gaps.length? `<div class="adv-sec"><h4>🎒 Matériel à compléter (${A.gaps.length})</h4>${A.gaps.slice(0,opts.compact?3:12).map(g=>`<div class="gap ${g.st}"><span>${esc(g.l)}</span><em>${g.st==='buy'?'à acheter':'absent de ta liste'}</em></div>`).join('')}${opts.compact&&A.gaps.length>3?`<div class="small mut">+ ${A.gaps.length-3} autre(s)</div>`:''}</div>` : `<div class="adv-sec"><h4>🎒 Matériel</h4><div class="small green">Tout le matériel conseillé est coché dans ta liste ✔</div></div>`;
+  return `<div class="card hero-card adv" ${opts.compact?`data-sum="${o.n}" role="button" tabindex="0"`:''}>
+    <div class="row" style="justify-content:space-between"><div class="eyebrow2">Prochaine ascension</div><span class="tag">${rLabel(R.r)}</span></div>
+    <div class="prep" style="margin-top:6px">${ringSVG(R.r,opts.compact?78:124)}
+      <div style="flex:1;min-width:0"><h2 style="margin:0">${esc(o.sommet)}</h2><div class="small mut">${esc(o.iti)}</div>
+      <div class="row" style="margin-top:8px"><span class="tag">${f(o.multi?o.multi.dpJ:o.dplus,0)} m D+${o.multi?'/jour':''}</span><span class="tag">${f(o.altSom,0)} m</span>${when?`<span class="tag">📅 ${dFR(when)}</span>`:''}</div></div></div>
+    ${opts.compact?'':barsHTML(R)}
+    ${A.warn.length?`<div class="adv-sec">${A.warn.slice(0,opts.compact?1:9).map(w=>`<div class="warnl">⚠️ ${w}</div>`).join('')}</div>`:''}
+    <div class="adv-sec"><h4>💡 Conseils</h4>${A.tips.slice(0,n).map(t=>`<div class="tipl"><span>${t.ic}</span><div>${t.t}</div></div>`).join('')||'<div class="small mut">Rien à signaler.</div>'}</div>
+    ${opts.compact?'':`<div class="adv-sec"><h4>🗓️ À faire cette semaine</h4>${A.plan.map(p=>`<div class="planl"><b>${esc(p.t)}</b><span>${esc(p.d)}</span></div>`).join('')}</div>`}
+    ${opts.compact?(A.gaps.length?`<div class="small mut" style="margin-top:8px">🎒 ${A.gaps.length} article(s) de matériel à compléter</div>`:''):gapsH}
+    <div class="row" style="margin-top:12px"><button class="btn sm" data-sum="${o.n}">Voir la fiche du sommet ›</button></div>
+    <div class="small mut" style="margin-top:8px">Basé sur ${st.n28} séances des 4 dernières semaines (D+ ${f(st.dp28,0)} m, ${fmtH(st.dur28/3600)}). Estimation indicative.</div></div>`;
+}
+
+/* ---------- Fiche détaillée d'un sommet (page #p-sum) ---------- */
+let curSum=null;
+function mapLinks(o,I){ const [la,lo]=I.sum, [sla,slo]=I.start.ll, ch=o.n===8;
+  const mb=(a,b)=>`${Math.abs(a).toFixed(3)}${a>=0?'N':'S'}${Math.abs(b).toFixed(3)}${b>=0?'E':'W'}`;
+  return [
+   ['🗺️ Carte OpenStreetMap',`https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=14/${la}/${lo}`],
+   ch?['🇨🇭 Carte Swisstopo',`https://map.geo.admin.ch/?lang=fr&swisssearch=${la},${lo}`]:['🧭 Carte IGN (Géoportail)',`https://www.geoportail.gouv.fr/carte?c=${lo},${la}&z=15&l0=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2::GEOPORTAIL:OGC:WMTS(1)&permalink=yes`],
+   ['🚗 Itinéraire jusqu’au départ',`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(I.start.q)}`],
+   ['⛅ Météo au sommet (meteoblue)',`https://www.meteoblue.com/fr/meteo/semaine/${mb(la,lo)}`],
+   ch?['🏔️ MétéoSuisse','https://www.meteosuisse.admin.ch/']:['🏔️ Météo-France montagne','https://meteofrance.com/meteo-montagne']]; }
+function osmEmbed(I){ const pts=[I.sum,I.start.ll], la=pts.map(p=>p[0]), lo=pts.map(p=>p[1]);
+  const pad=Math.max(0.012,(Math.max(...la)-Math.min(...la))*0.35,(Math.max(...lo)-Math.min(...lo))*0.35);
+  const bb=[Math.min(...lo)-pad,Math.min(...la)-pad,Math.max(...lo)+pad,Math.max(...la)+pad].map(x=>x.toFixed(4)).join(',');
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bb}&layer=mapnik&marker=${I.sum[0]},${I.sum[1]}`; }
+function uncMark(t){ return esc(t).replace(/⚠︎|⚠️?/g,'<span class="unc" title="Information incertaine : à vérifier">⚠︎</span>'); }
+function renderSummit(n){
+  const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I){ return false; }
+  curSum=o.n; const A=advise(o), st=objState(o.n), M=o.multi, mon=new Date().getMonth();
+  const sea=(SEASON[o.n]||[]).map((v,i)=>`<i class="s${v}${i===mon?' now':''}" title="${MOIS_L[i]} : ${['déconseillé','selon conditions','idéal'][v]}">${MOIS_L[i][0].toUpperCase()}</i>`).join('');
+  const cl=CLOSURES[o.n]||[], today=todayISO();
+  const kp=[[f(o.altSom,0)+' m','sommet'],[f(o.altDep,0)+' m','départ'],['≈ '+f(o.dplus,0)+' m','D+ total'],['≈ '+f(o.dist,o.dist<20?1:0)+' km','distance'],[fmtH(o.h),M?'par étape':'temps total'],[I.type,'type']];
+  const g=A.gear;
+  $('sumBody').innerHTML=`
+  <div class="card hero-card sumhero"><button class="xbtn back" data-sum-back aria-label="Retour">‹</button>
+    <div class="eyebrow2">Objectif ${o.n} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
+    <div class="row" style="margin-top:8px"><span class="tag">${esc(st.statut)}</span>${st.datePrevue?`<span class="tag">📅 prévu le ${dFR(st.datePrevue)}</span>`:''}${st.dateRealisee?`<span class="tag">✔ fait le ${dFR(st.dateRealisee)}</span>`:''}${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
+    <div class="kpis" style="margin-top:12px">${kp.map(([v,l])=>`<div class="kpi"><b style="font-size:${String(v).length>9?14:19}px">${esc(v)}</b><small>${l}</small></div>`).join('')}</div>
+    ${M?`<div class="small" style="margin-top:8px">Itinérance : <b>${M.jours} jours</b>, ≈ ${f(o.dist/M.jours,0)} km par jour en moyenne (étapes jusqu’à ${f(M.distJ,0)} km) et ≈ ${f(M.dpJ,0)} m de D+ par jour (cible de préparation).</div>`:''}
+    <div class="small" style="margin-top:8px"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Durée :</span> ${esc(o.duree)} · <span class="mut">Fiabilité des données :</span> ${esc(o.conf)}</div>
+    ${o.note?`<div class="small mut" style="margin-top:4px">${uncMark(o.note)}</div>`:''}
+    <div class="small mut" style="margin-top:6px"><span class="unc">⚠︎</span> = information incertaine ou variable, à vérifier avant de partir.</div>
+  </div>
+  ${cl.filter(c=>c.to>=today).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> du ${dFR(c.from)} au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
+  <div class="card"><h3>🗺️ Carte</h3><div class="mapf"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
+    <div class="links">${mapLinks(o,I).map(([t,u])=>`<a class="btn sec sm" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
+    <div class="small mut" style="margin-top:6px">Sommet : ${I.sum[0].toFixed(4)}, ${I.sum[1].toFixed(4)} · Départ : ${I.start.ll[0].toFixed(4)}, ${I.start.ll[1].toFixed(4)} (coordonnées OSM approximatives)</div></div>
+  <div class="card"><h3>🚩 Départ, parking et accès</h3><div class="kv"><b>Départ</b><span>${esc(I.start.nm)} (${f(o.altDep,0)} m)</span><b>Parking</b><span>${uncMark(I.parking)}</span><b>Accès</b><span>${uncMark(I.access)}</span></div></div>
+  <div class="card"><h3>🥾 Itinéraire</h3><ol class="steps">${I.route.map(r=>`<li>${uncMark(r)}</li>`).join('')}</ol></div>
+  <div class="card"><h3>💧 Eau et refuges</h3><div class="kv"><b>Eau</b><span>${uncMark(I.water)}</span><b>Refuges</b><span>${uncMark(I.refuges)}</span></div></div>
+  <div class="card"><h3>📆 Meilleure saison</h3><div class="season">${sea}</div><div class="legend"><span><i style="background:#34b38a"></i>idéal</span><span><i style="background:#fb923c"></i>selon conditions</span><span><i style="background:rgba(255,255,255,.12)"></i>déconseillé</span></div>
+    <p class="small" style="margin:8px 0 0">${uncMark(I.seasonTxt)}</p>${I.winter?`<p class="small mut" style="margin:4px 0 0">❄️ ${uncMark(I.winter)}</p>`:''}</div>
+  <div class="card"><h3>⚠️ Dangers et précautions</h3><ul class="steps">${I.dangers.map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul></div>
+  <div class="card"><h3>🎯 Ta préparation</h3><div class="prep">${ringSVG(A.R.r,78)}<div style="flex:1"><b>${rLabel(A.R.r)}</b><div class="small mut">${f(A.st.maxD,0)} m de D+ max · ${f(A.st.wk,0)} m/sem · sortie la plus longue ${fmtH(A.st.longest/3600)} (28 j)</div></div></div>${barsHTML(A.R)}
+    <h4 class="h4">💡 Conseils</h4>${A.tips.map(t=>`<div class="tipl"><span>${t.ic}</span><div>${t.t}</div></div>`).join('')}
+    <h4 class="h4">🌤️ Le jour J</h4>${A.warn.map(w=>`<div class="warnl">${w}</div>`).join('')}
+    <h4 class="h4">🗓️ Cette semaine</h4>${A.plan.map(p=>`<div class="planl"><b>${esc(p.t)}</b><span>${esc(p.d)}</span></div>`).join('')}</div>
+  <div class="card"><h3>🎒 Matériel conseillé <span class="small mut">${g.filter(x=>x.st==='ok').length}/${g.length} prêts</span></h3>
+    ${g.map(x=>`<div class="gear ${x.st}"><span class="gi">${x.st==='ok'?'✔':x.st==='buy'?'○':'＋'}</span><div class="nm"><b>${esc(x.l)}</b><div class="small mut">${x.st==='ok'?'coché dans « '+esc(x.cat.name)+' »':x.st==='buy'?'dans ta liste, pas encore acheté':'absent de ta liste d’équipement'}</div></div>${x.st==='missing'?`<button class="btn sm sec" data-gear-add="${x.k}">Ajouter</button>`:''}</div>`).join('')}</div>
+  ${I.uncertain&&I.uncertain.length?`<div class="card"><h3>❓ À vérifier avant de partir</h3><ul class="steps">${I.uncertain.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
+  <div class="card small"><h3>📚 Sources</h3>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}<p class="mut" style="margin:8px 0 0">Données issues de topos et sites officiels (consultés en octobre 2026) ; conditions, horaires et accès changent : vérifie toujours avant de partir.</p></div>`;
+  return true;
+}
+function addGear(k){ const G=GEAR[k]; if(!G) return; const now=Date.now();
+  let c=DB.equip.find(x=>G.cat.test(x.name)); if(!c){ c={id:uid(),name:G.cat.test('Bivouac')?'Bivouac':G.cat.test('Haute montagne')?'Haute montagne':'Divers',items:[],updatedAt:now}; DB.equip.push(c); }
+  if(c.items.some(i=>G.re.test(i.name))) return; c.items.push({id:uid(),name:G.l,note:'ajouté depuis la fiche sommet',price:null,bought:false,updatedAt:now}); save(); toast('« '+G.l+' » ajouté à « '+c.name+' »'); }
+
+/* ---------- Poids (pesées Mi Fitness ou saisie manuelle) ---------- */
+// good: +1 = une hausse est favorable, -1 = une baisse est favorable, 0 = neutre
+const WF=[
+ ['weight','Poids','kg',1,-1],['score','Score corporel','',0,1],['imc','IMC','',1,-1],['fatPct','Graisse corporelle','%',1,-1],['fatKg','Masse grasse','kg',1,-1],
+ ['muscleKg','Masse musculaire','kg',1,1],['musclePct','Taux musculaire','%',1,1],['skelKg','Muscle squelettique','kg',1,1],['eauPct','Eau corporelle','%',1,1],['eauKg','Masse d’eau','kg',1,0],
+ ['protPct','Protéines','%',1,1],['protKg','Masse protéique','kg',1,1],['bonePct','Minéraux osseux','%',1,0],['boneKg','Masse osseuse','kg',1,0],['visceral','Graisse viscérale','',1,-1],
+ ['bmr','Métabolisme de base','kcal',0,1],['leanKg','Poids sans graisse','kg',1,1],['whr','Rapport taille-hanche','',2,-1],['bodyAge','Âge corporel','ans',0,-1],['hr','FC au repos','bpm',0,-1],
+ ['stdKg','Poids standard','kg',1,0],['ctrlPoids','Contrôle du poids','kg',1,0],['ctrlGraisse','Contrôle des graisses','kg',1,0],['ctrlMuscle','Contrôle musculaire','kg',1,0]];
+const WFK=Object.fromEntries(WF.map(x=>[x[0],x]));
+const BODY_TYPES=['Mince','Mince musclé','Athlétique','Sous-entraîné','Standard','Standard musclé','Obésité cachée','En surpoids','Corpulent'];
+const SIGNED_W=new Set(['ctrlPoids','ctrlGraisse','ctrlMuscle']);
+function weighsSorted(){ return (DB.weights||[]).slice().sort((a,b)=>(a.date+(a.heure||'')).localeCompare(b.date+(b.heure||''))); }
+function wDelta(cur,prev,k){ return (cur&&prev&&cur[k]!=null&&prev[k]!=null)? cur[k]-prev[k] : null; }
+function deltaHTML(d,k,suf){ if(d==null||!isFinite(d)) return '<span class="mut">–</span>'; const F=WFK[k], dec=F?F[3]:1, g=F?F[4]:0;
+  if(Math.abs(d)<Math.pow(10,-dec)/2) return '<span class="mut">=</span>';
+  const cls=g===0?'mut':(d*g>0?'green':'red'); return `<span class="${cls}">${d>0?'+':'−'}${f(Math.abs(d),dec)}${suf?' '+suf:''}</span>`; }
+function renderPoids(){
+  const L=weighsSorted(), box=$('poidsBody'); if(!box) return;
+  if(!L.length){ box.innerHTML=`<div class="card"><div class="empty"><h3>Aucune pesée</h3><p class="small mut">Importe une capture « Composition corporelle » de Mi Fitness ou saisis une pesée.</p><div class="row" style="justify-content:center"><button class="btn" data-imp-open>📷 Importer une capture</button><button class="btn sec" data-w-new>Saisir une pesée</button></div></div></div>`; return; }
+  const c=L[L.length-1], p=L.length>1?L[L.length-2]:null;
+  const ago=d=>{ const t=new Date(parseISO(c.date)); t.setDate(t.getDate()-d); const iso=toISO(t); let best=null; for(const w of L) if(w.date<=iso) best=w; return best; };
+  const p30=ago(30), first=L[0];
+  const dW=wDelta(c,p,'weight'), d30=wDelta(c,p30,'weight'), d0=L.length>1?wDelta(c,first,'weight'):null;
+  const toStd=c.stdKg!=null&&c.weight!=null? c.weight-c.stdKg : null;
+  const pctStd=c.stdKg? Math.max(0,Math.min(1, 1-Math.max(0,toStd)/Math.max(3,c.weight*0.1))) : null;
+  let h=`<div class="card hero-card"><div class="row" style="justify-content:space-between"><div class="eyebrow2">Dernière pesée</div><span class="small mut">${dFR(c.date)}${c.heure?' · '+esc(c.heure):''}</span></div>
+   <div class="wh"><div><div class="wbig"><b data-count="${c.weight}" data-dec="1">${f(c.weight,1)}</b><small>kg</small></div>
+     <div class="row" style="margin-top:4px">${p?`<span class="chip">${deltaHTML(dW,'weight','kg')} vs ${dFR(p.date)}</span>`:''}${p30&&p30!==c&&p30!==p?`<span class="chip">${deltaHTML(d30,'weight','kg')} sur 30 j</span>`:''}${d0!=null&&first!==p?`<span class="chip">${deltaHTML(d0,'weight','kg')} depuis le ${dFR(first.date)}</span>`:''}</div></div>
+     ${c.score!=null?`<div style="text-align:center">${ringSVG(c.score/100,78,{suf:'',label:'Score corporel',col:'#7cc8ea',cls:''})}<div class="small mut">score</div></div>`:''}</div>
+   ${c.bodyType?`<div class="row" style="margin-top:8px"><span class="tag">Type de corps : ${esc(c.bodyType)}</span>${c.imc!=null?`<span class="tag">IMC ${f(c.imc,1)}</span>`:''}</div>`:''}
+   ${toStd!=null?`<div style="margin-top:12px"><div class="row small" style="justify-content:space-between"><span>Poids standard ${f(c.stdKg,1)} kg</span><b class="${toStd>0?'orange':'green'}">${toStd>0?'encore '+f(toStd,1)+' kg':'atteint ✔'}</b></div><div class="bar pre" style="margin-top:6px"><i style="--v:${(pctStd||0).toFixed(3)};background:linear-gradient(90deg,#1f6f54,#34b38a)"></i></div></div>`:''}
+  </div>`;
+  // KPI
+  const K=['fatPct','muscleKg','visceral','eauPct','protPct','bmr','skelKg','leanKg','bodyAge'];
+  h+=`<div class="card"><h3>Composition</h3><div class="kpis">${K.filter(k=>c[k]!=null).map(k=>{ const F=WFK[k]; return `<div class="kpi"><b>${f(c[k],F[3])}<span class="u">${F[2]}</span></b><small>${F[1]}</small>${p?`<div class="dl">${deltaHTML(wDelta(c,p,k),k)}</div>`:''}</div>`; }).join('')}</div>
+   ${c.visceral!=null&&c.visceral>=9?'<div class="tip">Graisse viscérale ≥ 9 (niveau « élevé » selon Mi Fitness) : l’endurance régulière (marche en côte, tapis incliné) et le renforcement la font baisser.</div>':''}</div>`;
+  // Graphiques
+  h+=`<div class="card"><h3>Évolution du poids (kg)</h3><div class="chart" id="chWt"></div>${L.length<2?'<p class="small mut">Le graphique se remplira avec les prochaines pesées.</p>':''}</div>
+   <div class="card"><h3>Graisse et muscle (%)</h3><div class="chart" id="chWc"></div></div>`;
+  // Tableau des écarts
+  h+=`<div class="card"><h3>Toutes les mesures</h3><div class="scroll"><table class="tbl"><tr><th>Mesure</th><th>Actuel</th>${p?'<th>Δ préc.</th><th>Δ 30 j</th><th>Δ début</th>':''}</tr>${WF.filter(([k])=>c[k]!=null).map(([k,l,u,d])=>`<tr><td>${l}</td><td>${SIGNED_W.has(k)&&c[k]>0?'+':''}${f(c[k],d)}${u?' '+u:''}</td>${p?`<td>${deltaHTML(wDelta(c,p,k),k)}</td><td>${p30&&p30!==c?deltaHTML(wDelta(c,p30,k),k):'–'}</td><td>${first!==c?deltaHTML(wDelta(c,first,k),k):'–'}</td>`:''}</tr>`).join('')}</table></div>
+   <p class="small mut" style="margin:8px 0 0">Valeurs estimées par la balance (impédancemétrie) : indicatives, à comparer dans les mêmes conditions (matin, à jeun). Vert = évolution favorable.</p></div>`;
+  // Historique
+  h+=`<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:4px"><h3 style="margin:0">Historique (${L.length})</h3><div class="row"><button class="btn sm sec" data-w-new>＋ Saisir</button><button class="btn sm" data-imp-open>📷 Importer</button></div></div>
+   ${L.slice().reverse().map((w,i,a)=>{ const pr=a[i+1]; return `<div class="eq"><div class="nm"><b>${f(w.weight,1)} kg</b> <span class="small">${pr?deltaHTML(wDelta(w,pr,'weight'),'weight','kg'):''}</span><div class="small mut">${dFR(w.date)}${w.heure?' · '+esc(w.heure):''}${w.fatPct!=null?' · graisse '+f(w.fatPct,1)+' %':''}${w.muscleKg!=null?' · muscle '+f(w.muscleKg,1)+' kg':''}${w.notes?' · '+esc(w.notes):''}</div></div>
+     <button class="iconbtn" data-w-edit="${esc(w.id)}" aria-label="Modifier">✏️</button><button class="iconbtn" data-w-del="${esc(w.id)}" aria-label="Supprimer">🗑️</button></div>`; }).join('')}
+   <div class="row" style="margin-top:10px"><button class="btn sec sm" id="btnExpW">Exporter CSV (pesées)</button></div></div>`;
+  box.innerHTML=h;
+  const lb=L.map(w=>dFR(w.date).slice(0,5)+(L.filter(x=>x.date===w.date).length>1&&w.heure?' '+w.heure:''));
+  chart($('chWt'),lb,[{name:'Poids (kg)',type:'line',color:'#7cc8ea',values:L.map(w=>w.weight)},{name:'Poids standard',type:'line',color:'#8b9a97',values:L.map(w=>w.stdKg)}],{fitLeft:true});
+  chart($('chWc'),lb,[{name:'Graisse (%)',type:'line',color:'#fb923c',values:L.map(w=>w.fatPct)},{name:'Taux musculaire (%)',type:'line',axis:'right',color:'#34b38a',values:L.map(w=>w.musclePct)}],{fitLeft:true,rightMin:true});
+}
+function weightsCSV(){ const L=weighsSorted(); const h=['Date','Heure',...WF.map(x=>x[1]+(x[2]?' ('+x[2]+')':'')),'Type de corps','Notes'];
+  return '\ufeff'+h.join(';')+'\n'+L.map(w=>[dFR(w.date),w.heure||'',...WF.map(([k])=>csvN(w[k])),csvS(w.bodyType),csvS(w.notes)].join(';')).join('\n'); }
+function poidsClick(e){
+  const ed=e.target.closest('[data-w-edit]'), de=e.target.closest('[data-w-del]');
+  if(e.target.closest('[data-w-new]')){ IMP.manualWeigh(); return; }
+  if(e.target.closest('#btnExpW')){ download('suivi-montagne-pesees-'+todayISO()+'.csv',weightsCSV(),'text/csv;charset=utf-8'); return; }
+  if(ed){ const w=DB.weights.find(x=>x.id===ed.dataset.wEdit); if(w) IMP.manualWeigh(w); return; }
+  if(de){ const w=DB.weights.find(x=>x.id===de.dataset.wDel); if(w&&confirm('Supprimer la pesée du '+dFR(w.date)+' ('+f(w.weight,1)+' kg) ?')){ DB.weights=DB.weights.filter(x=>x.id!==w.id); DB.tomb.w[w.id]=Date.now(); save(); renderPoids(); toast('Pesée supprimée'); } }
+}
+
+/* ---------- Import Mi Fitness : OCR dans le navigateur (Tesseract.js, modèle « fra ») ----------
+   Captures « longues » (≈ 1100 × 10 000–14 000 px, thème sombre) :
+   passe 1 = tuiles de 1 000 px (chevauchement 150 px), niveaux de gris inversés → repère les libellés ;
+   passe 2 = recadrage ciblé de chaque valeur (au-dessus de son libellé), agrandi ×2 et binarisé (Otsu), ligne unique.
+   Rien n'est enregistré ici : le résultat sert uniquement à préremplir l'écran de vérification. */
+const MiFit = (()=>{
+  const TJS='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  const NW=1100, TILE=1000, OV=150;
+  let libP=null, wP=null, curLog=null;
+  function loadLib(){
+    if(window.Tesseract) return Promise.resolve();
+    if(!libP) libP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=TJS; s.async=true;
+      s.onload=()=>res(); s.onerror=()=>{ libP=null; s.remove(); rej(new Error('Moteur OCR indisponible : une connexion internet est nécessaire la première fois.')); };
+      document.head.appendChild(s); });
+    return libP;
+  }
+  async function worker(){
+    await loadLib();
+    if(!wP) wP=Tesseract.createWorker('fra',1,{logger:m=>{ if(curLog) curLog(m); }}).catch(e=>{ wP=null; throw e; });
+    return wP;
+  }
+  async function loadImage(src){
+    const img=new Image(); let url=null;
+    if(src instanceof Blob){ url=URL.createObjectURL(src); img.src=url; } else img.src=src;
+    try{ await img.decode(); }catch(e){ if(url) URL.revokeObjectURL(url); throw new Error('Image illisible (format non pris en charge ?)'); }
+    return {img, url};
+  }
+  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  // Dessine une zone (coordonnées normalisées, largeur NW) de l'image source dans un canevas, agrandie de « up ».
+  function crop(img, sc, x, y, w, h, up){
+    const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w*up)); c.height=Math.max(1,Math.round(h*up));
+    const g=c.getContext('2d',{willReadFrequently:true}); g.imageSmoothingQuality='high';
+    g.drawImage(img, x/sc, y/sc, w/sc, h/sc, 0, 0, c.width, c.height); return [c,g];
+  }
+  // Niveaux de gris ; fond sombre → inversion (texte foncé sur fond clair) ; option binarisation d'Otsu.
+  function prep(c,g,bin){
+    const d=g.getImageData(0,0,c.width,c.height), p=d.data, n=p.length/4; let sum=0; const L=new Uint8ClampedArray(n);
+    for(let i=0,j=0;i<p.length;i+=4,j++){ const v=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2]; L[j]=v; sum+=v; }
+    const inv=sum/n<128;
+    if(inv) for(let j=0;j<n;j++) L[j]=255-L[j];
+    let thr=-1;
+    if(bin==='soft'){ // texte peu contrasté (gris sur dégradé) : seuil entre le fond (médiane) et l'encre la plus marquée
+      const hist=new Array(256).fill(0); for(let j=0;j<n;j++) hist[L[j]]++; let acc=0,med=255,ink=0;
+      for(let t=255;t>=0;t--){ acc+=hist[t]; if(acc>=n/2){ med=t; break; } }
+      acc=0; for(let t=0;t<256;t++){ acc+=hist[t]; if(acc>=n*0.01){ ink=t; break; } }
+      thr=Math.round(ink+0.8*(med-ink)); }
+    else if(bin){ const hist=new Array(256).fill(0); for(let j=0;j<n;j++) hist[L[j]]++;
+      let sumAll=0; for(let t=0;t<256;t++) sumAll+=t*hist[t]; let wB=0,sB=0,best=0; thr=128;
+      for(let t=0;t<256;t++){ wB+=hist[t]; if(!wB) continue; const wF=n-wB; if(!wF) break; sB+=t*hist[t];
+        const mB=sB/wB, mF=(sumAll-sB)/wF, between=wB*wF*(mB-mF)*(mB-mF); if(between>best){ best=between; thr=t; } } }
+    for(let i=0,j=0;i<p.length;i+=4,j++){ const v=thr>=0?(L[j]>thr?255:0):L[j]; p[i]=p[i+1]=p[i+2]=v; p[i+3]=255; }
+    g.putImageData(d,0,0); return c;
+  }
+  // Mots → segments (groupes de mots proches sur une même ligne)
+  function segmentsOf(data, oy){
+    const out=[];
+    for(const ln of (data.lines||[])){ const ws=(ln.words||[]).filter(w=>w.text&&w.text.trim()).sort((a,b)=>a.bbox.x0-b.bbox.x0); if(!ws.length) continue;
+      const hs=ws.map(w=>w.bbox.y1-w.bbox.y0).sort((a,b)=>a-b), hm=hs[hs.length>>1]||20;
+      let cur=null;
+      for(const w of ws){ const b=w.bbox;
+        if(cur && b.x0-cur.x1 <= Math.max(28,1.3*hm)){ cur.words.push(w); cur.x1=Math.max(cur.x1,b.x1); cur.y0=Math.min(cur.y0,b.y0+oy); cur.y1=Math.max(cur.y1,b.y1+oy); }
+        else { cur={words:[w],x0:b.x0,x1:b.x1,y0:b.y0+oy,y1:b.y1+oy}; out.push(cur); } } }
+    return out.map(s=>({ text:s.words.map(w=>w.text).join(' ').trim(), conf:s.words.reduce((t,w)=>t+w.confidence,0)/s.words.length, x0:s.x0,x1:s.x1,y0:s.y0,y1:s.y1, h:s.y1-s.y0 }))
+      .map(s=>Object.assign(s,{n:norm(s.text)})).filter(s=>s.n);
+  }
+  function dedupe(segs){
+    const out=[];
+    for(const s of segs.sort((a,b)=>b.conf-a.conf)){
+      if(out.some(o=>o.n===s.n && Math.abs((o.x0+o.x1)/2-(s.x0+s.x1)/2)<30 && Math.abs((o.y0+o.y1)/2-(s.y0+s.y1)/2)<30)) continue;
+      out.push(s); }
+    return out.sort((a,b)=>a.y0-b.y0||a.x0-b.x0);
+  }
+  // Libellés Mi Fitness (FR) : la valeur est affichée juste au-dessus, alignée à gauche ou centrée.
+  const LABELS=[
+    ['dur',/^temps$/,'dur'], ['kcal',/^kcal actif/,'int'], ['kcalTot',/^kcal total/,'int'],
+    ['pace',/^rythme moy/,'pace'], ['bpm',/^fc moy/,'int'], ['bpm',/^bpm$/,'int'], ['bpmMax',/^bpm max/,'int'],
+    ['pas',/^pas$/,'int'], ['dplus',/^gain d ?alt/,'d1'], ['dminus',/^perte d ?alt/,'d1'],
+    ['speed',/^vitesse moy/,'d1'], ['speed',/^vitesse$/,'d1'], ['cadence',/^(ppm|spm) moy/,'int'], ['foulee',/^foulee moy/,'int'],
+    ['altMin',/^altitude minimale/,'d1'], ['altMax',/^altitude max/,'d1'], ['tl',/^charge d ?entrainement/,'int'],
+    ['recup',/^recuperation$/,'hours'], ['pauses',/^pauses$/,'int']
+  ];
+  const P={
+    dur:t=>{ const m=t.replace(/[oO]/g,'0').match(/(\d{1,2})\s*[:.;]\s*(\d{2})\s*[:.;]\s*(\d{2})/); return m? (+m[1])*3600+(+m[2])*60+(+m[3]) : null; },
+    int:t=>{ const m=t.replace(/[oO](?=\d)|(?<=\d)[oO]/g,'0').match(/\d{1,6}/); return m? +m[0] : null; },
+    d1:t=>{ const m=t.match(/(\d{1,5})\s*[.,]\s*(\d)/); if(m) return +(m[1]+'.'+m[2]); const k=t.match(/\d{2,6}/); return k? {v:+k[0]/10, guess:true} : null; },
+    pace:t=>{ let m=t.match(/(\d{1,2})\s*['’`´]\s*(\d{2})/); if(!m) m=t.replace(/\s/g,'').match(/^(\d{1,2})(\d{2})["”]*$/); return m&&+m[2]<60? (+m[1])*60+(+m[2]) : null; },
+    hours:t=>{ const m=t.match(/^\s*(\d{1,3})\s*[hn]?\s*$/i); return m? +m[1] : null; }
+  };
+  // Isole la valeur : composantes connexes « hautes » (chiffres), groupe le plus proche du libellé,
+  // en gardant les petits signes situés entre les chiffres (. : ') et en retirant l'unité qui suit (kcal, BPM, m, TL, h…).
+  function isolate(c, ax0, acx, opt={}){
+    const W=c.width, H=c.height, g=c.getContext('2d',{willReadFrequently:true}), d=g.getImageData(0,0,W,H), p=d.data;
+    const lab=new Int32Array(W*H), comps=[]; const st=[];
+    for(let i=0;i<W*H;i++){ if(lab[i]||p[i*4]>=128) continue; const id=comps.length+1; let x0=W,x1=0,y0=H,y1=0,a=0; st.push(i); lab[i]=id;
+      while(st.length){ const q=st.pop(), x=q%W, y=(q-x)/W; a++; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const nx=x+dx, ny=y+dy; if(nx<0||ny<0||nx>=W||ny>=H) continue; const k=ny*W+nx; if(!lab[k]&&p[k*4]<128){ lab[k]=id; st.push(k); } } }
+      comps.push({id,x0,x1,y0,y1,a,h:y1-y0+1,w:x1-x0+1}); }
+    const big=comps.filter(k=>k.a>=12 && k.x0>0 && k.x1<W-1); if(!big.length) return null;
+    const mh=Math.max(...big.map(k=>k.h)); const tall=big.filter(k=>k.h>=0.8*mh).sort((a,b)=>a.x0-b.x0);
+    const cl=[]; for(const k of tall){ const L=cl[cl.length-1]; if(L && k.x0-L.x1<=0.85*mh){ L.x1=Math.max(L.x1,k.x1); L.y0=Math.min(L.y0,k.y0); L.y1=Math.max(L.y1,k.y1); L.ks.push(k); } else cl.push({x0:k.x0,x1:k.x1,y0:k.y0,y1:k.y1,ks:[k]}); }
+    const sc=c._up||1; let best=null, bd=1e9;
+    for(const L of cl){ const dd=Math.min(Math.abs(L.x0-ax0*sc), Math.abs((L.x0+L.x1)/2-acx*sc)); if(dd<bd){ bd=dd; best=L; } }
+    if(!best) return null;
+    const keep=new Set(best.ks.map(k=>k.id));
+    for(const k of big) if(!keep.has(k.id) && k.h<0.8*mh && (k.x0+k.x1)/2>best.x0 && (k.x0+k.x1)/2<best.x1 && k.y1>=best.y0-2 && k.y0<=best.y1+2) keep.add(k.id);
+    // signe +/− juste à gauche (petit, centré verticalement)
+    for(const k of comps) if(!keep.has(k.id) && k.a>=6 && k.x1<best.x0 && best.x0-k.x1<0.6*mh && k.h<0.8*mh && (k.y0+k.y1)/2>best.y0+0.25*(best.y1-best.y0) && (k.y0+k.y1)/2<best.y1-0.2*(best.y1-best.y0)){ keep.add(k.id); best.x0=Math.min(best.x0,k.x0); }
+    // décimale en petit format à droite (ex. poids « 77 ,1 ») : composantes dans la moitié basse, juste après le groupe
+    let dec=null;
+    if(opt.decimal){ const ds=big.filter(k=>!keep.has(k.id) && k.x0>best.x1-2 && k.x0-best.x1<1.1*mh && k.h<0.8*mh && k.h>0.12*mh && (k.y0+k.y1)/2>best.y0+0.45*(best.y1-best.y0) && k.y0>best.y0+0.2*(best.y1-best.y0));
+      if(ds.length){ const dx0=Math.min(...ds.map(k=>k.x0)), dx1=Math.max(...ds.map(k=>k.x1)), dy0=Math.min(...ds.map(k=>k.y0)), dy1=Math.max(...ds.map(k=>k.y1)); const ids=new Set(ds.map(k=>k.id));
+        const dmh=Math.max(...ds.map(k=>k.h)), pd=Math.round(0.35*dmh), dw=dx1-dx0+1+2*pd, dh=dy1-dy0+1+2*pd; dec=document.createElement('canvas'); dec.width=dw; dec.height=dh;
+        const dg=dec.getContext('2d'), di=dg.createImageData(dw,dh), dq=di.data; dq.fill(255);
+        for(let y=dy0;y<=dy1;y++) for(let x=dx0;x<=dx1;x++){ const l=lab[y*W+x]; if(l&&ids.has(l)&&ds.find(k=>k.id===l).h>0.55*dmh){ const j=((y-dy0+pd)*dw+(x-dx0+pd))*4; dq[j]=dq[j+1]=dq[j+2]=0; } }
+        dg.putImageData(di,0,0); dec._mh=dmh; } }
+    const pad=Math.round(0.35*mh), ow=best.x1-best.x0+1+2*pad, oh=best.y1-best.y0+1+2*pad;
+    const o=document.createElement('canvas'); o.width=ow; o.height=oh; const og=o.getContext('2d'); const od=og.createImageData(ow,oh), q=od.data; q.fill(255);
+    for(let y=best.y0;y<=best.y1;y++) for(let x=best.x0;x<=best.x1;x++){ const l=lab[y*W+x]; if(l&&keep.has(l)){ const j=((y-best.y0+pad)*ow+(x-best.x0+pad))*4; q[j]=q[j+1]=q[j+2]=0; } }
+    og.putImageData(od,0,0); o._mh=mh; o._dec=dec; return o;
+  }
+  // Tesseract lit mieux des chiffres d'environ 40 px de haut (au-delà, il confond 3/5).
+  function sized(c, H){ const k=H/c._mh, o=document.createElement('canvas'); o.width=Math.max(8,Math.round(c.width*k)); o.height=Math.max(8,Math.round(c.height*k));
+    const g=o.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,o.width,o.height); g.imageSmoothingQuality='high'; g.drawImage(c,0,0,o.width,o.height); return o; }
+  async function recLine(w, c){ const r=await w.recognize(c); const t=(r.data.text||'').replace(/\n+/g,' ').trim(); return {t, conf:r.data.confidence||0}; }
+
+  // Lecture d'une valeur recadrée : 1 lecture libre (contrôle « c'est bien un nombre ») + 2 lectures chiffres seuls à 40 et 30 px.
+  async function readValue(w, img, sc, j, opt={}){
+    const [c,g]=crop(img,sc,j.x,j.y,j.w,j.h,2); prep(c,g,true); c._up=2;
+    await w.setParameters({tessedit_char_whitelist:''}); const r=await recLine(w,c);
+    const lab=j.label||{x0:j.x+(j.ax||0),x1:j.x+(j.ax||0)};
+    const iso=isolate(c,lab.x0-j.x,(lab.x0+lab.x1)/2-j.x,opt);
+    const out={raw:r.t, rawConf:r.conf, reads:[]};
+    if(iso){ const rp=await recLine(w,sized(iso,40));
+      const digitish=rp.t.replace(/[^0-9]/g,'').length >= Math.max(1, 0.5*rp.t.replace(/[\s.:,'’"+\-−]/g,'').length);
+      if(digitish){ await w.setParameters({tessedit_char_whitelist:"0123456789.,:'+-"});
+        for(const H of [40,30]){ const rd=await recLine(w,sized(iso,H)); out.reads.push({t:rd.t.replace(/\s+/g,''), conf:Math.min(rd.conf,rp.conf+15)}); } }
+      if(iso._dec){ await w.setParameters({tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:'10'}); const rd=await recLine(w,sized(iso._dec,40)); await w.setParameters({tessedit_pageseg_mode:'7'}); out.dec={t:rd.t.replace(/\D/g,''),conf:rd.conf};
+        if(window.__dbg) window.__dbg.push({k:'dec',raw:rd.t,conf:rd.conf,reads:[],box:[0,0,0,0],png:iso._dec.toDataURL()}); } }
+    if(window.__dbg) window.__dbg.push({k:j.k,raw:r.t,conf:r.conf,reads:out.reads,dec:out.dec,box:[j.x,j.y,j.w,j.h].map(Math.round),lab:j.label&&j.label.text,png:(iso||c).toDataURL()});
+    return out;
+  }
+  // Libellés de la pesée (balance Mi / Mi Fitness, FR). dir 'up' = valeur au-dessus du libellé, 'down' = en dessous.
+  const WLABELS=[
+    ['skelKg',/^masse musculaire squelettique/,'d1','up'], ['muscleKg',/^masse musculaire$/,'d1','up'],
+    ['imc',/^imc$/,'d1','up'], ['fatPct',/^pourcentage de graisse/,'d1','up'], ['eauKg',/^masse d ?eau/,'d1','up'],
+    ['fatKg',/^masse grasse/,'d1','up'], ['boneKg',/^teneur en mineraux/,'d1','up'], ['protKg',/^masse proteique/,'d1','up'],
+    ['musclePct',/^pourcentage musculaire/,'d1','up'], ['eauPct',/^eau corporelle/,'d1','up'], ['protPct',/^pourcentage de proteines/,'d1','up'],
+    ['bonePct',/^pourcentage de mineraux/,'d1','up'], ['visceral',/^taux de graisse visc/,'d1','up'], ['bmr',/^taux metabolique/,'int','up'],
+    ['whr',/^estimation du rapport/,'d1','up'], ['bodyAge',/^age corporel/,'int','up'], ['leanKg',/^poids corporel sans graisse/,'d1','up'],
+    ['hr',/^frequence cardiaque$/,'int','up'], ['score',/^score corporel/,'int','down'], ['stdKg',/^poids standard/,'d1','down'],
+    ['ctrlPoids',/^controle du poids/,'sd1','down'], ['ctrlGraisse',/^controle des graisses/,'sd1','down'], ['ctrlMuscle',/^controle musculaire/,'sd1','down']
+  ];
+  const BODY_TYPES=['Mince et musclé','Obésité invisible','En sous-poids','En surpoids','En forme','Athlétique','Musclé','Mince','Maigre','Obèse'];
+  // Détecte la case surlignée (orange) du tableau « Type de corps »
+  function findHighlight(img, sc, y0, y1){
+    const step=4, c=document.createElement('canvas'), w=Math.round(img.naturalWidth/step), h=Math.max(1,Math.round((y1-y0)/sc/step));
+    c.width=w; c.height=h; const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(img,0,y0/sc,img.naturalWidth,(y1-y0)/sc,0,0,w,h);
+    const p=g.getImageData(0,0,w,h).data; let x0=w,x1=-1,yy0=h,yy1=-1,n=0;
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=(y*w+x)*4, r=p[i],gg=p[i+1],b=p[i+2];
+      if(r>190 && gg>80 && gg<190 && b<90 && r-b>130){ n++; if(x<x0)x0=x; if(x>x1)x1=x; if(y<yy0)yy0=y; if(y>yy1)yy1=y; } }
+    if(n<40) return null; const k=step*sc; return {x:x0*k, y:y0+yy0*k, w:(x1-x0+1)*k, h:(yy1-yy0+1)*k};
+  }
+
+  async function analyze(src, onProgress){
+    const prog=(k,msg)=>{ try{ onProgress&&onProgress(Math.max(0,Math.min(1,k)),msg); }catch(e){} };
+    prog(0,'Chargement du moteur OCR…');
+    const w=await worker();
+    const {img,url}=await loadImage(src);
+    try{
+      if(img.naturalWidth<300||img.naturalHeight<300) throw new Error('Image trop petite pour être lue.');
+      const sc=NW/img.naturalWidth, H=Math.round(img.naturalHeight*sc);
+      await w.setParameters({tessedit_pageseg_mode:'3', tessedit_char_whitelist:''});
+      const tiles=[]; for(let y=0;y<H;y+=TILE-OV){ tiles.push([y,Math.min(TILE,H-y)]); if(y+TILE>=H) break; }
+      let segs=[];
+      for(let i=0;i<tiles.length;i++){ const [y,h]=tiles[i]; prog(0.04+0.6*i/tiles.length,'Lecture de la capture ('+(i+1)+'/'+tiles.length+')…');
+        const [c,g]=crop(img,sc,0,y,NW,h,1); prep(c,g,false);
+        const r=await w.recognize(c); segs.push(...segmentsOf(r.data,y)); }
+      segs=dedupe(segs);
+      const has=re=>segs.some(s=>re.test(s.n));
+      const wScore=[/^score corporel/,/^composition corporelle/,/^masse musculaire/,/^masse grasse/,/^imc$/,/^taux metabolique/,/^type de corps/].filter(has).length;
+      const sScore=[/^mi fitness /,/^effet d ?entrainement/,/^temps$/,/^frequence cardiaque bpm/,/^kcal actif/,/^rythme/,/^fc moy/].filter(has).length;
+      const kind= wScore>=2&&wScore>sScore ? 'weigh' : sScore>=2 ? 'workout' : 'unknown';
+      const res={kind, fields:{}, activity:null, debug:{segs:segs.map(s=>[Math.round(s.y0),Math.round(s.x0),s.text,Math.round(s.conf)])}};
+      const cand={}; const add=(k,v,conf,raw,wt=1)=>{ if(v==null||(typeof v==='number'&&!isFinite(v))) return; let guess=false; if(typeof v==='object'){ guess=v.guess; v=v.v; } (cand[k]=cand[k]||[]).push({v,conf:guess?Math.min(conf,45):conf,raw,wt}); };
+      // date (haut de capture) : si la passe 1 l'a manquée (texte gris sur dégradé), relecture binarisée du haut
+      let dateSeg=segs.find(s=>/\d{2}\/\d{2}\/\d{4}/.test(s.text));
+      if(!dateSeg){ // relecture ciblée sous chacune des premières lignes de texte (binarisation locale)
+        await w.setParameters({tessedit_pageseg_mode:'6'});
+        const tops=segs.filter(s=>s.y0<Math.max(400,0.1*H) && /[a-z]{3}/.test(s.n)).slice(0,4);
+        for(const t of tops){ const y=Math.max(0,t.y0-4), h=(t.y1-t.y0)+110, x=Math.max(0,t.x0-20); const [c,g]=crop(img,sc,x,y,Math.min(NW-x,0.7*NW),h,2); prep(c,g,'soft');
+          const r=await w.recognize(c); const tx=(r.data.text||'').replace(/\s+/g,' ').trim();
+          if(window.__dbg) window.__dbg.push({k:'date?',raw:tx,conf:r.data.confidence,reads:[],box:[x,y,0.7*NW,h].map(Math.round),png:c.toDataURL()});
+          if(/\d{2}\/\d{2}\/\d{4}/.test(tx)){ dateSeg={text:tx,conf:r.data.confidence||0,x0:x,x1:x+0.7*NW,y0:y,y1:y+h,h,n:norm(tx)}; break; } }
+        await w.setParameters({tessedit_pageseg_mode:'3'}); }
+      if(dateSeg){ const m=dateSeg.text.match(/(\d{2})\/(\d{2})\/(\d{4})(?:\D+(\d{1,2})[:h.](\d{2}))?/);
+        if(m && +m[2]>=1 && +m[2]<=12 && +m[1]>=1 && +m[1]<=31){ res.fields.date={v:m[3]+'-'+m[2]+'-'+m[1],conf:dateSeg.conf}; if(m[4]&&+m[4]<24&&+m[5]<60) res.fields.heure={v:m[4].padStart(2,'0')+':'+m[5],conf:dateSeg.conf}; } }
+      await w.setParameters({tessedit_pageseg_mode:'7'});
+      const jobs=[];
+      const upJob=(k,type,s)=>{ const lh=Math.max(18,Math.min(40,s.h)), cx=(s.x0+s.x1)/2;
+        const x0=Math.max(0,Math.min(s.x0-0.05*NW, cx-0.17*NW)), x1=Math.min(NW,Math.max(s.x0+0.29*NW, cx+0.17*NW));
+        // borne haute : libellé de la rangée précédente (texte fiable, sans chiffres), sinon 5 hauteurs de libellé
+        const above=segs.filter(o=>o!==s && o.y1<s.y0-2 && o.h<1.35*lh && o.conf>=60 && /[a-z]{3}/.test(o.n) && !/\d/.test(o.n) && o.x1>x0 && o.x0<x1 && s.y0-o.y1<6*lh).sort((a,b)=>b.y1-a.y1)[0];
+        const y1=s.y0-0.1*lh, y0=Math.max(0, Math.min(s.y0-4.2*lh, above? Math.max(above.y1+2, s.y0-6*lh) : s.y0-5*lh));
+        return {k,type,x:x0,y:y0,w:x1-x0,h:y1-y0,label:s}; };
+      if(kind==='workout'){
+        const head=segs.find(s=>/^mi\s*fitness/i.test(s.text));
+        if(head){ const m=head.text.match(/^mi\s*fitness\s*[|lI!\]\[/]\s*(.+)$/i); if(m) res.activity={v:m[1].trim(),conf:head.conf}; }
+        if(!res.activity && dateSeg){ const t=segs.filter(s=>s!==dateSeg && s.y1<=dateSeg.y0+4 && dateSeg.y0-s.y1<3.5*dateSeg.h && s.x0<NW*0.5 && /[a-z]{3}/i.test(s.text)).pop(); if(t) res.activity={v:t.text.trim(),conf:t.conf}; }
+        if(head){ jobs.push({k:'hero',x:0,y:head.y1+4,w:NW*0.64,h:Math.max(150,6*head.h),ax:0}); }
+        for(const s of segs){ for(const [k,re,type] of LABELS){ if(!re.test(s.n)) continue;
+            if(k==='recup' && !segs.some(o=>o!==s && /^charge d ?entrainement/.test(o.n) && Math.abs(o.y0-s.y0)<0.8*s.h)) continue;
+            jobs.push(upJob(k,type,s)); break; } }
+        const te=segs.find(s=>/^effet d ?entrainement/.test(s.n));
+        if(te){ const v=segs.find(s=>s.y0>te.y1 && s.y0-te.y1<0.6*NW && /^\d\s*[.,]\s*\d$/.test(s.text.trim()));
+          if(v){ jobs.push({k:'te',type:'te',x:Math.max(0,v.x0-40),y:v.y0-12,w:(v.x1-v.x0)+80,h:v.h+24,label:v});
+            const st=segs.find(s=>s.y0>v.y1-4 && s.y0-v.y1<3*v.h && /(ameliorant|maintenu|recuperation|surcharge|aucun|tres|hautement|extreme)/.test(s.n));
+            const ty=segs.find(s=>s.y0>v.y1 && s.y0-v.y1<7*v.h && /^(an)?aerobie/.test(s.n));
+            if(st) res.fields.teLabel={v:st.text.replace(/[^A-Za-zÀ-ÿ' -]/g,'').trim(),conf:st.conf};
+            if(ty) res.fields.teType={v:/^an/.test(ty.n)?'Anaérobie':'Aérobie',conf:ty.conf}; } }
+      } else if(kind==='weigh'){
+        res.activity={v:'Pesée',conf:99};
+        const scoreH=segs.find(s=>/^score corporel/.test(s.n));
+        const top=dateSeg? dateSeg.y1+4 : 0.02*H, bot=scoreH? scoreH.y0-0.6*scoreH.h : top+0.08*H;
+        jobs.push({k:'weight',type:'weight',x:0.08*NW,y:top,w:0.84*NW,h:Math.max(80,bot-top),ax:0.3*NW,opt:{decimal:true}});
+        const typeH=segs.find(s=>/^type de corps/.test(s.n));
+        const done=new Set();
+        for(let i=0;i<segs.length;i++){ const s=segs[i];
+          if(typeH && s.y0>typeH.y0) { if(!/^(poids standard|controle)/.test(s.n)) continue; } // ignorer les axes du tableau « Type de corps »
+          const nx=segs.find(o=>o!==s && Math.abs(o.x0-s.x0)<14 && o.y0>=s.y1-4 && o.y0-s.y1<0.8*s.h && Math.abs(o.h-s.h)<0.4*s.h);
+          const n2=nx? s.n+' '+nx.n : s.n;
+          for(const [k,re,type,dir] of WLABELS){ if(done.has(k) || !(re.test(n2)||re.test(s.n))) continue;
+            if(k==='muscleKg' && re.test(s.n) && nx && /^squelettique/.test(nx.n)) continue;
+            done.add(k);
+            if(dir==='up') jobs.push(upJob(k,type,s));
+            else { const lh=Math.max(18,Math.min(40,s.h)); jobs.push({k,type,x:Math.max(0,s.x0-0.05*NW),y:s.y1+0.1*lh,w:(k==='score'?0.3:0.45)*NW,h:(k==='score'?4.2:3.2)*lh,label:s}); }
+            break; } }
+        if(typeH){ const sug=segs.find(s=>/^suggestion de poids/.test(s.n)); const hl=findHighlight(img,sc,typeH.y1,sug?sug.y0:Math.min(H,typeH.y1+0.6*NW));
+          if(hl){ const [c,g]=crop(img,sc,hl.x+4,hl.y+4,hl.w-8,hl.h-8,2); prep(c,g,true);
+            // texte blanc sur orange : après binarisation le fond est noir → inversion
+            const gg=c.getContext('2d'), dd=gg.getImageData(0,0,c.width,c.height), pp=dd.data; let blk=0; for(let i=0;i<pp.length;i+=4) if(pp[i]<128) blk++;
+            if(blk>pp.length/8){ for(let i=0;i<pp.length;i+=4){ pp[i]=pp[i+1]=pp[i+2]=255-pp[i]; } gg.putImageData(dd,0,0); }
+            await w.setParameters({tessedit_pageseg_mode:'6', tessedit_char_whitelist:''}); const r=await w.recognize(c); const t=norm(r.data.text);
+            const bt=BODY_TYPES.find(b=>t.includes(norm(b))) || BODY_TYPES.find(b=>norm(b).split(' ').every(x=>t.includes(x)));
+            if(bt) res.fields.bodyType={v:bt,conf:Math.round(r.data.confidence||80)};
+            // repli : segments de la passe 1 contenus dans la case
+            if(!bt){ const inC=segs.filter(s=>s.x0>=hl.x-6&&s.x1<=hl.x+hl.w+6&&s.y0>=hl.y-6&&s.y1<=hl.y+hl.h+6).map(s=>s.n).join(' '); const b2=BODY_TYPES.find(b=>inC.includes(norm(b))); if(b2) res.fields.bodyType={v:b2,conf:70}; }
+            await w.setParameters({tessedit_pageseg_mode:'7'}); } }
+      }
+      const SP=Object.assign({},P,{ sd1:t=>{ const m=String(t).replace(/−/g,'-').match(/([+-]?)\s*(\d{1,3})\s*[.,]\s*(\d)/); return m? +((m[1]==='-'?'-':'')+m[2]+'.'+m[3]) : null; } });
+      for(let i=0;i<jobs.length;i++){ const j=jobs[i]; prog(0.68+0.3*i/jobs.length,'Lecture des valeurs ('+(i+1)+'/'+jobs.length+')…');
+        const R=await readValue(w,img,sc,j,j.opt||{});
+        if(j.k==='hero'){ const t=R.raw.replace(/,/g,'.'); const isS=/saut/i.test(t); const isC=res.activity && /corde|saut/i.test(res.activity.v);
+          for(const {t:x,conf} of R.reads){ if((isS||isC) && /^\d{1,5}$/.test(x)) add('sauts',+x,conf,x,3); else if(!isS && !isC && /^\d{1,3}[.,]\d{1,2}$/.test(x)) add('dist',+x.replace(',','.'),conf,x,3); }
+          let m=t.match(/(\d{1,3}\.\d{1,2})\s*km/i); if(m) add('dist',+m[1],Math.min(R.rawConf,80),R.raw); m=t.match(/(\d{1,5})\s*saut/i); if(m) add('sauts',+m[1],Math.min(R.rawConf,80),R.raw); continue; }
+        if(j.type==='weight'){ for(const {t:x,conf} of R.reads){ const m=x.match(/^(\d{2,3})(?:[.,](\d))?$/); if(!m) continue;
+            if(m[2]) add('weight',+(m[1]+'.'+m[2]),conf,x,3); else if(R.dec&&/^\d$/.test(R.dec.t)) add('weight',+(m[1]+'.'+R.dec.t),Math.min(conf,R.dec.conf),x+','+R.dec.t,3); }
+          const m=R.raw.match(/(\d{2,3})\s*[.,]\s*(\d)/); if(m) add('weight',+(m[1]+'.'+m[2]),Math.min(R.rawConf,70),R.raw); continue; }
+        if(j.type==='te'){ for(const {t:x,conf} of R.reads){ const m=x.match(/(\d)\s*[.,]\s*(\d)/); if(m) add('te',+(m[1]+'.'+m[2]),conf,x,3); }
+          const m=R.raw.match(/(\d)\s*[.,]\s*(\d)/); if(m) add('te',+(m[1]+'.'+m[2]),R.rawConf,R.raw); continue; }
+        for(const {t:x,conf} of R.reads) add(j.k,SP[j.type](x),conf,x,3);
+        add(j.k,SP[j.type](R.raw),Math.min(R.rawConf,75),R.raw);
+        // repli : lecture de la passe 1 (segment juste au-dessus / en dessous du libellé)
+        if(j.label){ const ab=segs.filter(s=>s!==j.label && s.y0>=j.y-4 && s.y1<=j.y+j.h+4 && s.x1>j.x && s.x0<j.x+j.w).pop();
+          if(ab){ const v=SP[j.type](ab.text); if(v!=null) add(j.k,v,Math.min(ab.conf,70),ab.text+' (p1)',1); } } }
+      // fusion des candidats : score = Σ poids × confiance ; la confiance finale tient compte de la part des lectures concordantes
+      const eq=(a,b)=>Math.abs(a-b)<1e-6;
+      for(const [k,list] of Object.entries(cand)){ const groups=[];
+        for(const c of list){ const sc=c.wt*Math.max(5,c.conf)/100; const g=groups.find(g=>eq(g.v,c.v)); if(g){ g.n++; g.s+=sc; g.conf=Math.max(g.conf,c.conf); g.raw.push(c.raw); } else groups.push({v:c.v,n:1,s:sc,conf:c.conf,raw:[c.raw]}); }
+        groups.sort((a,b)=>b.s-a.s);
+        const g=groups[0], tot=groups.reduce((t,x)=>t+x.s,0), share=g.s/tot;
+        res.fields[k]={v:g.v,conf:Math.round(Math.min(99,g.conf*(0.55+0.45*share)+(g.n>2?6:0))),raw:g.raw.join(' | '),alt:groups.slice(1).map(x=>x.v)}; }
+      if(kind==='weigh') validateWeigh(res.fields); else validate(res.fields, segs);
+      for(const f of Object.values(res.fields)) f.conf=Math.round(f.conf);
+      prog(1,'Terminé');
+      return res;
+    } finally { if(url) URL.revokeObjectURL(url); }
+  }
+  // Pesée : contrôles croisés (les pourcentages et masses de Mi Fitness sont liés au poids).
+  function validateWeigh(F){
+    const has=(...k)=>k.every(x=>F[x]&&F[x].v!=null);
+    const ok=(k,b)=>{ if(!F[k]) return; if(b) F[k].conf=Math.max(F[k].conf,96); else { F[k].conf=Math.min(F[k].conf,45); F[k].warn=true; } };
+    const close=(a,b,t)=>Math.abs(a-b)<=t;
+    // poids absent : déduit de masse grasse + poids sans graisse (signalé, confiance moyenne)
+    if(!has('weight') && has('fatKg','leanKg')) F.weight={v:Math.round((F.fatKg.v+F.leanKg.v)*10)/10,conf:70,raw:'masse grasse + poids sans graisse',derived:true};
+    if(has('weight','fatKg','leanKg')){ const b=close(F.fatKg.v+F.leanKg.v,F.weight.v,0.15); ok('weight',b); ok('fatKg',b); ok('leanKg',b); }
+    const pct=[['fatPct','fatKg'],['musclePct','muscleKg'],['eauPct','eauKg'],['protPct','protKg'],['bonePct','boneKg']];
+    for(const [p,kg] of pct) if(has('weight',p,kg)){ const b=close(F[kg].v/F.weight.v*100,F[p].v,0.35); ok(p,b); ok(kg,b); if(b) ok('weight',true); }
+    if(has('leanKg','muscleKg','boneKg')){ const b=close(F.muscleKg.v+F.boneKg.v,F.leanKg.v,0.15); if(b){ ok('leanKg',true); ok('muscleKg',true); ok('boneKg',true); } }
+    if(has('ctrlPoids','stdKg','weight')){ const e=Math.round((F.stdKg.v-F.weight.v)*10)/10;
+      if(close(Math.abs(F.ctrlPoids.v),Math.abs(e),0.15)){ if(Math.sign(F.ctrlPoids.v)!==Math.sign(e)&&e!==0){ F.ctrlPoids.v=e; F.ctrlPoids.signFixed=true; } ok('ctrlPoids',true); ok('stdKg',true); } else ok('ctrlPoids',false); }
+    if(has('imc')) ok('imc', F.imc.v>=10&&F.imc.v<=60);
+    if(has('bmr')) ok('bmr', F.bmr.v>=800&&F.bmr.v<=4000);
+    if(has('hr')) ok('hr', F.hr.v>=30&&F.hr.v<=200);
+    if(has('bodyAge')) ok('bodyAge', F.bodyAge.v>=10&&F.bodyAge.v<=99);
+  }
+  // Contrôles de cohérence : ils relèvent ou abaissent la confiance (jamais de correction silencieuse).
+  function validate(F, segs){
+    const ok=(k,b)=>{ if(F[k]) F[k].conf=b?Math.max(F[k].conf,96):Math.min(F[k].conf,40); if(F[k]&&!b) F[k].warn=true; };
+    const has=(...k)=>k.every(x=>F[x]&&F[x].v!=null);
+    if(has('dist','dur')){ const pace=F.dur.v/F.dist.v;
+      if(has('pace')){ const b=Math.abs(pace-F.pace.v)<=3; ok('pace',b); if(b){ ok('dist',true); ok('dur',true); } }
+      if(has('speed')){ const b=Math.abs(F.dist.v/(F.dur.v/3600)-F.speed.v)<=0.06; ok('speed',b); if(b){ ok('dist',true); ok('dur',true); } } }
+    if(has('bpm','bpmMax')){ const b=F.bpm.v<=F.bpmMax.v && F.bpm.v>=35 && F.bpmMax.v<=230; ok('bpm',b); ok('bpmMax',b); }
+    if(has('kcal','kcalTot')){ const b=F.kcal.v<=F.kcalTot.v; if(!b){ ok('kcal',false); ok('kcalTot',false); } }
+    if(has('pas','cadence','dur')){ const e=F.cadence.v*F.dur.v/60; const b=Math.abs(e-F.pas.v)/F.pas.v<0.12; if(b){ ok('pas',true); ok('cadence',true); } }
+    if(has('foulee','dist','pas')){ const e=F.dist.v*1e5/F.pas.v; if(Math.abs(e-F.foulee.v)/F.foulee.v<0.15) ok('foulee',true); }
+    if(has('sauts','cadence','dur')){ const e=F.cadence.v*F.dur.v/60; const b=Math.abs(e-F.sauts.v)/F.sauts.v<0.12; if(b){ ok('sauts',true); ok('cadence',true); } }
+    if(has('altMin','altMax')){ const b=F.altMin.v<=F.altMax.v; if(!b){ ok('altMin',false); ok('altMax',false); } }
+    if(has('dplus','altMin','altMax') && F.dplus.v+0.5 < F.altMax.v-F.altMin.v && F.dplus.v*3 < F.altMax.v-F.altMin.v) ok('dplus',false);
+    // valeur vue ailleurs telle quelle dans la capture (ex. durée et sauts dans le tableau « Détails »)
+    const toks=new Set(); segs.forEach(s=>s.text.split(/\s+/).forEach(t=>toks.add(t.replace(/[^\d:.]/g,''))));
+    const seen=(k,str)=>{ if(F[k]&&!F[k].warn&&toks.has(str)) F[k].conf=Math.max(F[k].conf,92); };
+    if(has('dur')){ const s=F.dur.v, t=String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); seen('dur',t); }
+    for(const k of ['sauts','pas','bpm','bpmMax','cadence']) if(has(k)) seen(k,String(F[k].v));
+  }
+  return {analyze, loadLib, norm, P, validate, validateWeigh, BODY_TYPES};
+})();
+
+/* ---------- Import de captures Mi Fitness : analyse → vérification → enregistrement (jamais automatique) ---------- */
+// Activité Mi Fitness → type de séance (suggestion ; le choix de l'utilisateur est mémorisé par activité dans DB.prefs.actMap)
+const MF_MAP=[[/corde|saut/i,'Corde à sauter'],[/tapis|interieur|intérieur/i,'Tapis'],[/trail|montagne/i,'Trail'],[/course|running|jogging/i,'Course'],
+  [/chemin|randonn|trek|alpin/i,'Randonnée'],[/marche|walk/i,'Marche'],[/muscu|force|fonctionnel|hiit|renfo|crossfit|gainage/i,'Musculation'],
+  [/escalier|stepper|grimpe/i,'Escaliers'],[/elliptique/i,'Elliptique'],[/v[ée]lo|cycl|bike|vtt/i,'Vélo']];
+const actKey=a=>String(a||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()||'?';
+function mfSuggest(act){ const p=DB.prefs&&DB.prefs.actMap&&DB.prefs.actMap[actKey(act)];
+  if(p&&TYPES.includes(p.type)) return {type:p.type, incline:p.incline, pref:true};
+  for(const [re,t] of MF_MAP) if(re.test(act||'')) return {type:t}; return {type:'Autre'}; }
+// Champs de séance : [clé, libellé, nature, unité]
+const SF={ date:['Date','date'], heure:['Heure','time'], dur:['Durée','dur','h:mm:ss'], dist:['Distance','dec','km'], incline:['Inclinaison du tapis','dec','%'],
+  dplus:['D+','dec','m'], dminus:['D-','dec','m'], kcal:['Calories actives','int','kcal'], kcalTot:['Calories totales','int','kcal'], bpm:['FC moyenne','int','bpm'], bpmMax:['FC max','int','bpm'],
+  pas:['Pas','int',''], cadence:['Cadence','int','pas/min'], foulee:['Longueur de foulée','int','cm'], altMin:['Altitude min','dec','m'], altMax:['Altitude max','dec','m'],
+  sauts:['Sauts','int',''], pauses:['Pauses','int',''], te:['Effet d’entraînement','dec','/5'], teLabel:['Effet (libellé)','text',''], tl:['Charge d’entraînement','int','TL'], recup:['Récupération','int','h'],
+  sac:['Sac / charge','dec','kg'], ress:['Ressenti (1-10)','int',''], exos:['Exercices','area',''], notes:['Notes','area',''] };
+const FIELDS_BY={ walk:['dist','dur','dplus','dminus','bpm','bpmMax','kcal','kcalTot','pas','cadence','foulee','altMin','altMax','te','teLabel','tl','recup','sac','ress','notes'],
+  tapis:['dist','dur','incline','dplus','bpm','bpmMax','kcal','kcalTot','pas','cadence','foulee','te','teLabel','tl','recup','sac','ress','notes'],
+  corde:['sauts','dur','pauses','cadence','bpm','bpmMax','kcal','kcalTot','te','teLabel','tl','recup','ress','notes'],
+  muscu:['dur','exos','sac','bpm','bpmMax','kcal','kcalTot','te','teLabel','tl','recup','ress','notes'],
+  velo:['dist','dur','dplus','dminus','bpm','bpmMax','kcal','kcalTot','cadence','altMin','altMax','te','teLabel','tl','recup','ress','notes'],
+  stairs:['dur','dplus','pas','cadence','bpm','bpmMax','kcal','kcalTot','te','teLabel','tl','recup','sac','ress','notes'],
+  ellip:['dist','dur','pas','cadence','bpm','bpmMax','kcal','kcalTot','te','teLabel','tl','recup','ress','notes'] };
+function typeFamily(t){ return isTapis(t)?'tapis':t==='Corde à sauter'?'corde':t==='Musculation'?'muscu':t==='Vélo'?'velo':t==='Escaliers'?'stairs':t==='Elliptique'?'ellip':'walk'; }
+function cadLabel(t){ const fm=typeFamily(t); return fm==='corde'?['Sauts par minute','sauts/min']:fm==='velo'?['Cadence','tr/min']:['Cadence','pas/min']; }
+const fmtIn=(k,v)=>{ if(v==null||v==='') return ''; const K=SF[k]; if(!K) return String(v); if(K[1]==='dur') return fmtDur(v); if(K[1]==='dec'||K[1]==='int') return String(v).replace('.',','); return String(v); };
+const cfBadge=(c,edited,calc)=>edited?'<i class="cf ed">modifié</i>':calc?'<i class="cf calc">calculé</i>':c==null?'':`<i class="cf ${c>=85?'hi':c>=60?'mid':'lo'}" title="Confiance de lecture">${Math.round(c)} %</i>`;
+
+const IMP={ items:[], running:false,
+  open(){ $('p-imp').scrollTop=0; document.body.classList.add('imp-open'); $('p-imp').setAttribute('aria-hidden','false'); this.render(); },
+  close(){ document.body.classList.remove('imp-open'); $('p-imp').setAttribute('aria-hidden','true');
+    const pend=this.items.filter(x=>x.status==='done').length; if(pend) toast(pend+' capture(s) analysée(s) non enregistrée(s) : elles restent dans l’import');
+    this.items=this.items.filter(x=>{ const keep=x.status!=='saved'&&x.status!=='skipped'; if(!keep&&x.thumb) URL.revokeObjectURL(x.thumb); return keep; }); },
+  isOpen(){ return document.body.classList.contains('imp-open'); },
+  add(files){ const L=[...files].filter(f=>/^image\//.test(f.type)||/\.(png|jpe?g|webp|heic)$/i.test(f.name)); if(!L.length){ toast('Choisis une ou plusieurs images'); return; }
+    for(const file of L) this.items.push({id:uid(),file,name:file.name||'capture',thumb:URL.createObjectURL(file),status:'queued',prog:0,msg:'En attente…'});
+    this.open(); this.run(); },
+  async run(){ if(this.running) return; this.running=true;
+    try{ let it; while((it=this.items.find(x=>x.status==='queued'))){ it.status='reading'; it.msg='Préparation…'; this.renderItem(it);
+        try{ const r=await MiFit.analyze(it.file,(k,m)=>{ it.prog=k; it.msg=m||it.msg; this.paintProg(it); }); this.prepare(it,r); }
+        catch(e){ it.status='error'; it.msg=e&&e.message||String(e); }
+        this.renderItem(it); } }
+    finally{ this.running=false; } },
+  prepare(it,r){ it.res=r; it.kind=r.kind; it.edited={}; it.status=r.kind==='unknown'?'unknown':'done'; const F=r.fields, v={}, cf={};
+    for(const [k,x] of Object.entries(F)){ if(x&&x.v!=null){ v[k]=x.v; cf[k]=x.warn?Math.min(55,x.conf):x.conf; } }
+    if(r.kind==='workout'){ it.act=r.activity?r.activity.v:''; const sg=mfSuggest(it.act); it.type=sg.type; it.pref=!!sg.pref;
+      if(F.teLabel) v.teLabel=F.teLabel.v+(F.teType?' · '+F.teType.v:'');
+      v.notes='Importé de Mi Fitness'+(it.act?' ('+it.act+')':'')+(F.pace?' · allure '+Math.floor(F.pace.v/60)+'\''+String(Math.round(F.pace.v%60)).padStart(2,'0')+'"/km':'');
+      it.incline= sg.incline!=null? sg.incline : (typeIncline(sg.type)!=null? typeIncline(sg.type) : 6);
+      it.v=v; it.cf=cf; this.applyType(it,true); this.findDup(it); }
+    else if(r.kind==='weigh'){ it.v=v; it.cf=cf; it.wDup=(DB.weights||[]).find(w=>w.date===v.date&&(w.heure||'')===(v.heure||'')); it.wMode=it.wDup?'update':'new'; }
+  },
+  applyType(it,init){ const fam=typeFamily(it.type);
+    if(fam==='tapis'){ const ti=typeIncline(it.type); if(ti!=null){ it.incline=ti; it.edited.incline=false; } it.v.incline=it.incline;
+      if(!it.edited.dplus){ const d=num(fmtIn('dist',it.v.dist)); it.v.dplus=(d>0&&it.v.incline!=null)? Math.round(d*it.v.incline*10) : null; it.calc={dplus:true}; }
+      if(!it.edited.dminus) it.v.dminus=null; }
+    else { it.calc={}; if(!it.edited.dplus&&it.res.fields.dplus) it.v.dplus=it.res.fields.dplus.v; if(!it.edited.dminus&&it.res.fields.dminus) it.v.dminus=it.res.fields.dminus.v; }
+  },
+  findDup(it){ const v=it.v; it.dup=null; if(!v.date) return;
+    const near=DB.sessions.filter(s=>s.date===v.date && ((v.dur&&s.dur&&Math.abs(s.dur-v.dur)<=240)||(v.dist!=null&&s.dist!=null&&Math.abs(s.dist-v.dist)<=0.06)||(v.sauts&&s.sauts&&Math.abs(s.sauts-v.sauts)<=20)));
+    it.dup=near[0]||null; it.mode=it.dup?'merge':'new'; },
+  fieldHTML(it,k){ const K=SF[k]; let [lab,kind,unit]=K; if(k==='cadence'){ [lab,unit]=cadLabel(it.type); }
+    const val=fmtIn(k,it.v[k]), b=cfBadge(it.cf[k],it.edited[k],it.calc&&it.calc[k]&&!it.edited[k]);
+    const id='i_'+it.id+'_'+k, L=`<label for="${id}">${lab}${unit?' ('+unit+')':''} ${b}</label>`;
+    if(kind==='area') return `<div class="full">${L}<textarea id="${id}" data-k="${k}" rows="2">${esc(val)}</textarea></div>`;
+    if(k==='ress') return `<div>${L}<select id="${id}" data-k="${k}"><option value="">–</option>${[1,2,3,4,5,6,7,8,9,10].map(i=>`<option${String(it.v.ress)===String(i)?' selected':''}>${i}</option>`).join('')}</select></div>`;
+    const im=kind==='int'||kind==='dur'?'numeric':kind==='dec'?'decimal':'text', ty=kind==='date'?'date':kind==='time'?'time':'text';
+    return `<div class="${(it.cf[k]!=null&&it.cf[k]<60&&!it.edited[k])?'lowc':''}">${L}<input id="${id}" type="${ty}" data-k="${k}" inputmode="${im}" value="${esc(val)}"${k==='incline'?' placeholder="6"'+(typeIncline(it.type)!=null?' readonly title="Inclinaison fixée par le type (choisis « Tapis » pour une autre valeur)"':''):''}></div>`; },
+  cardHTML(it){
+    const head=`<div class="imph"><img src="${it.thumb||''}" alt="" ${it.thumb?'':'style="visibility:hidden"'}><div style="flex:1;min-width:0"><b class="ell">${esc(it.name)}</b><div class="small mut" data-msg>${esc(this.statusText(it))}</div>
+      ${it.status==='reading'||it.status==='queued'?`<div class="bar" style="margin-top:6px"><i data-prog style="--v:${(it.prog||0).toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div>`:''}</div>
+      ${it.status!=='reading'?`<button class="xbtn" data-imp-x="${it.id}" aria-label="Retirer">✕</button>`:''}</div>`;
+    let body='';
+    if(it.status==='error'||it.status==='unknown') body=`<div class="tip">${it.status==='error'?'⚠️ '+esc(it.msg):'Capture non reconnue : ni une séance Mi Fitness, ni une pesée « Composition corporelle ». Vérifie qu’il s’agit bien de la capture longue complète.'}</div>
+      <div class="row" style="margin-top:8px"><button class="btn sm sec" data-imp-retry="${it.id}">Réessayer</button><button class="btn sm sec" data-imp-manual="${it.id}">Saisir à la main</button></div>`;
+    if(it.status==='done'&&it.kind==='workout'){ const fam=typeFamily(it.type), keys=FIELDS_BY[fam];
+      const warns=Object.entries(it.res.fields).filter(([k,x])=>x.warn&&keys.includes(k)).map(([k])=>SF[k]?SF[k][0]:k);
+      body=`<div class="imptype"><div><label for="t_${it.id}">Type de séance ${it.pref?'<i class="cf calc">ton dernier choix</i>':''}</label><select id="t_${it.id}" data-type>${TYPES.map(t=>`<option${t===it.type?' selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="small mut">Mi Fitness : <b>${esc(it.act||'?')}</b>${fam==='tapis'?' · D+ calculé = distance × inclinaison':''}</div></div>
+        <div class="grid" style="margin-top:10px">${['date','heure'].map(k=>this.fieldHTML(it,k)).join('')}${keys.map(k=>this.fieldHTML(it,k)).join('')}</div>
+        ${warns.length?`<div class="tip">⚠️ Valeurs incohérentes entre elles, à vérifier : ${warns.join(', ')}</div>`:''}
+        ${this.derivedHTML(it)}
+        ${it.dup?`<div class="dup"><b>Séance existante le ${dFR(it.dup.date)}</b> : ${esc(it.dup.type)}${it.dup.dist!=null?' · '+f(it.dup.dist,2)+' km':''}${it.dup.dur?' · '+fmtDur(it.dup.dur):''}
+          <label class="rad"><input type="radio" name="m_${it.id}" value="merge" data-mode ${it.mode==='merge'?'checked':''}> Compléter cette séance (tes valeurs existantes sont gardées, les champs vides sont remplis)</label>
+          <label class="rad"><input type="radio" name="m_${it.id}" value="replace" data-mode ${it.mode==='replace'?'checked':''}> Mettre à jour cette séance avec les valeurs ci-dessus</label>
+          <label class="rad"><input type="radio" name="m_${it.id}" value="new" data-mode ${it.mode==='new'?'checked':''}> Créer une nouvelle séance</label></div>`:''}
+        <div class="row" style="margin-top:12px"><button class="btn" data-imp-save="${it.id}">Enregistrer la séance</button><button class="btn sec" data-imp-skip="${it.id}">Ignorer</button></div>`; }
+    if(it.status==='done'&&it.kind==='weigh') body=this.weighForm(it);
+    if(it.status==='saved') body=`<div class="small green">✔ ${esc(it.msg)}</div>`;
+    if(it.status==='skipped') body=`<div class="small mut">Ignorée.</div>`;
+    return `<div class="card impc ${it.status}" data-it="${it.id}">${head}${body}</div>`; },
+  weighForm(it){ const v=it.v;
+    const fld=k=>{ const F=WFK[k]; const id='i_'+it.id+'_'+k; return `<div class="${(it.cf[k]!=null&&it.cf[k]<60&&!it.edited[k])?'lowc':''}"><label for="${id}">${F[1]}${F[2]?' ('+F[2]+')':''} ${cfBadge(it.cf[k],it.edited[k])}</label><input id="${id}" data-k="${k}" inputmode="${SIGNED_W.has(k)?'text':'decimal'}" value="${esc(v[k]==null?'':String(v[k]).replace('.',','))}"></div>`; };
+    const warns=Object.entries(it.res&&it.res.fields||{}).filter(([k,x])=>x.warn&&WFK[k]).map(([k])=>WFK[k][1]);
+    return `<div class="small mut" style="margin-top:6px">${it.editId?'Modification d’une pesée':it.res?'Pesée détectée (Mi Fitness · composition corporelle)':'Nouvelle pesée'}</div>
+      <div class="grid" style="margin-top:8px"><div><label for="i_${it.id}_date">Date ${cfBadge(it.cf.date,it.edited.date)}</label><input type="date" id="i_${it.id}_date" data-k="date" value="${esc(v.date||'')}"></div>
+       <div><label for="i_${it.id}_heure">Heure ${cfBadge(it.cf.heure,it.edited.heure)}</label><input type="time" id="i_${it.id}_heure" data-k="heure" value="${esc(v.heure||'')}"></div>
+       ${fld('weight')}<div><label for="i_${it.id}_bodyType">Type de corps ${cfBadge(it.cf.bodyType,it.edited.bodyType)}</label><select id="i_${it.id}_bodyType" data-k="bodyType"><option value="">–</option>${BODY_TYPES.map(b=>`<option${b===v.bodyType?' selected':''}>${b}</option>`).join('')}</select></div></div>
+      <details class="more" ${it.res?'open':''}><summary>Composition détaillée (${WF.length-1} mesures)</summary><div class="grid" style="margin-top:10px">${WF.filter(([k])=>k!=='weight').map(([k])=>fld(k)).join('')}
+       <div class="full"><label for="i_${it.id}_notes">Notes</label><input id="i_${it.id}_notes" data-k="notes" value="${esc(v.notes||'')}"></div></div></details>
+      ${warns.length?`<div class="tip">⚠️ À vérifier (incohérence entre valeurs) : ${warns.join(', ')}</div>`:''}
+      ${it.wDup&&!it.editId?`<div class="dup"><b>Pesée déjà enregistrée le ${dFR(it.wDup.date)}${it.wDup.heure?' à '+esc(it.wDup.heure):''}</b> (${f(it.wDup.weight,1)} kg)
+        <label class="rad"><input type="radio" name="m_${it.id}" value="update" data-wmode ${it.wMode==='update'?'checked':''}> La mettre à jour</label><label class="rad"><input type="radio" name="m_${it.id}" value="new" data-wmode ${it.wMode==='new'?'checked':''}> Créer une nouvelle pesée</label></div>`:''}
+      <div class="row" style="margin-top:12px"><button class="btn" data-imp-save="${it.id}">Enregistrer la pesée</button><button class="btn sec" data-imp-skip="${it.id}">${it.res?'Ignorer':'Annuler'}</button></div>`; },
+  derivedHTML(it){ const s={dist:num(fmtIn('dist',it.v.dist)),dur:hms(fmtIn('dur',it.v.dur)),dplus:num(fmtIn('dplus',it.v.dplus))}; const sp=speed(s), va=vasc(s), pc=sp?3600/sp:null;
+    return `<div class="auto" style="margin-top:10px" data-derived>Vitesse : ${sp?f(sp,2)+' km/h':'–'} · Allure : ${pc?Math.floor(pc/60)+'\''+String(Math.round(pc%60)).padStart(2,'0')+'"/km':'–'} · Vitesse asc. : ${va&&s.dplus>0?f(va,0)+' m/h':'–'}</div>`; },
+  statusText(it){ return it.status==='queued'?'En attente…':it.status==='reading'?it.msg:it.status==='error'?'Échec de la lecture':it.status==='unknown'?'Capture non reconnue':it.status==='saved'?'Enregistrée':it.status==='skipped'?'Ignorée':
+     it.kind==='weigh'?(it.res?'Pesée · vérifie puis enregistre':'Saisie manuelle'):'Séance « '+(it.act||'?')+' » · vérifie puis enregistre'; },
+  paintProg(it){ const c=document.querySelector(`[data-it="${it.id}"]`); if(!c) return; const m=c.querySelector('[data-msg]'), p=c.querySelector('[data-prog]'); if(m) m.textContent=it.msg; if(p) p.style.setProperty('--v',(it.prog||0).toFixed(3)); },
+  render(){ const L=this.items, box=$('impList'); if(!box) return;
+    box.innerHTML=L.length? L.map(it=>this.cardHTML(it)).join('') : `<div class="empty small mut" style="padding:12px 4px">Ajoute une ou plusieurs captures longues Mi Fitness (séance ou « Composition corporelle »). Rien n’est enregistré sans ta validation.</div>`;
+    const ready=L.filter(x=>x.status==='done').length; $('btnImpAll').style.display=ready>1?'':'none'; $('btnImpAll').textContent='Tout enregistrer ('+ready+')'; },
+  renderItem(it){ const c=document.querySelector(`[data-it="${it.id}"]`); if(!c){ this.render(); return; } c.outerHTML=this.cardHTML(it);
+    const ready=this.items.filter(x=>x.status==='done').length; $('btnImpAll').style.display=ready>1?'':'none'; $('btnImpAll').textContent='Tout enregistrer ('+ready+')'; },
+  byId(id){ return this.items.find(x=>x.id===id); },
+  readInputs(it){ const c=document.querySelector(`[data-it="${it.id}"]`); if(!c) return; c.querySelectorAll('[data-k]').forEach(el=>{ const k=el.dataset.k; it.raw=it.raw||{}; it.raw[k]=el.value; }); },
+  onInput(e){ const el=e.target, c=el.closest('[data-it]'); if(!c) return; const it=this.byId(c.dataset.it); if(!it) return;
+    if(el.matches('[data-type]')){ this.readInputs(it); this.syncRaw(it); it.type=el.value; it.pref=false; this.applyType(it); this.render(); return; }
+    if(el.matches('[data-mode]')){ it.mode=el.value; return; } if(el.matches('[data-wmode]')){ it.wMode=el.value; return; }
+    const k=el.dataset.k; if(!k) return; it.edited[k]=true; this.readInputs(it); this.syncRaw(it); const lab=c.querySelector(`label[for="${el.id}"] .cf`); if(lab){ lab.className='cf ed'; lab.textContent='modifié'; } el.parentElement.classList.remove('lowc');
+    if(it.kind==='workout'){
+      if(typeFamily(it.type)==='tapis'&&(k==='dist'||k==='incline')&&!it.edited.dplus){ if(k==='incline') it.incline=num(el.value); this.applyType(it); const d=c.querySelector('[data-k="dplus"]'); if(d) d.value=fmtIn('dplus',it.v.dplus); }
+      const dv=c.querySelector('[data-derived]'); if(dv) dv.outerHTML=this.derivedHTML(it); } },
+  syncRaw(it){ // valeurs saisies → it.v (en conservant le texte tel quel s'il est invalide, la validation se fait à l'enregistrement)
+    for(const [k,val] of Object.entries(it.raw||{})){ const K=SF[k]; const kind=K?K[1]:(WFK[k]?'dec':'text');
+      if(kind==='dur'){ const x=hms(val); it.v[k]=x==null?null:(isNaN(x)?val:x); } else if(kind==='dec'||kind==='int'){ const x=num(val); it.v[k]=x==null?null:(isNaN(x)?val:x); } else it.v[k]=val; } },
+  buildSession(it){ this.readInputs(it); this.syncRaw(it); const errs=[], fam=typeFamily(it.type), keys=new Set(['date','heure',...FIELDS_BY[fam]]), s={type:it.type};
+    for(const k of keys){ const K=SF[k], raw=(it.raw&&it.raw[k]!=null)?it.raw[k]:fmtIn(k,it.v[k]);
+      if(K[1]==='dur'){ const x=hms(raw); if(x!=null&&(isNaN(x)||x<=0)) errs.push(K[0]); s[k]=x&&!isNaN(x)?x:null; }
+      else if(K[1]==='dec'||K[1]==='int'){ const x=num(raw); if(x!=null&&(isNaN(x)||x<0)) errs.push(K[0]); s[k]=x==null||isNaN(x)?null:(K[1]==='int'?Math.round(x):x); }
+      else s[k]=String(raw||'').trim(); }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(s.date||'')) errs.push('Date');
+    if(s.heure&&!/^\d{2}:\d{2}$/.test(s.heure)) errs.push('Heure');
+    if(s.ress!=null&&(s.ress<1||s.ress>10)) errs.push('Ressenti');
+    if(fam!=='tapis') delete s.incline; if(!s.heure) delete s.heure;
+    ['exos','notes'].forEach(k=>{ if(s[k]==null) s[k]=''; }); if(s.teLabel==='') delete s.teLabel;
+    s.src='mifit'; return {s,errs}; },
+  saveOne(it,silent){
+    if(it.kind==='weigh') return this.saveWeigh(it,silent);
+    const {s,errs}=this.buildSession(it); if(errs.length){ if(!silent) alert('Valeurs invalides : '+errs.join(', ')); return errs; }
+    const now=Date.now(); let msg;
+    const dupNow=it.dup&&DB.sessions.find(x=>x.id===it.dup.id);
+    if(dupNow&&it.mode!=='new'){ const o=dupNow;
+      if(it.mode==='merge'){ for(const [k,v] of Object.entries(s)){ if(v==null||v==='') continue; if(k==='notes'){ if(!o.notes) o.notes=v; else if(!o.notes.includes('Mi Fitness')) o.notes+=' · '+v; continue; } if(k==='type'||k==='src') continue; if(o[k]==null||o[k]===''||o[k]===0&&k!=='dplus') o[k]=v; } }
+      else { for(const [k,v] of Object.entries(s)) if(v!=null&&v!=='') o[k]=v; }
+      o.updatedAt=now; msg='Séance du '+dFR(o.date)+' complétée'; }
+    else { const base={dist:null,dplus:null,dminus:null,dur:null,bpm:null,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:''};
+      DB.sessions.push(Object.assign({id:uid()},base,s,{updatedAt:now})); msg='Séance du '+dFR(s.date)+' ajoutée ('+s.type+')'; }
+    // mémorise le choix de type pour cette activité Mi Fitness
+    if(it.act){ DB.prefs=DB.prefs||{actMap:{}}; DB.prefs.actMap=DB.prefs.actMap||{}; DB.prefs.actMap[actKey(it.act)]={act:it.act,type:it.type,incline:typeFamily(it.type)==='tapis'?(s.incline??null):null,updatedAt:now}; }
+    save(); it.status='saved'; it.msg=msg; if(!silent){ this.render(); toast(msg); renderAll(); } return null; },
+  saveWeigh(it,silent){ this.readInputs(it); const r=it.raw||{}, w={}, errs=[];
+    const date=(r.date||'').trim(), heure=(r.heure||'').trim(); if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('Date'); if(heure&&!/^\d{2}:\d{2}$/.test(heure)) errs.push('Heure');
+    for(const [k,l] of WF){ const x=num((r[k]||'').replace(/^\+/,'').replace(/^[−–]/,'-')); if(x!=null&&(isNaN(x)||(!SIGNED_W.has(k)&&x<0))) errs.push(l); w[k]=x==null||isNaN(x)?null:x; }
+    if(w.weight==null) errs.push('Poids (obligatoire)'); else if(w.weight<20||w.weight>300) errs.push('Poids (20–300 kg)');
+    if(errs.length){ if(!silent) alert('Valeurs invalides : '+[...new Set(errs)].join(', ')); return errs; }
+    for(const k of Object.keys(w)) if(w[k]==null) delete w[k];
+    Object.assign(w,{date,heure:heure||'',bodyType:(r.bodyType||'').trim()||null,notes:(r.notes||'').trim()}); if(!w.bodyType) delete w.bodyType;
+    const now=Date.now(); DB.weights=DB.weights||[]; let msg;
+    const target=it.editId? DB.weights.find(x=>x.id===it.editId) : (it.wDup&&it.wMode==='update'? DB.weights.find(x=>x.id===it.wDup.id) : null);
+    if(target){ const keep={id:target.id}; for(const k of Object.keys(target)) if(!(k in w)&&!WFK[k]&&k!=='bodyType'&&k!=='heure') keep[k]=target[k];
+      if(!it.editId){ for(const [k] of WF) if(w[k]==null&&target[k]!=null) w[k]=target[k]; }
+      const i=DB.weights.indexOf(target); DB.weights[i]=Object.assign(keep,w,{src:it.res?'Mi Fitness':(target.src||'saisie'),updatedAt:now}); msg='Pesée du '+dFR(date)+' mise à jour'; }
+    else { DB.weights.push(Object.assign({id:uid()},w,{src:it.res?'Mi Fitness':'saisie',updatedAt:now})); msg='Pesée du '+dFR(date)+' ajoutée ('+f(w.weight,1)+' kg)'; }
+    save(); it.status='saved'; it.msg=msg; if(!silent){ this.render(); toast(msg); renderPoids(); } return null; },
+  saveAll(){ const L=this.items.filter(x=>x.status==='done'); if(!L.length) return;
+    if(!confirm('Enregistrer les '+L.length+' éléments vérifiés ?')) return; snapshot('avant import Mi Fitness',true);
+    const bad=[]; for(const it of L){ const e=this.saveOne(it,true); if(e) bad.push(it.name+' : '+e.join(', ')); }
+    this.render(); renderAll(); renderPoids(); toast((L.length-bad.length)+' enregistré(s)'); if(bad.length) alert('Non enregistrés (valeurs invalides) :\n'+bad.join('\n')); },
+  manualWeigh(w){ const last=weighsSorted().pop(); const it={id:uid(),name:w?'Pesée du '+dFR(w.date):'Saisie manuelle',status:'done',kind:'weigh',res:null,edited:{},cf:{},editId:w?w.id:null,
+      v:w?Object.assign({},w):{date:todayISO(),heure:String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0'),stdKg:last?last.stdKg:null}};
+    this.items.unshift(it); this.open(); },
+  click(e){ const b=e.target.closest('button'); if(!b) return; const g=a=>this.byId(b.dataset[a]);
+    if(b.dataset.impSave){ const it=g('impSave'); if(it) this.saveOne(it); }
+    else if(b.dataset.impSkip){ const it=g('impSkip'); if(it){ it.status='skipped'; this.render(); } }
+    else if(b.dataset.impX){ const it=g('impX'); if(it){ if(it.status==='done'&&!confirm('Retirer cette capture sans l’enregistrer ?')) return; if(it.thumb) URL.revokeObjectURL(it.thumb); this.items=this.items.filter(x=>x!==it); this.render(); } }
+    else if(b.dataset.impRetry){ const it=g('impRetry'); if(it){ it.status='queued'; it.prog=0; this.render(); this.run(); } }
+    else if(b.dataset.impManual){ const it=g('impManual'); this.close(); fillForm(null); show('add'); }
+  }
+};
+function initImport(){
+  const fi=$('impFiles'); fi.addEventListener('change',()=>{ if(fi.files.length) IMP.add(fi.files); fi.value=''; });
+  $('btnImpPick').addEventListener('click',()=>fi.click());
+  $('btnImpClose').addEventListener('click',()=>IMP.close());
+  $('btnImpAll').addEventListener('click',()=>IMP.saveAll());
+  $('impList').addEventListener('click',e=>IMP.click(e));
+  $('impList').addEventListener('input',e=>IMP.onInput(e)); $('impList').addEventListener('change',e=>{ if(e.target.matches('select,[type=radio],[type=date],[type=time]')) IMP.onInput(e); });
+  document.addEventListener('click',e=>{ if(e.target.closest('[data-imp-open]')){ if(document.body.classList.contains('sheet-open')) show(curPage); IMP.open(); } });
+  // coller une image (ordinateur) quand l'import est ouvert
+  addEventListener('paste',e=>{ if(!IMP.isOpen()) return; const fs=[...(e.clipboardData&&e.clipboardData.files||[])]; if(fs.length) IMP.add(fs); });
+  const sh=$('p-imp'); sh.addEventListener('dragover',e=>{ e.preventDefault(); }); sh.addEventListener('drop',e=>{ e.preventDefault(); if(e.dataTransfer.files.length) IMP.add(e.dataTransfer.files); });
+}
 
 /* ---------- Nav ---------- */
 let curPage='journal';
@@ -871,18 +1944,24 @@ function show(p){
   document.body.classList.remove('fab-hide');
   const wasSheet=document.body.classList.contains('sheet-open'); closeSheet();
   const prev=curPage; const changed=prev!==p||!document.querySelector('.page.on:not(#p-add)'); curPage=p;
-  const dir=TABS.indexOf(p)>TABS.indexOf(prev)?'r':TABS.indexOf(p)<TABS.indexOf(prev)?'l':'u';
+  if(prev!=='sum'&&p==='sum') sumFrom=prev; if(IMP.isOpen()&&p!==prev) IMP.close();
+  if(prev==='sum'&&p!=='sum'&&history.state&&history.state.sum){ try{ history.back(); }catch(e){} } // quitte la fiche par un onglet : retire l'entrée d'historique
+  const dir=p==='sum'&&prev!=='sum'?'r':prev==='sum'&&p!=='sum'?'l':TABS.indexOf(p)>TABS.indexOf(prev)?'r':TABS.indexOf(p)<TABS.indexOf(prev)?'l':'u';
   document.querySelectorAll('.page:not(#p-add)').forEach(x=>{ const on=x.id==='p-'+p; if(on&&changed){ x.classList.remove('on'); void x.offsetWidth; x.dataset.dir=dir; } x.classList.toggle('on',on); });
-  document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
-  TABS.forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
-  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='equip') renderEquip(); if(p==='data') renderSync();
+  const tabP=p==='sum'?sumFrom:p; document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('on',b.dataset.p===tabP));
+  [...TABS,'sum'].forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
+  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); }
   const t=$('pageTitle'); if(t&&t.textContent!==TITLES[p]){ t.textContent=TITLES[p]; t.classList.remove('swap'); void t.offsetWidth; t.classList.add('swap'); }
-  moveInd(); if(changed||wasSheet) animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
-function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderEquip(); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
+  moveInd(); animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
+function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderPoids(); renderEquip(); if(curPage==='sum'&&curSum) renderSummit(curSum); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
+let sumFrom='obj';
+function openSummit(n){ if(!renderSummit(n)) return; try{ history.pushState({sum:+n},''); }catch(e){} show('sum'); }
+function openSummitNoPush(n){ if(renderSummit(n)) show('sum'); }
+function closeSummit(){ if(history.state&&history.state.sum){ history.back(); } else show(sumFrom||'obj'); }
 
 /* ---------- Couche UI (navigation, feuille, animations) — n'altère pas les données ---------- */
-const TABS=['journal','obj','prep','evo','equip','data'];
-const TITLES={journal:'Journal',obj:'Objectifs',prep:'Préparation',evo:'Évolution',equip:'Équipement',data:'Données'};
+const TABS=['journal','obj','prep','evo','poids','equip','data'];
+const TITLES={journal:'Journal',obj:'Objectifs',prep:'Préparation',evo:'Évolution',poids:'Poids',equip:'Équipement',data:'Données',sum:'Fiche sommet'};
 const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 function moveInd(){ const nav=document.querySelector('nav'), ind=nav&&nav.querySelector('.ind'), b=nav&&nav.querySelector('.tab.on'); if(!ind||!b) return;
   ind.style.width=b.offsetWidth+'px'; ind.style.transform='translate3d('+b.offsetLeft+'px,0,0)'; }
@@ -908,9 +1987,10 @@ function initUI(){
   addEventListener('resize',moveInd);
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(moveInd);
   // feuille : fond, croix, glisser vers le bas, Échap
-  $('sheetBg').addEventListener('click',()=>{ fillForm(null); show(curPage); });
+  $('sheetBg').addEventListener('click',()=>{ if(IMP.isOpen()){ IMP.close(); return; } fillForm(null); show(curPage); });
   $('btnSheetX').addEventListener('click',()=>{ fillForm(null); show(curPage); });
-  addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } });
+  addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
+  addEventListener('popstate',()=>{ if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
   const sh=$('p-add'), grab=sh.querySelector('.grab'); let y0=null,dy=0;
   grab.addEventListener('pointerdown',e=>{ y0=e.clientY; dy=0; sh.classList.add('dragging'); grab.setPointerCapture(e.pointerId); });
   grab.addEventListener('pointermove',e=>{ if(y0==null) return; dy=Math.max(0,e.clientY-y0); sh.style.transform='translate3d(0,'+dy+'px,0)'; });
@@ -918,15 +1998,16 @@ function initUI(){
   grab.addEventListener('pointerup',end); grab.addEventListener('pointercancel',end);
   // balayage horizontal entre onglets
   const main=document.querySelector('main'); let sx=0,sy=0,lock=null,pg=null,dx=0;
-  main.addEventListener('touchstart',e=>{ if(document.body.classList.contains('sheet-open')||e.touches.length>1){ lock='n'; return; }
-    const t=e.target; if(t.closest('input,textarea,select,.scroll,.seg,[contenteditable]')){ lock='n'; return; }
+  main.addEventListener('touchstart',e=>{ if(document.body.classList.contains('sheet-open')||document.body.classList.contains('imp-open')||e.touches.length>1){ lock='n'; return; }
+    const t=e.target; if(t.closest('input,textarea,select,.scroll,.seg,.mapf,[contenteditable]')){ lock='n'; return; }
     sx=e.touches[0].clientX; sy=e.touches[0].clientY; lock=null; dx=0; pg=document.querySelector('.page.on:not(#p-add)'); },{passive:true});
   main.addEventListener('touchmove',e=>{ if(lock==='n'||!pg) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy;
     if(lock==null){ if(Math.abs(x)<10&&Math.abs(y)<10) return; lock=Math.abs(x)>Math.abs(y)*1.4?'h':'n'; if(lock==='h') pg.classList.add('dragging'); }
-    if(lock!=='h') return; const i=TABS.indexOf(curPage); dx=x; if((i===0&&x>0)||(i===TABS.length-1&&x<0)) dx=x*0.25;
+    if(lock!=='h') return; const i=TABS.indexOf(curPage); dx=x; if(curPage==='sum'){ if(x<0) dx=x*0.25; } else if((i===0&&x>0)||(i===TABS.length-1&&x<0)) dx=x*0.25;
     pg.style.transform='translate3d('+(dx*0.45)+'px,0,0)'; pg.style.opacity=String(1-Math.min(.35,Math.abs(dx)/600)); },{passive:true});
   main.addEventListener('touchend',()=>{ if(lock!=='h'||!pg){ lock=null; return; } const i=TABS.indexOf(curPage); const p=pg; p.classList.remove('dragging');
-    let to=null; if(dx<-70&&i<TABS.length-1) to=TABS[i+1]; else if(dx>70&&i>0) to=TABS[i-1];
+    let to=null; if(curPage==='sum'){ if(dx>70){ p.style.transform=''; p.style.opacity=''; haptic(); closeSummit(); lock=null; pg=null; return; } }
+    else if(dx<-70&&i<TABS.length-1) to=TABS[i+1]; else if(dx>70&&i>0) to=TABS[i-1];
     if(to){ p.style.transform=''; p.style.opacity=''; haptic(); show(to); }
     else { p.classList.add('snap'); p.style.transform=''; p.style.opacity=''; setTimeout(()=>p.classList.remove('snap'),320); }
     lock=null; pg=null; },{passive:true});
@@ -947,7 +2028,18 @@ function init(){
   for(let i=1;i<=10;i++) $('f_ress').insertAdjacentHTML('beforeend',`<option value="${i}">${i}</option>`);
   document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.p==='add'&&!$('f_id').value) fillForm(null); show(b.dataset.p); }));
   $('fltType').addEventListener('change',renderJournal);
-  $('f_type').addEventListener('change',updExos);
+  $('f_type').addEventListener('change',()=>{ updExos(); autoTapisDplus(); updAuto(); });
+  $('f_dplus').addEventListener('input',()=>{ $('f_dplus').dataset.auto=$('f_dplus').value.trim()?'0':'1'; });
+  ['f_dist','f_incline'].forEach(id=>$(id).addEventListener('input',()=>{ autoTapisDplus(); updAuto(); }));
+  // fiches sommet : cartes Objectifs, Prépa, conseil du Journal
+  const sumClick=e=>{ if(e.target.closest('select,input,textarea,a,summary,label,details>div')) return; const t=e.target.closest('[data-sum]'); if(t){ openSummit(t.dataset.sum); } };
+  ['objList','prepList','prepHero','jAdv'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
+  $('sumBody').addEventListener('click',e=>{ if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
+  $('poidsBody').addEventListener('click',poidsClick);
+  document.addEventListener('click',e=>{ if(e.target.closest('[data-w-new]')&&!e.target.closest('#poidsBody')){ IMP.manualWeigh(); } });
+  $('snapList').addEventListener('click',e=>{ const b=e.target.closest('[data-snap]'); if(b) restoreSnap(+b.dataset.snap); });
+  $('btnExpCsvW').addEventListener('click',()=>download('suivi-montagne-pesees-'+todayISO()+'.csv',weightsCSV(),'text/csv;charset=utf-8'));
+  initImport();
   $('eqList').addEventListener('click',e=>{ if(e.target.matches('input[type=checkbox]')) return; equipClick(e); });
   $('eqList').addEventListener('change',e=>{ if(e.target.matches('input[type=checkbox]')) equipClick(e); });
   $('btnAddCat').addEventListener('click',()=>{ const n=$('eqNewCat').value.trim(); if(!n) return; DB.equip.push({id:uid(),name:n,items:[],updatedAt:Date.now()}); $('eqNewCat').value=''; save(); renderEquip(); toast('Catégorie ajoutée'); });
@@ -958,7 +2050,11 @@ function init(){
   $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();
     if(errs.length){ alert('Valeurs invalides : '+errs.join(', ')); return; }
     const id=$('f_id').value;
-    s.updatedAt=Date.now(); if(id){ const i=DB.sessions.findIndex(x=>x.id===id); if(i>=0) DB.sessions[i]=Object.assign({id},s); } else DB.sessions.push(Object.assign({id:uid()},s));
+    s.updatedAt=Date.now();
+    if(id){ const i=DB.sessions.findIndex(x=>x.id===id);
+      // conserve les champs inconnus du formulaire (libellé d'effet, source…) ; n'ajoute pas de champs vides absents
+      if(i>=0){ const old=DB.sessions[i]; for(const k of ['heure','incline',...FX]) if(s[k]==null&&old[k]==null) delete s[k]; DB.sessions[i]=Object.assign({},old,s,{id}); } }
+    else { for(const k of ['heure','incline',...FX]) if(s[k]==null) delete s[k]; DB.sessions.push(Object.assign({id:uid()},s)); }
     save(); fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); show('journal'); });
   $('btnCancel').addEventListener('click',()=>{ fillForm(null); show('journal'); });
   $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj; DB.objectifs[n]=Object.assign(objState(n),{[t.dataset.k]:t.value,updatedAt:Date.now()}); save(); toast('Objectif mis à jour'); });
@@ -970,15 +2066,22 @@ function init(){
   $('btnExpCsvM').addEventListener('click',()=>download('suivi-montagne-mois-'+stamp()+'.csv',monthsCSV(),'text/csv;charset=utf-8'));
   $('impFile').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
     rd.onload=()=>{ try{ const o=JSON.parse(rd.result); if(!validImport(o)) throw new Error('format');
-      if(!confirm('Remplacer les données actuelles par ce fichier ('+o.sessions.length+' séances) ?')) return;
-      DB=Object.assign({version:1,objectifs:{}},o); migrate(DB); save(); renderAll(); toast('Import réussi'); }
+      if(!confirm('Remplacer les données actuelles par ce fichier ('+o.sessions.length+' séances'+(o.weights?', '+o.weights.length+' pesées':'')+') ? Une copie de sécurité des données actuelles est faite avant.')) return;
+      snapshot('avant import JSON',true); DB=Object.assign({version:1,objectifs:{}},o); migrate(DB); normalizeDB(DB); dedupeBivouac(DB); save(); renderAll(); toast('Import réussi'); }
       catch(err){ alert('Fichier invalide : JSON de sauvegarde attendu.'); } finally { e.target.value=''; } };
     rd.readAsText(file); });
-  $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ?')){ DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
+  $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ? (une copie de sécurité est faite avant)')){ snapshot('avant réinitialisation',true); DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
   fillForm(null); renderAll(); show('journal');
   initSync();
   initUI();
-  if('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
+    const hadCtl=!!navigator.serviceWorker.controller; let reloaded=false;
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    // nouvelle version active : rechargement automatique seulement si rien n'est en cours de saisie
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(!hadCtl||reloaded) return;
+      const busy=document.body.classList.contains('sheet-open')||IMP.isOpen()||IMP.running||syncing;
+      if(busy){ toast('Nouvelle version installée : elle s’appliquera à la prochaine ouverture'); return; } reloaded=true; location.reload(); });
+  }
 }
 document.addEventListener('DOMContentLoaded',init);
 </script>
