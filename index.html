@@ -473,7 +473,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
   </div>
   <div class="card">
     <h2>Réinitialiser</h2>
-    <p class="small mut">Remet les données de départ (séances de septembre et octobre 2026, liste d’équipement par défaut). Toutes les modifications seront perdues sur cet appareil (si la synchronisation est active, la prochaine synchro récupérera les données du gist).</p>
+    <p class="small mut">Efface les données de cet appareil (séances, pesées) et remet la liste d’équipement par défaut. Une copie de sécurité est faite avant ; si la synchronisation est active, la prochaine synchro récupère toutes les données du gist.</p>
     <button class="btn bad" id="btnReset">Réinitialiser les données</button>
   </div>
   <p class="small mut" style="text-align:center">Ajout à l’écran d’accueil : menu du navigateur → « Ajouter à l’écran d’accueil ».</p>
@@ -728,8 +728,6 @@ function bivouacCat(){ const it=[['Tente légère 1–2 places','ou nuits en gî
    'Repas lyophilisés / repas du soir',['Sacs étanches','duvet et vêtements de rechange'],['Sac poubelle','tout redescendre'],['Petite pelle / truelle + papier','toilettes à 50 m des points d’eau'],
    ['Vérifier la réglementation du bivouac','Chaîne des Puys : une nuit, tente montée après 20 h, démontée avant 8 h, hors sommets et cratères']];
   return {id:BIV_ID,name:'Bivouac',updatedAt:0,items:it.map((x,i)=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:'eqi-bivouac-'+i,name:n,note,price:null,bought:false,updatedAt:0}; })}; }
-// Pesée réelle du 13/10/2026 (capture Mi Fitness « Composition corporelle ») — id stable, updatedAt 0 (donnée de départ)
-const SEED_WEIGH={id:'seed-w-2026-10-13',updatedAt:0};
 function untouchedDefaultCat(c){ return c&&c.id===BIV_ID&&!c.updatedAt&&c.items.every(i=>!i.updatedAt&&!i.bought&&i.price==null)&&c.items.length===bivouacCat().items.length; }
 // Si l'utilisateur a déjà sa propre catégorie « Bivouac », la catégorie par défaut (non modifiée) est retirée (pierre tombale).
 function dedupeBivouac(db){ const mine=db.equip.find(c=>c.id!==BIV_ID&&/bivouac/i.test(c.name)), def=db.equip.find(c=>c.id===BIV_ID);
@@ -757,9 +755,9 @@ function restoreSnap(i){ const s=snapshots()[i]; if(!s) return; let o; try{ o=JS
 
 /* ---------- Seed ---------- */
 const mk = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:'seed-'+date+'-'+(dist==null?'x':Math.round(dist*100)),date,type,dist,dplus,dminus:null,dur,bpm,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:'',updatedAt:0},extra);
-// Séances réelles de septembre 2026 (remplacent les anciens totaux manuels)
-const SEPT_RAW = [];
-function septSessions(){ return SEPT_RAW.map(([d,t,k,p,du,b,sa])=>mk(d,t,k,p,hms(du),b,{sauts:sa||null})); }
+// v6 : les séances réelles ne sont plus dans le code public. Elles restent dans le stockage local de chaque appareil
+// et dans le gist secret de synchronisation (vérifié le 13/10/2026) ; un nouvel appareil les récupère à la première synchro.
+function septSessions(){ return []; }
 function octSessions(){ return []; }
 function defaultEquip(withBivouac=true){
   let ci=0; const C=(name,items)=>{ const cid='eqc-'+(ci++); return {id:cid,name,updatedAt:0,items:items.map((x,ii)=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:cid.replace('eqc','eqi')+'-'+ii,name:n,note,price:null,bought:false,updatedAt:0}; })}; };
@@ -773,7 +771,7 @@ function defaultEquip(withBivouac=true){
   ].concat(withBivouac?[bivouacCat()]:[]);
 }
 function seed(){
-  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip(), weights:[Object.assign({},SEED_WEIGH)], prefs:{actMap:{}}, tomb:newTomb() };
+  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip(), weights:[], prefs:{actMap:{}}, tomb:newTomb() };
 }
 const sessKey = s => s.date+'|'+(s.dist==null?'':Math.round(s.dist*100));
 const SESS_FIELDS=['type','dist','dplus','dminus','dur','bpm','bpmMax','pas','sac','sauts','ress','exos','notes'];
@@ -801,7 +799,7 @@ function migrate(db){
     for(const s of db.sessions){
       const sd=byKey.get(sessKey(s));
       if(sd && !matched.has(sd.id)){ matched.add(sd.id); s.id=sd.id; s.updatedAt = sameSession(s,sd)?0:1; }
-      else { if(!s.id||String(s.id).startsWith('seed-')) s.id=uid(); if(typeof s.updatedAt!=='number') s.updatedAt=1; }
+      else { if(!s.id||String(s.id).startsWith('seed-')) s.id=uid(); if(typeof s.updatedAt!=='number') s.updatedAt=1; s._legacy=1; } // ids stables adoptés à la 1re synchro (adoptSeedIds)
     }
     for(const sd of seeds) if(!matched.has(sd.id)) db.tomb.s[sd.id]=1;
     if(!equipCreated){
@@ -820,9 +818,8 @@ function migrate(db){
     for(const [n,o] of Object.entries(db.objectifs)){ if(o&&typeof o.updatedAt!=='number') o.updatedAt=(o.statut&&o.statut!=='À préparer')||o.datePrevue||o.dateRealisee?1:0; }
   }
   if(db.version < 4){
-    // v4 : pesées (DB.weights + tomb.w), préférences (DB.prefs.actMap), catégorie Bivouac, pesée réelle du 13/10/2026
+    // v4 : pesées (DB.weights + tomb.w), préférences (DB.prefs.actMap), catégorie Bivouac
     normalizeDB(db);
-    if(!db.weights.some(w=>w.id===SEED_WEIGH.id) && db.tomb.w[SEED_WEIGH.id]==null){ db.weights.push(Object.assign({},SEED_WEIGH)); log.push('pesée du 13/10/2026 ajoutée'); }
     if(!db.equip.some(c=>c.id===BIV_ID||/bivouac/i.test(c.name||'')) && db.tomb.c[BIV_ID]==null){ db.equip.push(bivouacCat()); log.push('catégorie Bivouac ajoutée'); }
   }
   normalizeDB(db);
@@ -832,6 +829,12 @@ function migrate(db){
   return log;
 }
 
+/* Appareil migré depuis v1/v2 : ses séances de départ avaient des ids aléatoires. À la 1re synchro, chacune reprend
+   l'id stable « seed-… » de la même séance (même date + distance) présente dans le gist, pour éviter les doublons. */
+function adoptSeedIds(L,R){ const leg=L.sessions.filter(s=>s._legacy); if(!leg.length) return false; const used=new Set(L.sessions.map(s=>s.id));
+  for(const s of leg){ const r=(R.sessions||[]).find(x=>String(x.id).startsWith('seed-')&&!used.has(x.id)&&sessKey(x)===sessKey(s));
+    if(r){ used.add(r.id); s.id=r.id; s.updatedAt=sameSession(s,r)?0:Math.max(1,s.updatedAt||1); } delete s._legacy; }
+  return true; }
 /* ---------- Fusion (synchronisation) ---------- */
 // Règle : pour chaque élément (même id), la version la plus récente (updatedAt) gagne ; à égalité, la version distante.
 // Une suppression (pierre tombale) l'emporte sur toute version modifiée avant ou au moment de la suppression.
@@ -1149,6 +1152,7 @@ async function syncNow(opts={}){
     if(gist){ const txt=await readGistFile(gist);
       if(txt){ try{ remote=JSON.parse(txt); }catch(e){ throw new SyncError('Le fichier du gist est illisible (JSON invalide).'); }
         if(!validImport(remote)) throw new SyncError('Le fichier du gist n’a pas le format attendu.'); migrate(remote); } }
+    if(remote&&adoptSeedIds(DB,remote)) save();
     const snapshot=JSON.parse(JSON.stringify(DB));
     const merged=remote? mergeDB(snapshot,remote) : snapshot; normalizeDB(merged); dedupeBivouac(merged);
     const body={files:{[GIST_FILE]:{content:JSON.stringify(merged)}}};
