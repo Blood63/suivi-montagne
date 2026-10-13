@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1120">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Suivi Montagne">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Suivi Montagne</title>
+<style>
+:root{--bg:#0b1120;--card:#141c2f;--card2:#1b2540;--line:#2a3654;--txt:#e5e9f2;--mut:#94a3b8;--acc:#38bdf8;--acc2:#22c55e;--warn:#f59e0b;--bad:#ef4444;--good:#22c55e}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:rgba(11,17,32,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
+header h1{margin:0;font-size:17px;font-weight:650}
+header small{color:var(--mut)}
+main{padding:12px 12px calc(84px + env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:#0f172a;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:8px 2px 9px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:19px;line-height:1}
+nav button.on{color:var(--acc)}
+.page{display:none}.page.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+h2{font-size:16px;margin:4px 0 10px}h3{font-size:15px;margin:0 0 6px}
+.mut{color:var(--mut)}.small{font-size:12.5px}
+label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:3px}
+input,select,textarea{width:100%;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:16px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);border-color:transparent}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .full{grid-column:1/-1}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr)}}
+.btn{background:var(--acc);color:#04121d;border:0;border-radius:10px;padding:11px 14px;font-weight:650;font-size:15px}
+.btn.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.btn.bad{background:#3b1418;color:#fca5a5;border:1px solid #7f1d1d}
+.btn.sm{padding:6px 10px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.auto{background:#0f2a3a;border:1px dashed #1e5d7c;border-radius:10px;padding:9px;font-size:14px}
+.sess{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.sess:first-child{border-top:0}
+.sess .d{min-width:52px;text-align:center;background:var(--card2);border-radius:10px;padding:5px 2px;font-weight:650}
+.sess .d small{display:block;color:var(--mut);font-weight:400;font-size:11px}
+.sess .b{flex:1;min-width:0}
+.sess .acts{display:flex;flex-direction:column;gap:5px}
+.chip{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:12px;margin:2px 3px 0 0}
+.tag{display:inline-block;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;background:#1e3a5f;color:#bae6fd}
+.month{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 2px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--card2);border-radius:10px;padding:8px;text-align:center}
+.kpi b{display:block;font-size:17px}.kpi small{color:var(--mut);font-size:11.5px}
+.bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%}
+.pct{font-weight:750;font-size:20px}
+.red{color:var(--bad)}.orange{color:var(--warn)}.green{color:var(--good)}
+.bg-red{background:var(--bad)}.bg-orange{background:var(--warn)}.bg-green{background:var(--good)}
+.alt{display:inline-block;background:#3a2a0a;color:#fcd34d;border:1px solid #92400e;border-radius:6px;padding:1px 7px;font-size:12px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{color:var(--mut);font-weight:600;position:sticky;top:0;background:var(--card)}
+.scroll{overflow-x:auto}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0f2a3a;border:1px solid var(--acc);color:var(--txt);padding:9px 14px;border-radius:10px;z-index:9;display:none}
+.seg{display:flex;background:var(--card2);border-radius:10px;padding:3px;margin-bottom:10px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);padding:7px;border-radius:8px;font-size:14px}
+.seg button.on{background:var(--acc);color:#04121d;font-weight:650}
+details summary{cursor:pointer;color:var(--acc)}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<header><h1>⛰️ Suivi Montagne</h1><small id="hdrSub">Entraînement &amp; préparation des ascensions</small></header>
+<main>
+
+<!-- JOURNAL -->
+<section class="page on" id="p-journal">
+  <div class="card">
+    <div class="kpis" id="kpiMonth"></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <h2 style="margin:0">Séances</h2>
+      <select id="fltType" style="width:auto;padding:6px 8px;font-size:14px"></select>
+    </div>
+    <div id="sessList"></div>
+  </div>
+</section>
+
+<!-- SAISIE -->
+<section class="page" id="p-add">
+  <div class="card">
+    <h2 id="formTitle">Nouvelle séance</h2>
+    <form id="fSess" autocomplete="off">
+      <input type="hidden" id="f_id">
+      <div class="grid">
+        <div><label for="f_date">Date</label><input type="date" id="f_date" required></div>
+        <div><label for="f_type">Type</label><select id="f_type"></select></div>
+        <div><label for="f_dist">Distance (km)</label><input id="f_dist" inputmode="decimal" placeholder="ex. 5,2"></div>
+        <div><label for="f_dur">Durée (h:mm:ss)</label><input id="f_dur" inputmode="numeric" placeholder="1:00:00"></div>
+        <div><label for="f_dplus">D+ (m)</label><input id="f_dplus" inputmode="decimal"></div>
+        <div><label for="f_dminus">D- (m)</label><input id="f_dminus" inputmode="decimal"></div>
+        <div><label for="f_bpm">BPM moyen</label><input id="f_bpm" inputmode="numeric"></div>
+        <div><label for="f_bpmmax">BPM max</label><input id="f_bpmmax" inputmode="numeric"></div>
+        <div><label for="f_pas">Pas</label><input id="f_pas" inputmode="numeric"></div>
+        <div><label for="f_sac">Sac à dos (kg)</label><input id="f_sac" inputmode="decimal"></div>
+        <div><label for="f_sauts">Sauts corde</label><input id="f_sauts" inputmode="numeric"></div>
+        <div><label for="f_ress">Ressenti (1-10)</label><select id="f_ress"><option value="">–</option></select></div>
+        <div class="full"><label for="f_notes">Notes</label><textarea id="f_notes" rows="2"></textarea></div>
+        <div class="full auto" id="f_auto">Vitesse : – · Vitesse ascensionnelle : –</div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" type="submit" id="btnSave">Enregistrer</button>
+        <button class="btn sec" type="button" id="btnCancel">Annuler</button>
+      </div>
+      <p class="small mut" style="margin:8px 0 0">Décimales avec virgule ou point. Vitesse = distance / durée ; vitesse ascensionnelle = D+ / durée (m/h).</p>
+    </form>
+  </div>
+</section>
+
+<!-- OBJECTIFS -->
+<section class="page" id="p-obj">
+  <div class="card small mut">Valeurs <b>approximatives</b> issues de topos en ligne (sources sous chaque sommet). D+, distance et durée = sortie complète (aller-retour ou boucle) sauf mention.</div>
+  <div id="objList"></div>
+</section>
+
+<!-- PREPARATION -->
+<section class="page" id="p-prep">
+  <div class="card small">
+    <h3>Règle de préparation</h3>
+    <div class="mut">Fenêtre : 4 dernières semaines (28 jours jusqu’à aujourd’hui).<br>
+    <b>A – Grosse séance</b> = D+ max d’une séance ÷ (65 % du D+ cible), plafonné à 100 %.<br>
+    <b>B – Volume</b> = D+ hebdo moyen (total 28 j ÷ 4) ÷ D+ cible, plafonné à 100 %.<br>
+    <b>Indice</b> = moyenne de A et B. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
+    ⚠️ Altitude : sommet ≥ 2 500 m → prévoir acclimatation, météo, vêtements chauds ; l’indice ne mesure pas cela.</div>
+    <div id="prepWin" class="mut" style="margin-top:6px"></div>
+  </div>
+  <div id="prepList"></div>
+</section>
+
+<!-- EVOLUTION -->
+<section class="page" id="p-evo">
+  <div class="seg"><button id="sgW" class="on">Hebdomadaire</button><button id="sgM">Mensuel</button></div>
+  <div id="evoW">
+    <div class="card"><h3>D+ (colonnes) et distance (ligne) par semaine</h3><div class="chart" id="chW1"></div></div>
+    <div class="card"><h3>Durée (h) et BPM moyen par semaine</h3><div class="chart" id="chW2"></div></div>
+    <div class="card"><h3>Totaux hebdomadaires</h3><div class="scroll" id="tblW"></div></div>
+  </div>
+  <div id="evoM" style="display:none">
+    <div class="card"><h3>Volume mensuel : distance (colonnes) et D+ (ligne)</h3><div class="chart" id="chM1"></div></div>
+    <div class="card"><h3>Tendance BPM moyen et vitesse moyenne</h3><div class="chart" id="chM2"></div></div>
+    <div class="card"><h3>Sauts de corde par mois</h3><div class="chart" id="chM3"></div></div>
+    <div class="card"><h3>Totaux mensuels (sept. 2026 → sept. 2027)</h3><div class="scroll" id="tblM"></div>
+      <p class="small mut">Septembre 2026 : totaux saisis manuellement (pas de détail par séance).</p></div>
+  </div>
+</section>
+
+<!-- DONNEES -->
+<section class="page" id="p-data">
+  <div class="card">
+    <h2>Sauvegarde</h2>
+    <p class="small mut">Les données restent sur ce téléphone (stockage local du navigateur). Exporte régulièrement un fichier JSON pour ne rien perdre.</p>
+    <div class="row">
+      <button class="btn" id="btnExpJson">Exporter JSON</button>
+      <button class="btn sec" id="btnExpCsv">Exporter CSV (séances)</button>
+      <button class="btn sec" id="btnExpCsvM">Exporter CSV (mois)</button>
+    </div>
+    <div style="margin-top:12px">
+      <label for="impFile">Importer une sauvegarde JSON (remplace les données actuelles)</label>
+      <input type="file" id="impFile" accept="application/json,.json">
+    </div>
+  </div>
+  <div class="card">
+    <h2>Totaux manuels — septembre 2026</h2>
+    <div class="grid">
+      <div><label>Distance (km)</label><input id="m_dist" inputmode="decimal"></div>
+      <div><label>D+ (m)</label><input id="m_dplus" inputmode="decimal"></div>
+      <div><label>Durée (h:mm:ss)</label><input id="m_dur"></div>
+      <div><label>BPM moyen</label><input id="m_bpm" inputmode="numeric"></div>
+      <div><label>Sauts corde</label><input id="m_sauts" inputmode="numeric"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn sec" id="btnSaveManual">Enregistrer les totaux</button></div>
+  </div>
+  <div class="card">
+    <h2>Réinitialiser</h2>
+    <p class="small mut">Remet les données de départ (octobre 2026 + totaux de septembre). Toutes les modifications seront perdues.</p>
+    <button class="btn bad" id="btnReset">Réinitialiser les données</button>
+  </div>
+  <p class="small mut" style="text-align:center">Ajout à l’écran d’accueil : menu du navigateur → « Ajouter à l’écran d’accueil ».</p>
+</section>
+</main>
+
+<nav>
+  <button data-p="journal" class="on"><span>📒</span>Journal</button>
+  <button data-p="add"><span>➕</span>Séance</button>
+  <button data-p="obj"><span>🏔️</span>Objectifs</button>
+  <button data-p="prep"><span>🎯</span>Prépa</button>
+  <button data-p="evo"><span>📈</span>Évolution</button>
+  <button data-p="data"><span>💾</span>Données</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const KEY = 'suiviMontagne.v1';
+const TYPES = ['Tapis 12%','Tapis 0%','Marche','Randonnée','Course','Corde à sauter','Vélo','Autre'];
+const STATUTS = ['À préparer','Prêt','Fait'];
+
+/* ---------- Objectifs (valeurs approximatives, recherche oct. 2026) ---------- */
+const OBJECTIFS = [
+ {n:1,sommet:'Puy de Dôme',iti:'Sentier des Muletiers (GR 441)',depart:'Col de Ceyssat',altDep:1078,altSom:1465,dplus:390,dist:3.8,duree:'≈ 50 min montée · 1 h 30 A/R',diff:'Facile à moyenne (court mais raide)',conf:'Élevée',
+  note:'Montée seule : 1,9 km / ≈ 365–390 m D+. Accès fermé du 6 au 17/10/2026 (travaux).',
+  src:[['Puy-de-Dôme Tourisme – chemin des Muletiers','https://www.puydedome-tourisme.com/fr/fiche/equipement/le-chemin-des-muletiers-orcines_TFO6453685/'],['Clermont Auvergne Volcans','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-muletiers/']]},
+ {n:2,sommet:'Puy de Dôme',iti:'Sentier des Chèvres (PR puis GR 441)',depart:'Gare du Panoramique des Dômes',altDep:980,altSom:1465,dplus:530,dist:10,duree:'1 h 15–2 h montée · ≈ 3 h–3 h 30 A/R',diff:'Moyenne',conf:'Élevée',
+  note:'Montée : ≈ 5 km / 526–532 m D+ (fiche officielle). Fin par des escaliers puis la route de service.',
+  src:[['Clermont Auvergne Volcans – chemin des Chèvres','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-chevres/'],['Chaîne des Puys en rando','https://chainedespuysenrando.fr/le-puy-de-dome-par-le-sentier-des-chevres/']]},
+ {n:3,sommet:'Puy de Sancy',iti:'Boucle Val d’Enfer / Val de Courre',depart:'Station du Mont-Dore (téléphérique)',altDep:1340,altSom:1885,dplus:560,dist:7,duree:'≈ 3 h (boucle)',diff:'Difficile (Val d’Enfer raide)',conf:'Élevée',
+  note:'Boucle PDIPR officielle « Le puy de Sancy » : 7 km, 560 m, 3 h.',
+  src:[['Sancy.com – Le puy de Sancy','https://www.sancy.com/fr/fiche/equipement/le-puy-de-sancy-mont-dore_TFO890393/'],['Visorando – Sancy par le Val de Courre','https://www.visorando.com/randonnee-le-puy-de-sancy-par-le-val-de-courre/']]},
+ {n:4,sommet:'La Rhune',iti:'Voie normale du Col de Saint-Ignace',depart:'Col de Saint-Ignace',altDep:169,altSom:905,dplus:740,dist:9.8,duree:'≈ 2 h 15–2 h 30 montée · 4 h A/R',diff:'Difficile (raide, rocailleux)',conf:'Élevée',
+  note:'Descente possible en petit train (selon places).',
+  src:[['Mapirando – La Rhune depuis le col de Saint-Ignace','https://www.mapirando.fr/topo/la-rhune-depuis-le-col-de-saint-ignace/'],['Les plus beaux villages – Sare','https://www.les-plus-beaux-villages.com/randonnees/sare/la-rhune-depuis-le-col-de-saint-ignace/']]},
+ {n:5,sommet:'Puy de Sancy',iti:'Grande boucle des Crêtes via la Grande Cascade',depart:'Centre-ville du Mont-Dore',altDep:1050,altSom:1885,dplus:1050,dist:18,duree:'≈ 7 h (boucle)',diff:'Difficile',conf:'Élevée',
+  note:'Boucle officielle « Les crêtes du Sancy » ; variantes 15,6–17 km / ≈ 990–1 030 m.',
+  src:[['Sancy.com – Les crêtes du Sancy','https://www.sancy.com/fr/fiche/equipement/les-cretes-du-sancy-mont-dore_TFO890509/'],['Les Terres du Milieu – crêtes du Sancy','https://www.lesterresdumilieu.fr/sancy-cretes']]},
+ {n:6,sommet:'Pic du Midi de Bigorre',iti:'Voie du Tourmalet (col de Sencours, Laquets)',depart:'Col du Tourmalet',altDep:2115,altSom:2877,dplus:800,dist:13,duree:'≈ 2 h 30 montée · 5–6 h A/R',diff:'Moyenne (haute montagne, sans neige)',conf:'Moyenne-élevée',
+  note:'Piste jusqu’à ≈ 2 637 m puis sentier ; éboulis sur la fin. D+ annoncé 760–850 m.',
+  src:[['Altituderando – Pic du Midi par le Tourmalet','https://www.altituderando.com/Pic-du-Midi-de-Bigorre-2876m-par-le-col-du-Tourmalet'],['Iris-Pyrénées','https://iris-py.fr/randonnee-pyrenees/le-pic-du-midi-de-bigorre-depuis-le-col-du-tourmalet/']]},
+ {n:7,sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
+  note:'Topos : 1 600–1 700 m D+, 19–20 km A/R. Certains départs (virage des Arizes) sont à ≈ 1 280 m.',
+  src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21']]},
+ {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'≈ 8 h 30–10 h (ou 2 jours via la cabane)',diff:'Difficile (T3, très physique, altitude)',conf:'Moyenne',
+  note:'Plus haut sommet randonnable de Suisse. Sources : 1 760–1 982 m D+, 19,8–21,2 km. Nuit à la Turtmannhütte (2 519 m) conseillée.',
+  src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097']]},
+ {n:9,sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
+  note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable.',
+  src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – rando Grande Sassière','https://www.tignes.net/magazine/randonnee-aiguille-sassiere']]}
+];
+
+/* ---------- Seed ---------- */
+function seed(){
+  const s = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:uid(),date,type,dist,dplus,dminus:null,dur,bpm,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,notes:''},extra);
+  return {
+    version:1,
+    sessions:[],
+    manualMonths:{},
+    objectifs:{}
+  };
+}
+
+/* ---------- Utils ---------- */
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function hms(t){ if(t==null) return null; t=String(t).trim(); if(!t) return null;
+  const p=t.split(':').map(x=>x.trim()); if(p.some(x=>x===''||isNaN(+x))) return NaN;
+  if(p.length===3) return (+p[0])*3600+(+p[1])*60+(+p[2]);
+  if(p.length===2) return (+p[0])*3600+(+p[1])*60;
+  if(p.length===1) return (+p[0])*60; return NaN; }
+function fmtDur(s){ if(s==null||isNaN(s)) return '–'; s=Math.round(s); const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60; return h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'); }
+function num(v){ if(v==null) return null; v=String(v).trim().replace(/\s/g,'').replace(',','.'); if(v==='') return null; const n=+v; return isNaN(n)?NaN:n; }
+const nf = (d=1)=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:d,minimumFractionDigits:0});
+function f(n,d=1){ return (n==null||isNaN(n)||!isFinite(n))?'–':nf(d).format(n); }
+function dFR(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function parseISO(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function toISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function monday(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); return x; }
+function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1)); return Math.ceil(((t-y0)/86400000+1)/7); }
+const MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+function speed(s){ return (s.dist!=null&&s.dur>0)? s.dist/(s.dur/3600):null; }
+function vasc(s){ return (s.dplus!=null&&s.dur>0)? s.dplus/(s.dur/3600):null; }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none',2200); }
+function todayISO(){ return toISO(new Date()); }
+
+/* ---------- Store ---------- */
+let DB;
+function load(){ try{ const r=localStorage.getItem(KEY); DB = r? JSON.parse(r) : null; }catch(e){ DB=null; }
+  if(!DB||!Array.isArray(DB.sessions)){ DB=seed(); save(); }
+  DB.manualMonths=DB.manualMonths||{}; DB.objectifs=DB.objectifs||{}; }
+function save(){ localStorage.setItem(KEY, JSON.stringify(DB)); }
+function objState(n){ return Object.assign({datePrevue:'',statut:'À préparer',dateRealisee:''}, DB.objectifs[n]||{}); }
+
+/* ---------- Aggregation ---------- */
+function agg(list){
+  const r={n:list.length,dist:0,dplus:0,dminus:0,dur:0,sauts:0,bpmW:0,bpmDur:0,bpmSum:0,bpmN:0,distTimed:0};
+  for(const s of list){ r.dist+=s.dist||0; r.dplus+=s.dplus||0; r.dminus+=s.dminus||0; r.dur+=s.dur||0; r.sauts+=s.sauts||0;
+    if(s.dur>0&&s.dist!=null) r.distTimed+=s.dist;
+    if(s.bpm){ r.bpmSum+=s.bpm; r.bpmN++; if(s.dur>0){ r.bpmW+=s.bpm*s.dur; r.bpmDur+=s.dur; } } }
+  r.bpm = r.bpmDur? r.bpmW/r.bpmDur : (r.bpmN? r.bpmSum/r.bpmN : null);
+  r.speed = r.dur? r.distTimed/(r.dur/3600) : null;
+  return r;
+}
+function monthAgg(ym){
+  const m=DB.manualMonths[ym];
+  if(m){ return {manual:true,n:null,dist:m.dist||0,dplus:m.dplus||0,dur:m.dur||0,sauts:m.sauts||0,bpm:m.bpm||null,speed:(m.dur? (m.dist||0)/(m.dur/3600):null)}; }
+  return agg(DB.sessions.filter(s=>s.date.slice(0,7)===ym));
+}
+function monthsRange(){ const out=[]; let y=2026,m=9; while(y<2027||(y===2027&&m<=9)){ out.push(y+'-'+String(m).padStart(2,'0')); m++; if(m>12){m=1;y++;} } return out; }
+function weeksRange(){
+  const dates=DB.sessions.map(s=>s.date).sort();
+  let start = dates.length? monday(parseISO(dates[0])) : monday(new Date());
+  const minStart = monday(new Date(2026,8,1)); if(start<minStart) start=minStart;
+  let endD = new Date(); if(dates.length && parseISO(dates[dates.length-1])>endD) endD=parseISO(dates[dates.length-1]);
+  const maxEnd=new Date(2027,8,30); if(endD>maxEnd) endD=maxEnd;
+  const end=monday(endD); const out=[]; const d=new Date(start);
+  while(d<=end){ out.push(toISO(d)); d.setDate(d.getDate()+7); }
+  return out;
+}
+function weekAgg(monISO){ const a=parseISO(monISO); const b=new Date(a); b.setDate(b.getDate()+6); const A=monISO,B=toISO(b);
+  return agg(DB.sessions.filter(s=>s.date>=A&&s.date<=B)); }
+
+/* ---------- SVG chart ---------- */
+function chart(el, labels, series, opt={}){
+  const W=420,H=240,L=38,R=38,T=12,B=48; const iw=W-L-R, ih=H-T-B; const n=labels.length||1;
+  const axes={left:[],right:[]}; series.forEach(s=>axes[s.axis||'left'].push(...s.values.filter(v=>v!=null&&isFinite(v))));
+  const nice=v=>{ if(!v||v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const k=v/p; return (k<=1?1:k<=2?2:k<=2.5?2.5:k<=5?5:10)*p; };
+  const mn={left:0,right:0};
+  if(opt.rightMin!=null&&axes.right.length){ const lo=Math.min(...axes.right); mn.right=Math.max(0,Math.floor((lo*0.9)/10)*10); }
+  const top=ax=>{ const hi=Math.max(mn[ax],...axes[ax]); const st=nice((hi-mn[ax])*1.05/4||1); return mn[ax]+st*4; };
+  const mx={left:top('left'), right:top('right')};
+  const y=(v,ax)=>T+ih-(v-mn[ax])/(mx[ax]-mn[ax]||1)*ih; const xc=i=>L+iw*(i+0.5)/n;
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif" font-size="11.5">`;
+  for(let k=0;k<=4;k++){ const yy=T+ih*k/4; g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="#2a3654"/>`;
+    const vl=mx.left-(mx.left-mn.left)*k/4; g+=`<text x="${L-6}" y="${yy+4}" text-anchor="end" fill="#94a3b8">${f(vl,vl<10?1:0)}</text>`;
+    if(axes.right.length){ const vr=mx.right-(mx.right-mn.right)*k/4; g+=`<text x="${W-R+6}" y="${yy+4}" fill="#94a3b8">${f(vr,vr<10?1:0)}</text>`; } }
+  const bars=series.filter(s=>s.type==='bar'); const bw=Math.min(28,iw/n*0.7)/Math.max(1,bars.length);
+  bars.forEach((s,bi)=>{ s.values.forEach((v,i)=>{ if(v==null||!v) return; const ax=s.axis||'left'; const x=xc(i)-bw*bars.length/2+bi*bw; const yy=y(v,ax);
+    g+=`<rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${(bw-1).toFixed(1)}" height="${(T+ih-yy).toFixed(1)}" rx="2" fill="${s.color}"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></rect>`; }); });
+  series.filter(s=>s.type==='line').forEach(s=>{ const ax=s.axis||'left'; let d='',pen=false;
+    s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)){pen=false;return;} d+=(pen?'L':'M')+xc(i).toFixed(1)+' '+y(v,ax).toFixed(1); pen=true; });
+    g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.5"/>`;
+    s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)) return; g+=`<circle cx="${xc(i).toFixed(1)}" cy="${y(v,ax).toFixed(1)}" r="3.5" fill="${s.color}"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></circle>`; }); });
+  const step=Math.ceil(n/12);
+  labels.forEach((lb,i)=>{ if(i%step) return; g+=`<text x="${xc(i).toFixed(1)}" y="${H-B+16}" text-anchor="end" transform="rotate(-35 ${xc(i).toFixed(1)} ${H-B+16})" fill="#cbd5e1">${esc(lb)}</text>`; });
+  g+='</svg>';
+  g+='<div class="legend">'+series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}${(s.axis==='right')?' (axe droit)':''}</span>`).join('')+'</div>';
+  el.innerHTML=g;
+}
+
+/* ---------- Render: Journal ---------- */
+function renderJournal(){
+  const flt=document.getElementById('fltType').value;
+  const list=DB.sessions.filter(s=>!flt||s.type===flt).sort((a,b)=>b.date.localeCompare(a.date)||(b.id>a.id?1:-1));
+  const ymNow = (DB.sessions.map(s=>s.date).sort().pop()||todayISO()).slice(0,7);
+  const ma=monthAgg(ymNow); const [yy,mm]=ymNow.split('-');
+  document.getElementById('kpiMonth').innerHTML=`<div style="grid-column:1/-1" class="mut small">Mois en cours : ${MOIS[+mm-1]} ${yy} · ${ma.n??''} séances</div>`+
+    [['km',f(ma.dist,1)],['D+ m',f(ma.dplus,0)],['durée',fmtDur(ma.dur)],['km/h moy.',f(ma.speed,2)],['BPM moy.',f(ma.bpm,0)],['sauts',f(ma.sauts,0)]].map(([k,v])=>`<div class="kpi"><b>${v}</b><small>${k}</small></div>`).join('');
+  const box=document.getElementById('sessList');
+  if(!list.length){ box.innerHTML='<p class="mut">Aucune séance.</p>'; return; }
+  let html='',cur='';
+  for(const s of list){ const ym=s.date.slice(0,7);
+    if(ym!==cur){ cur=ym; const a=agg(DB.sessions.filter(x=>x.date.slice(0,7)===ym&&(!flt||x.type===flt))); const [y,m]=ym.split('-');
+      html+=`<div class="month"><b>${MOIS[+m-1]} ${y}</b><span class="small mut">${f(a.dist)} km · ${f(a.dplus,0)} m D+ · ${fmtDur(a.dur)}</span></div>`; }
+    const d=parseISO(s.date); const sp=speed(s), va=vasc(s);
+    const chips=[ s.dist!=null?f(s.dist,2)+' km':null, s.dplus!=null?'D+ '+f(s.dplus,0)+' m':null, s.dminus!=null?'D- '+f(s.dminus,0)+' m':null, s.dur?fmtDur(s.dur):null,
+      sp!=null?f(sp,2)+' km/h':null, va!=null&&s.dplus>0?f(va,0)+' m/h':null, s.bpm?'♥ '+s.bpm+(s.bpmMax?' / '+s.bpmMax:''):null,
+      s.pas?f(s.pas,0)+' pas':null, s.sac?'🎒 '+f(s.sac)+' kg':null, s.sauts?'🪢 '+f(s.sauts,0):null, s.ress?'ressenti '+s.ress+'/10':null ].filter(Boolean);
+    html+=`<div class="sess" data-id="${s.id}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
+      <div class="b"><span class="tag">${esc(s.type)}</span> <span class="small mut">${dFR(s.date)} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
+      <div class="acts"><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`; }
+  box.innerHTML=html;
+}
+
+/* ---------- Form ---------- */
+const FF=['date','type','dist','dur','dplus','dminus','bpm','bpmmax','pas','sac','sauts','ress','notes'];
+const $=id=>document.getElementById(id);
+function fillForm(s){
+  $('f_id').value=s?s.id:''; $('formTitle').textContent=s?'Modifier la séance':'Nouvelle séance';
+  $('f_date').value=s?s.date:todayISO(); $('f_type').value=s?s.type:'Marche';
+  const v=x=>x==null?'':String(x).replace('.',',');
+  $('f_dist').value=s?v(s.dist):''; $('f_dur').value=s&&s.dur?fmtDur(s.dur):''; $('f_dplus').value=s?v(s.dplus):''; $('f_dminus').value=s?v(s.dminus):'';
+  $('f_bpm').value=s?v(s.bpm):''; $('f_bpmmax').value=s?v(s.bpmMax):''; $('f_pas').value=s?v(s.pas):''; $('f_sac').value=s?v(s.sac):''; $('f_sauts').value=s?v(s.sauts):'';
+  $('f_ress').value=s&&s.ress?String(s.ress):''; $('f_notes').value=s?s.notes||'':''; updAuto();
+}
+function readForm(){
+  const errs=[]; const n=(id,lab,int)=>{ const x=num($(id).value); if(x!=null&&(isNaN(x)||x<0)){ errs.push(lab); return null;} return x==null?null:(int?Math.round(x):x); };
+  const dur=hms($('f_dur').value); if(dur!=null&&isNaN(dur)) errs.push('Durée (format h:mm:ss)');
+  const date=$('f_date').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('Date');
+  const s={ date, type:$('f_type').value, dist:n('f_dist','Distance'), dur:(dur!=null&&!isNaN(dur)&&dur>0)?dur:null, dplus:n('f_dplus','D+'), dminus:n('f_dminus','D-'),
+    bpm:n('f_bpm','BPM moyen',1), bpmMax:n('f_bpmmax','BPM max',1), pas:n('f_pas','Pas',1), sac:n('f_sac','Sac'), sauts:n('f_sauts','Sauts',1),
+    ress:$('f_ress').value?+$('f_ress').value:null, notes:$('f_notes').value.trim() };
+  return {s,errs};
+}
+function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s);
+  $('f_auto').textContent='Vitesse : '+(sp!=null?f(sp,2)+' km/h':'–')+' · Vitesse ascensionnelle : '+(va!=null?f(va,0)+' m/h':'–'); }
+
+/* ---------- Objectifs ---------- */
+function renderObj(){
+  $('objList').innerHTML=OBJECTIFS.map(o=>{ const st=objState(o.n);
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}</h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
+    <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
+    <div class="kpis" style="margin:8px 0">
+      <div class="kpi"><b>${f(o.altDep,0)} m</b><small>alt. départ</small></div><div class="kpi"><b>${f(o.altSom,0)} m</b><small>alt. sommet</small></div><div class="kpi"><b>≈ ${f(o.dplus,0)} m</b><small>D+ estimé</small></div>
+      <div class="kpi"><b>≈ ${f(o.dist,1)} km</b><small>distance</small></div><div class="kpi" style="grid-column:span 2"><b style="font-size:13.5px">${esc(o.duree)}</b><small>durée estimée</small></div></div>
+    <div class="small"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Confiance :</span> ${esc(o.conf)}</div>
+    <div class="small mut" style="margin:3px 0 8px">${esc(o.note)}</div>
+    <div class="grid">
+      <div><label>Statut</label><select data-obj="${o.n}" data-k="statut">${STATUTS.map(x=>`<option${x===st.statut?' selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>Date prévue</label><input type="date" data-obj="${o.n}" data-k="datePrevue" value="${st.datePrevue}"></div>
+      <div><label>Date réalisée</label><input type="date" data-obj="${o.n}" data-k="dateRealisee" value="${st.dateRealisee}"></div></div>
+    <details style="margin-top:8px" class="small"><summary>Sources</summary>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}</details></div>`; }).join('');
+}
+
+/* ---------- Préparation ---------- */
+function readinessWindow(){ const end=new Date(); const start=new Date(end.getFullYear(),end.getMonth(),end.getDate()-27); return [toISO(start),toISO(end)]; }
+function renderPrep(){
+  const [A,B]=readinessWindow(); const win=DB.sessions.filter(s=>s.date>=A&&s.date<=B);
+  const maxD=Math.max(0,...win.map(s=>s.dplus||0)); const tot=win.reduce((t,s)=>t+(s.dplus||0),0); const wk=tot/4;
+  const best=win.find(s=>(s.dplus||0)===maxD&&maxD>0);
+  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${win.length} séances · D+ total ${f(tot,0)} m · D+ hebdo moyen <b>${f(wk,0)} m</b> · plus grosse séance <b>${f(maxD,0)} m</b>${best?' ('+dFR(best.date)+')':''}`;
+  $('prepList').innerHTML=OBJECTIFS.map(o=>{ const a=Math.min(1,maxD/(0.65*o.dplus)), b=Math.min(1,wk/o.dplus), r=(a+b)/2;
+    const c=r>=0.8?'green':r>=0.5?'orange':'red'; const st=objState(o.n);
+    return `<div class="card"><div class="row" style="justify-content:space-between"><div><h3 style="margin:0">${o.n}. ${esc(o.sommet)}</h3><div class="small mut">${esc(o.iti)} · D+ cible ≈ ${f(o.dplus,0)} m · ${f(o.altSom,0)} m</div></div><div class="pct ${c}">${f(r*100,0)} %</div></div>
+    <div class="bar" style="margin:8px 0"><i class="bg-${c}" style="width:${(r*100).toFixed(0)}%"></i></div>
+    <div class="small">A – grosse séance : ${f(maxD,0)} / ${f(0.65*o.dplus,0)} m → <b>${f(a*100,0)} %</b> · B – volume : ${f(wk,0)} / ${f(o.dplus,0)} m/sem → <b>${f(b*100,0)} %</b></div>
+    <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st.statut)}</span>${st.datePrevue?'<span class="chip">prévu '+dFR(st.datePrevue)+'</span>':''}</div></div>`; }).join('');
+}
+
+/* ---------- Évolution ---------- */
+function renderEvo(){
+  const ws=weeksRange(); const wa=ws.map(weekAgg);
+  const wl=ws.map(w=>{ const d=parseISO(w); return 'S'+isoWeek(d)+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); });
+  chart($('chW1'),wl,[{name:'D+ (m)',type:'bar',color:'#38bdf8',values:wa.map(a=>a.dplus)},{name:'Distance (km)',type:'line',axis:'right',color:'#22c55e',values:wa.map(a=>a.n?a.dist:null)}]);
+  chart($('chW2'),wl,[{name:'Durée (h)',type:'bar',color:'#a78bfa',values:wa.map(a=>a.dur/3600)},{name:'BPM moyen',type:'line',axis:'right',color:'#f87171',values:wa.map(a=>a.bpm)}],{rightMin:true});
+  const th='<tr><th>Semaine</th><th>Séances</th><th>km</th><th>D+ m</th><th>Durée</th><th>km/h</th><th>BPM</th><th>Sauts</th></tr>';
+  $('tblW').innerHTML='<table class="tbl">'+th+ws.map((w,i)=>{const a=wa[i];return `<tr><td>${wl[i]}</td><td>${a.n}</td><td>${f(a.dist,1)}</td><td>${f(a.dplus,0)}</td><td>${fmtDur(a.dur)}</td><td>${f(a.speed,2)}</td><td>${f(a.bpm,0)}</td><td>${f(a.sauts,0)}</td></tr>`}).reverse().join('')+'</table>';
+  const ms=monthsRange(); const ma=ms.map(monthAgg); const ml=ms.map(m=>{const [y,mm]=m.split('-');return MOIS[+mm-1]+' '+y.slice(2)});
+  chart($('chM1'),ml,[{name:'Distance (km)',type:'bar',color:'#38bdf8',values:ma.map(a=>a.dist)},{name:'D+ (m)',type:'line',axis:'right',color:'#f59e0b',values:ma.map(a=>(a.manual||a.n)?a.dplus:null)}]);
+  chart($('chM2'),ml,[{name:'Vitesse moy. (km/h)',type:'line',color:'#22c55e',values:ma.map(a=>a.speed)},{name:'BPM moyen',type:'line',axis:'right',color:'#f87171',values:ma.map(a=>a.bpm)}],{rightMin:true});
+  chart($('chM3'),ml,[{name:'Sauts corde',type:'bar',color:'#e879f9',values:ma.map(a=>a.sauts)}]);
+  $('tblM').innerHTML='<table class="tbl"><tr><th>Mois</th><th>km</th><th>D+ m</th><th>Durée</th><th>km/h</th><th>BPM</th><th>Sauts</th></tr>'+ms.map((m,i)=>{const a=ma[i];return `<tr><td>${ml[i]}${a.manual?' *':''}</td><td>${f(a.dist,2)}</td><td>${f(a.dplus,1)}</td><td>${fmtDur(a.dur)}</td><td>${f(a.speed,2)}</td><td>${f(a.bpm,0)}</td><td>${f(a.sauts,0)}</td></tr>`}).join('')+'</table>';
+}
+
+/* ---------- Données ---------- */
+function download(name, text, mime){ const blob=new Blob([text],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }
+const csvN=v=>(v==null||v===''||(typeof v==='number'&&!isFinite(v)))?'':String(typeof v==='number'?Math.round(v*100)/100:v).replace('.',',');
+const csvS=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+function sessionsCSV(){ const h=['Date','Semaine','Mois','Type','Distance km','D+ m','D- m','Durée','Vitesse km/h','Vitesse asc. m/h','BPM moyen','BPM max','Pas','Sac kg','Sauts corde','Ressenti','Notes'];
+  const rows=DB.sessions.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const d=parseISO(s.date);return [dFR(s.date),d.getFullYear()+'-S'+String(isoWeek(d)).padStart(2,'0'),s.date.slice(0,7),csvS(s.type),csvN(s.dist),csvN(s.dplus),csvN(s.dminus),s.dur?fmtDur(s.dur):'',csvN(speed(s)),csvN(vasc(s)),csvN(s.bpm),csvN(s.bpmMax),csvN(s.pas),csvN(s.sac),csvN(s.sauts),csvN(s.ress),csvS(s.notes)].join(';')});
+  return '\ufeff'+h.join(';')+'\n'+rows.join('\n'); }
+function monthsCSV(){ const h=['Mois','Distance km','D+ m','Durée','Vitesse moy km/h','BPM moyen','Sauts','Source'];
+  return '\ufeff'+h.join(';')+'\n'+monthsRange().map(m=>{const a=monthAgg(m);return [m,csvN(a.dist),csvN(a.dplus),fmtDur(a.dur),csvN(a.speed),csvN(a.bpm&&Math.round(a.bpm)),csvN(a.sauts),a.manual?'manuel':'journal'].join(';')}).join('\n'); }
+function validImport(o){ return o&&Array.isArray(o.sessions)&&o.sessions.every(s=>s&&typeof s.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&typeof s.type==='string'); }
+function renderManual(){ const m=DB.manualMonths['2026-09']||{}; const v=x=>x==null?'':String(x).replace('.',',');
+  $('m_dist').value=v(m.dist); $('m_dplus').value=v(m.dplus); $('m_dur').value=m.dur?fmtDur(m.dur):''; $('m_bpm').value=v(m.bpm); $('m_sauts').value=v(m.sauts); }
+
+/* ---------- Nav ---------- */
+let curPage='journal';
+function show(p){ curPage=p; document.querySelectorAll('.page').forEach(x=>x.classList.toggle('on',x.id==='p-'+p)); document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='data') renderManual();
+  window.scrollTo(0,0); }
+function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderManual(); }
+
+/* ---------- Init ---------- */
+function init(){
+  load();
+  $('f_type').innerHTML=TYPES.map(t=>`<option>${t}</option>`).join('');
+  $('fltType').innerHTML='<option value="">Tous types</option>'+TYPES.map(t=>`<option>${t}</option>`).join('');
+  for(let i=1;i<=10;i++) $('f_ress').insertAdjacentHTML('beforeend',`<option value="${i}">${i}</option>`);
+  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.p==='add'&&!$('f_id').value) fillForm(null); show(b.dataset.p); }));
+  $('fltType').addEventListener('change',renderJournal);
+  $('sessList').addEventListener('click',e=>{ const ed=e.target.closest('[data-edit]'), de=e.target.closest('[data-del]');
+    if(ed){ fillForm(DB.sessions.find(s=>s.id===ed.dataset.edit)); show('add'); }
+    if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); save(); renderJournal(); toast('Séance supprimée'); } } });
+  ['f_dist','f_dur','f_dplus'].forEach(id=>$(id).addEventListener('input',updAuto));
+  $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();
+    if(errs.length){ alert('Valeurs invalides : '+errs.join(', ')); return; }
+    const id=$('f_id').value;
+    if(id){ const i=DB.sessions.findIndex(x=>x.id===id); if(i>=0) DB.sessions[i]=Object.assign({id},s); } else DB.sessions.push(Object.assign({id:uid()},s));
+    save(); fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); show('journal'); });
+  $('btnCancel').addEventListener('click',()=>{ fillForm(null); show('journal'); });
+  $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj; DB.objectifs[n]=Object.assign(objState(n),{[t.dataset.k]:t.value}); save(); toast('Objectif mis à jour'); });
+  $('sgW').addEventListener('click',()=>{ $('sgW').classList.add('on'); $('sgM').classList.remove('on'); $('evoW').style.display=''; $('evoM').style.display='none'; });
+  $('sgM').addEventListener('click',()=>{ $('sgM').classList.add('on'); $('sgW').classList.remove('on'); $('evoM').style.display=''; $('evoW').style.display='none'; });
+  const stamp=()=>todayISO();
+  $('btnExpJson').addEventListener('click',()=>download('suivi-montagne-'+stamp()+'.json',JSON.stringify(DB,null,2),'application/json'));
+  $('btnExpCsv').addEventListener('click',()=>download('suivi-montagne-seances-'+stamp()+'.csv',sessionsCSV(),'text/csv;charset=utf-8'));
+  $('btnExpCsvM').addEventListener('click',()=>download('suivi-montagne-mois-'+stamp()+'.csv',monthsCSV(),'text/csv;charset=utf-8'));
+  $('impFile').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
+    rd.onload=()=>{ try{ const o=JSON.parse(rd.result); if(!validImport(o)) throw new Error('format');
+      if(!confirm('Remplacer les données actuelles par ce fichier ('+o.sessions.length+' séances) ?')) return;
+      o.sessions.forEach(s=>{ if(!s.id) s.id=uid(); }); DB=Object.assign({version:1,manualMonths:{},objectifs:{}},o); save(); renderAll(); toast('Import réussi'); }
+      catch(err){ alert('Fichier invalide : JSON de sauvegarde attendu.'); } finally { e.target.value=''; } };
+    rd.readAsText(file); });
+  $('btnSaveManual').addEventListener('click',()=>{ const d=hms($('m_dur').value); const m={dist:num($('m_dist').value),dplus:num($('m_dplus').value),dur:(d!=null&&!isNaN(d))?d:null,bpm:num($('m_bpm').value),sauts:num($('m_sauts').value)};
+    if([m.dist,m.dplus,m.bpm,m.sauts].some(x=>x!=null&&isNaN(x))){ alert('Valeurs invalides'); return; }
+    if(Object.values(m).every(x=>x==null)) delete DB.manualMonths['2026-09']; else DB.manualMonths['2026-09']=m; save(); toast('Totaux enregistrés'); });
+  $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ?')){ DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
+  fillForm(null); renderAll(); show('journal');
+  if('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
