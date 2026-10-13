@@ -1,4 +1,4 @@
-const CACHE = 'suivi-montagne-v2';
+const CACHE = 'suivi-montagne-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -8,6 +8,7 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  if (new URL(e.request.url).origin !== self.location.origin) return; // ne jamais intercepter/mettre en cache l'API GitHub
   e.respondWith(
     fetch(e.request).then(r => {
       const copy = r.clone();

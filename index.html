@@ -72,7 +72,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);border-colo
 .eq .nm{flex:1;min-width:0}.eq.done .nm b{text-decoration:line-through;color:var(--mut)}
 .eq .pr{white-space:nowrap;font-size:13px;color:var(--mut)}
 .iconbtn{background:none;border:0;color:var(--mut);font-size:16px;padding:4px}
-.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0f2a3a;border:1px solid var(--acc);color:var(--txt);padding:9px 14px;border-radius:10px;z-index:9;display:none}
+.toast{pointer-events:none;max-width:92vw;text-align:center;position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0f2a3a;border:1px solid var(--acc);color:var(--txt);padding:9px 14px;border-radius:10px;z-index:9;display:none}
 .seg{display:flex;background:var(--card2);border-radius:10px;padding:3px;margin-bottom:10px}
 .seg button{flex:1;border:0;background:none;color:var(--mut);padding:7px;border-radius:8px;font-size:14px}
 .seg button.on{background:var(--acc);color:#04121d;font-weight:650}
@@ -195,9 +195,37 @@ a{color:var(--acc)}
       <input type="file" id="impFile" accept="application/json,.json">
     </div>
   </div>
+  <div class="card" id="syncCard">
+    <h2>Synchronisation (GitHub Gist privé)</h2>
+    <p class="small mut" style="margin-top:0">Partage les données entre ton téléphone et tes autres appareils via un gist secret sur ton compte GitHub. Fusion automatique : rien n’est écrasé, les suppressions sont reportées.</p>
+    <div id="syncLast" class="small"></div>
+    <div id="syncTokenState" class="small mut"></div>
+    <div id="syncGist" class="small mut"></div>
+    <div id="syncMsg" class="small mut" style="margin:6px 0"></div>
+    <label for="syncToken">Jeton GitHub (scope « gist » uniquement)</label>
+    <div class="row"><input id="syncToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ghp_… ou github_pat_…" style="flex:1"><button class="btn sec sm" id="btnTokShow" type="button" aria-label="Afficher le jeton">👁️</button></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnTokSave">Enregistrer et synchroniser</button>
+      <button class="btn sec" id="btnSync">Synchroniser</button>
+    </div>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;color:var(--txt)"><input type="checkbox" id="syncAuto" style="width:20px;height:20px"> Synchroniser automatiquement à l’ouverture</label>
+    <div class="row" style="margin-top:8px"><button class="btn bad sm" id="btnTokForget">Oublier le jeton</button></div>
+    <details style="margin-top:10px" class="small"><summary>Comment créer le jeton (2 minutes)</summary>
+      <ol style="padding-left:18px;margin:8px 0">
+        <li>Ouvre ce lien en étant connecté à GitHub : <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Suivi%20montagne" target="_blank" rel="noopener">créer un jeton « Suivi montagne »</a>.</li>
+        <li>La note « Suivi montagne » et la case <b>gist</b> sont déjà remplies. <b>Ne coche rien d’autre.</b></li>
+        <li><b>Expiration</b> : choisis « No expiration » (ou une date à 1 an ; il faudra alors refaire un jeton à l’échéance).</li>
+        <li>Tout en bas, clique sur le bouton vert <b>Generate token</b>.</li>
+        <li>Copie le jeton (il commence par <code>ghp_</code>). GitHub ne l’affiche qu’une seule fois : garde-le dans ton gestionnaire de mots de passe.</li>
+        <li>Colle-le ici puis touche <b>Enregistrer et synchroniser</b>. Le premier appareil crée le gist secret <code>suivi-montagne-data.json</code>.</li>
+        <li>Sur chaque autre appareil : ouvre l’app → Données → colle <b>le même jeton</b> → Enregistrer et synchroniser. Le gist existant est retrouvé et les données fusionnées.</li>
+      </ol>
+      <p class="mut">Sécurité : le jeton reste sur l’appareil et n’est envoyé qu’à api.github.com. Il ne donne accès qu’à tes gists et n’est jamais inclus dans les exports. Pour le révoquer : github.com → Settings → Developer settings → Personal access tokens. Un jeton « fine-grained » marche aussi s’il a uniquement la permission « Gists : Read and write ».</p>
+    </details>
+  </div>
   <div class="card">
     <h2>Réinitialiser</h2>
-    <p class="small mut">Remet les données de départ (séances de septembre et octobre 2026, liste d’équipement par défaut). Toutes les modifications seront perdues.</p>
+    <p class="small mut">Remet les données de départ (séances de septembre et octobre 2026, liste d’équipement par défaut). Toutes les modifications seront perdues sur cet appareil (si la synchronisation est active, la prochaine synchro récupérera les données du gist).</p>
     <button class="btn bad" id="btnReset">Réinitialiser les données</button>
   </div>
   <p class="small mut" style="text-align:center">Ajout à l’écran d’accueil : menu du navigateur → « Ajouter à l’écran d’accueil ».</p>
@@ -219,7 +247,7 @@ a{color:var(--acc)}
 'use strict';
 const KEY = 'suiviMontagne.v1';
 const TYPES = ['Tapis 12%','Tapis 6%','Tapis 0%','Marche','Randonnée','Course','Corde à sauter','Musculation','Vélo','Autre'];
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
 const STATUTS = ['À préparer','Prêt','Fait'];
 
 /* ---------- Objectifs (valeurs approximatives, recherche oct. 2026) ---------- */
@@ -254,13 +282,13 @@ const OBJECTIFS = [
 ];
 
 /* ---------- Seed ---------- */
-const mk = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:uid(),date,type,dist,dplus,dminus:null,dur,bpm,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:''},extra);
+const mk = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:'seed-'+date+'-'+(dist==null?'x':Math.round(dist*100)),date,type,dist,dplus,dminus:null,dur,bpm,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:'',updatedAt:0},extra);
 // Séances réelles de septembre 2026 (remplacent les anciens totaux manuels)
 const SEPT_RAW = [];
 function septSessions(){ return SEPT_RAW.map(([d,t,k,p,du,b,sa])=>mk(d,t,k,p,hms(du),b,{sauts:sa||null})); }
 function octSessions(){ return []; }
 function defaultEquip(){
-  const C=(name,items)=>({id:uid(),name,items:items.map(x=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:uid(),name:n,note,price:null,bought:false}; })});
+  let ci=0; const C=(name,items)=>{ const cid='eqc-'+(ci++); return {id:cid,name,updatedAt:0,items:items.map((x,ii)=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:cid.replace('eqc','eqi')+'-'+ii,name:n,note,price:null,bought:false,updatedAt:0}; })}; };
   return [
    C('Chaussures',[['Chaussures de randonnée tige haute','semelle crantée type Vibram, imperméables'],'Chaussettes de randonnée (×3 paires)',['Guêtres','pierriers, neige, boue'],['Chaussures d’approche / trail','optionnel, pour les sorties courtes']]),
    C('Vêtements (système 3 couches)',[['Couche 1 : t-shirt technique respirant','mérinos ou synthétique, pas de coton'],'Couche 1 : sous-vêtement thermique manches longues',['Couche 2 : polaire','ou doudoune légère'],['Couche 3 : veste imperméable-respirante','type Gore-Tex, avec capuche'],'Pantalon de randonnée déperlant','Surpantalon imperméable','Bonnet','Gants fins','Casquette / buff',['Lunettes de soleil','catégorie 3 minimum']]),
@@ -271,9 +299,13 @@ function defaultEquip(){
   ];
 }
 function seed(){
-  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip() };
+  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip(), tomb:{s:{},c:{},i:{}} };
 }
 const sessKey = s => s.date+'|'+(s.dist==null?'':Math.round(s.dist*100));
+const SESS_FIELDS=['type','dist','dplus','dminus','dur','bpm','bpmMax','pas','sac','sauts','ress','exos','notes'];
+const nz=v=>(v===''||v===undefined||v===0)?null:v;
+function sameSession(a,b){ return SESS_FIELDS.every(k=>nz(a[k])===nz(b[k])); }
+function newTomb(){ return {s:{},c:{},i:{}}; }
 /* Migration non destructive : ne supprime rien de ce que l'utilisateur a saisi. */
 function migrate(db){
   const log=[]; db.version = db.version||1;
@@ -284,12 +316,64 @@ function migrate(db){
     for(const s of septSessions()){ const k=sessKey(s); if(!have.has(k)){ db.sessions.push(s); have.add(k); added++; } }
     if(db.manualMonths && Object.keys(db.manualMonths).length){ db.legacyManualMonths = Object.assign({}, db.legacyManualMonths||{}, db.manualMonths); }
     delete db.manualMonths;
-    log.push(added+' séances de septembre ajoutées');
+    if(added) log.push(added+' séances de septembre ajoutées');
   }
-  db.sessions.forEach(s=>{ if(!s.id) s.id=uid(); if(s.exos==null) s.exos=''; });
-  if(!Array.isArray(db.equip)){ db.equip=defaultEquip(); log.push('liste d’équipement créée'); }
+  let equipCreated=false;
+  if(!Array.isArray(db.equip)){ db.equip=defaultEquip(); equipCreated=true; log.push('liste d’équipement créée'); }
+  if(db.version < 3){
+    // v3 : identifiants stables (identiques sur tous les appareils pour les données de départ), horodatage, pierres tombales
+    db.tomb = Object.assign(newTomb(), db.tomb||{});
+    const seeds=[...septSessions(),...octSessions()]; const byKey=new Map(seeds.map(s=>[sessKey(s),s])); const matched=new Set();
+    for(const s of db.sessions){
+      const sd=byKey.get(sessKey(s));
+      if(sd && !matched.has(sd.id)){ matched.add(sd.id); s.id=sd.id; s.updatedAt = sameSession(s,sd)?0:1; }
+      else { if(!s.id||String(s.id).startsWith('seed-')) s.id=uid(); if(typeof s.updatedAt!=='number') s.updatedAt=1; }
+    }
+    for(const sd of seeds) if(!matched.has(sd.id)) db.tomb.s[sd.id]=1;
+    if(!equipCreated){
+      const D=defaultEquip(); const usedC=new Set();
+      for(const c of db.equip){
+        const dc=D.find(x=>x.name===c.name&&!usedC.has(x.id));
+        if(!dc){ if(typeof c.updatedAt!=='number') c.updatedAt=1; c.items.forEach(i=>{ if(typeof i.updatedAt!=='number') i.updatedAt=1; }); continue; }
+        usedC.add(dc.id); c.id=dc.id; c.updatedAt=0; const usedI=new Set();
+        for(const it of c.items){ const di=dc.items.find(x=>x.name===it.name&&!usedI.has(x.id));
+          if(di){ usedI.add(di.id); it.id=di.id; it.updatedAt=(it.bought||it.price!=null||(it.note||'')!==(di.note||''))?1:0; }
+          else { if(!it.id||String(it.id).startsWith('eq')) it.id=uid(); if(typeof it.updatedAt!=='number') it.updatedAt=1; } }
+        for(const di of dc.items) if(!usedI.has(di.id)) db.tomb.i[di.id]=1;
+      }
+      for(const dc of D) if(!usedC.has(dc.id)){ db.tomb.c[dc.id]=1; dc.items.forEach(i=>db.tomb.i[i.id]=1); }
+    }
+    for(const [n,o] of Object.entries(db.objectifs)){ if(o&&typeof o.updatedAt!=='number') o.updatedAt=(o.statut&&o.statut!=='À préparer')||o.datePrevue||o.dateRealisee?1:0; }
+  }
+  db.tomb = Object.assign(newTomb(), db.tomb||{});
+  db.sessions.forEach(s=>{ if(!s.id) s.id=uid(); if(s.exos==null) s.exos=''; if(typeof s.updatedAt!=='number') s.updatedAt=1; });
+  db.equip.forEach(c=>{ if(!c.id) c.id=uid(); if(typeof c.updatedAt!=='number') c.updatedAt=1; if(!Array.isArray(c.items)) c.items=[]; c.items.forEach(i=>{ if(!i.id) i.id=uid(); if(typeof i.updatedAt!=='number') i.updatedAt=1; }); });
   db.version = Math.max(db.version, DATA_VERSION);
   return log;
+}
+
+/* ---------- Fusion (synchronisation) ---------- */
+// Règle : pour chaque élément (même id), la version la plus récente (updatedAt) gagne ; à égalité, la version distante.
+// Une suppression (pierre tombale) l'emporte sur toute version modifiée avant ou au moment de la suppression.
+function mergeDB(L,R){
+  const tomb=newTomb();
+  for(const k of ['s','c','i']) for(const src of [L.tomb,R.tomb]) for(const [id,ts] of Object.entries((src&&src[k])||{})) tomb[k][id]=Math.max(tomb[k][id]||0,+ts||0);
+  const ts=x=>x&&typeof x.updatedAt==='number'?x.updatedAt:0;
+  const pick=(a,b)=>!a?b:!b?a:(ts(b)>=ts(a)?b:a);
+  const alive=(k,x)=>!(tomb[k][x.id]!=null && tomb[k][x.id]>=ts(x));
+  const sm=new Map(); for(const s of L.sessions||[]) sm.set(s.id,s); for(const s of R.sessions||[]) sm.set(s.id,pick(sm.get(s.id),s));
+  const sessions=[...sm.values()].filter(s=>alive('s',s)).map(s=>Object.assign({},s));
+  const objectifs={}; const ok=new Set([...Object.keys(L.objectifs||{}),...Object.keys(R.objectifs||{})]);
+  for(const n of ok){ const v=pick((L.objectifs||{})[n],(R.objectifs||{})[n]); if(v) objectifs[n]=Object.assign({},v); }
+  const cm=new Map(), corder=[], im=new Map(), iorder=[];
+  for(const side of [L,R]) for(const c of side.equip||[]){
+    if(!cm.has(c.id)) corder.push(c.id); cm.set(c.id,pick(cm.get(c.id),c));
+    for(const it of c.items||[]){ const prev=im.get(it.id); if(!prev) iorder.push(it.id);
+      const chosen=pick(prev&&prev.it, it); im.set(it.id,{it:chosen, cat:(chosen===it? c.id : prev.cat)}); }
+  }
+  const equip=corder.map(id=>cm.get(id)).filter(c=>alive('c',c)).map(c=>{ const {items,...rest}=c;
+    return Object.assign({},rest,{items:iorder.map(id=>im.get(id)).filter(x=>x.cat===c.id&&alive('i',x.it)).map(x=>Object.assign({},x.it))}); });
+  return Object.assign({}, R, L, {version:Math.max(L.version||1,R.version||1,DATA_VERSION), sessions, objectifs, equip, tomb});
 }
 
 /* ---------- Utils ---------- */
@@ -494,18 +578,98 @@ function renderEquip(){
 function equipClick(e){
   const b=e.target.closest('[data-act]'); if(!b) return; const card=b.closest('[data-cat]'); if(!card) return;
   const cid=card.dataset.cat, row=b.closest('[data-item]'), iid=row&&row.dataset.item; const [c,it]=findItem(cid,iid); if(!c) return; const act=b.dataset.act;
-  if(act==='tog'){ it.bought=b.checked; }
-  else if(act==='del'){ if(!confirm('Supprimer « '+it.name+' » ?')) return; c.items=c.items.filter(i=>i.id!==iid); }
+  const now=Date.now();
+  if(act==='tog'){ it.bought=b.checked; it.updatedAt=now; }
+  else if(act==='del'){ if(!confirm('Supprimer « '+it.name+' » ?')) return; c.items=c.items.filter(i=>i.id!==iid); DB.tomb.i[iid]=now; }
   else if(act==='edit'){ const n=prompt('Nom de l’article',it.name); if(n===null) return; if(n.trim()) it.name=n.trim();
     const no=prompt('Note (optionnelle)',it.note||''); if(no!==null) it.note=no.trim();
-    const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p!==null){ const x=num(p); if(x!=null&&(isNaN(x)||x<0)) alert('Prix invalide'); else it.price=x; } }
+    const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p!==null){ const x=num(p); if(x!=null&&(isNaN(x)||x<0)) alert('Prix invalide'); else it.price=x; } it.updatedAt=now; }
   else if(act==='add'){ const inp=card.querySelector('[data-new=name]'); const nm=inp.value.trim(); if(!nm){ inp.focus(); return; }
     const pr=num(card.querySelector('[data-new=price]').value); if(pr!=null&&(isNaN(pr)||pr<0)){ alert('Prix invalide'); return; }
-    c.items.push({id:uid(),name:nm,note:'',price:pr,bought:false}); }
-  else if(act==='rencat'){ const n=prompt('Nom de la catégorie',c.name); if(n===null||!n.trim()) return; c.name=n.trim(); }
-  else if(act==='delcat'){ if(!confirm('Supprimer la catégorie « '+c.name+' » et ses '+c.items.length+' articles ?')) return; DB.equip=DB.equip.filter(x=>x.id!==cid); }
+    c.items.push({id:uid(),name:nm,note:'',price:pr,bought:false,updatedAt:now}); }
+  else if(act==='rencat'){ const n=prompt('Nom de la catégorie',c.name); if(n===null||!n.trim()) return; c.name=n.trim(); c.updatedAt=now; }
+  else if(act==='delcat'){ if(!confirm('Supprimer la catégorie « '+c.name+' » et ses '+c.items.length+' articles ?')) return; DB.equip=DB.equip.filter(x=>x.id!==cid); DB.tomb.c[cid]=now; c.items.forEach(i=>DB.tomb.i[i.id]=now); }
   else return;
   save(); renderEquip();
+}
+
+/* ---------- Synchronisation GitHub Gist ---------- */
+// Le jeton reste dans ce navigateur (localStorage) et n'est envoyé qu'à https://api.github.com.
+const SYNC_KEY = KEY+'.sync'; const GIST_FILE='suivi-montagne-data.json'; const GH_API='https://api.github.com';
+function syncCfg(){ const d={token:'',gistId:'',lastSync:0,auto:true}; try{ return Object.assign(d,JSON.parse(localStorage.getItem(SYNC_KEY)||'{}')); }catch(e){ return d; } }
+function saveSyncCfg(c){ localStorage.setItem(SYNC_KEY,JSON.stringify(c)); }
+class SyncError extends Error{ constructor(m,status){ super(m); this.status=status; } }
+async function gh(token,path,opt={}){
+  if(navigator.onLine===false) throw new SyncError('Pas de connexion internet : synchronisation impossible pour le moment.');
+  const headers={'Accept':'application/vnd.github+json','Authorization':'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28'};
+  if(opt.body) headers['Content-Type']='application/json';
+  let r;
+  try{ r=await fetch(GH_API+path,{method:opt.method||'GET',headers,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'}); }
+  catch(e){ throw new SyncError('Impossible de joindre GitHub : vérifie ta connexion internet.'); }
+  if(r.ok) return r.status===204?null:r.json();
+  let msg=''; try{ msg=(await r.json()).message||''; }catch(e){}
+  if(r.status===401) throw new SyncError('Jeton refusé par GitHub (invalide, expiré ou révoqué). Crée un nouveau jeton et colle-le ici.',401);
+  if(r.status===403||r.status===429){
+    if(r.headers.get('x-ratelimit-remaining')==='0'||/rate limit/i.test(msg)) throw new SyncError('Limite de requêtes GitHub atteinte. Réessaie dans quelques minutes.',r.status);
+    throw new SyncError('Ce jeton n’a pas le droit d’utiliser les Gists. Recrée-le avec la case « gist » cochée.',r.status); }
+  if(r.status===404) throw new SyncError('Gist introuvable (supprimé, ou jeton sans accès aux Gists).',404);
+  if(r.status===422) throw new SyncError('GitHub a refusé les données'+(msg?' ('+msg+')':'')+'.',422);
+  throw new SyncError('Erreur GitHub ('+r.status+(msg?' : '+msg:'')+'). Réessaie plus tard.',r.status);
+}
+async function findGist(token){
+  for(let p=1;p<=10;p++){ const list=await gh(token,'/gists?per_page=100&page='+p);
+    const g=(list||[]).find(x=>x.files&&x.files[GIST_FILE]); if(g) return g; if(!list||list.length<100) return null; }
+  return null;
+}
+async function readGistFile(gist){ const f=gist.files&&gist.files[GIST_FILE]; if(!f) return null;
+  if(f.truncated&&f.raw_url){ try{ return await (await fetch(f.raw_url,{cache:'no-store'})).text(); }catch(e){ throw new SyncError('Impossible de télécharger le fichier du gist.'); } } // sans jeton
+  return f.content; }
+let syncing=false;
+async function syncNow(opts={}){
+  const c=syncCfg(); if(!c.token){ setSyncStatus('Aucun jeton enregistré : colle ton jeton GitHub ci-dessus.','red'); return false; }
+  if(syncing) return false; syncing=true; setSyncStatus('Synchronisation en cours…');
+  const btn=$('btnSync'); if(btn) btn.disabled=true;
+  try{
+    let gist=null;
+    if(c.gistId){ try{ gist=await gh(c.token,'/gists/'+encodeURIComponent(c.gistId)); }catch(e){ if(e.status!==404) throw e; c.gistId=''; } }
+    if(!gist){ const g=await findGist(c.token); if(g) gist=await gh(c.token,'/gists/'+encodeURIComponent(g.id)); }
+    let remote=null;
+    if(gist){ const txt=await readGistFile(gist);
+      if(txt){ try{ remote=JSON.parse(txt); }catch(e){ throw new SyncError('Le fichier du gist est illisible (JSON invalide).'); }
+        if(!validImport(remote)) throw new SyncError('Le fichier du gist n’a pas le format attendu.'); migrate(remote); } }
+    const snapshot=JSON.parse(JSON.stringify(DB));
+    const merged=remote? mergeDB(snapshot,remote) : snapshot;
+    const body={files:{[GIST_FILE]:{content:JSON.stringify(merged)}}};
+    if(gist){ await gh(c.token,'/gists/'+encodeURIComponent(gist.id),{method:'PATCH',body}); c.gistId=gist.id; }
+    else { const g=await gh(c.token,'/gists',{method:'POST',body:Object.assign({description:'Suivi montagne – données (gist secret, ne pas rendre public)',public:false},body)}); c.gistId=g.id; }
+    DB=mergeDB(merged,DB); // conserve une éventuelle saisie faite pendant la synchro
+    save(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); saveSyncCfg(c2);
+    renderAll(); setSyncStatus('Synchronisé ✔','green'); if(!opts.silent) toast('Synchronisation réussie');
+    return true;
+  }catch(e){
+    const m=e instanceof SyncError? e.message : 'Erreur inattendue pendant la synchronisation : '+e.message;
+    if(c.gistId!==syncCfg().gistId){ const c3=syncCfg(); c3.gistId=c.gistId; saveSyncCfg(c3); }
+    setSyncStatus(m,'red'); if(!opts.silent) toast(m); return false;
+  }finally{ syncing=false; if(btn) btn.disabled=false; }
+}
+function fmtDT(t){ const d=new Date(t); return dFR(toISO(d))+' à '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function setSyncStatus(msg,cls){ const el=$('syncMsg'); if(el){ el.textContent=msg||''; el.className='small '+(cls||'mut'); } }
+function renderSync(){ const c=syncCfg();
+  $('syncLast').textContent=c.lastSync?('Dernière synchronisation : '+fmtDT(c.lastSync)):'Jamais synchronisé sur cet appareil.';
+  $('syncTokenState').textContent=c.token?('Jeton enregistré ('+c.token.slice(0,7)+'…'+c.token.slice(-4)+')'):'Aucun jeton enregistré.';
+  $('syncAuto').checked=!!c.auto;
+  $('syncGist').innerHTML=c.gistId?('Gist : <a href="https://gist.github.com/'+encodeURIComponent(c.gistId)+'" target="_blank" rel="noopener">'+esc(c.gistId.slice(0,10))+'…</a>'):'';
+}
+function initSync(){
+  $('btnTokSave').addEventListener('click',async()=>{ const t=$('syncToken').value.trim(); if(!t){ setSyncStatus('Colle d’abord ton jeton.','red'); return; }
+    if(!/^(ghp_|github_pat_)[A-Za-z0-9_]+$/.test(t) && !confirm('Ce texte ne ressemble pas à un jeton GitHub (ghp_… ou github_pat_…). L’enregistrer quand même ?')) return;
+    const c=syncCfg(); if(c.token!==t){ c.token=t; } saveSyncCfg(c); $('syncToken').value=''; renderSync(); await syncNow(); renderSync(); });
+  $('btnSync').addEventListener('click',async()=>{ await syncNow(); renderSync(); });
+  $('btnTokForget').addEventListener('click',()=>{ if(!confirm('Oublier le jeton sur cet appareil ? (les données restent sur le téléphone et dans le gist)')) return; const c=syncCfg(); c.token=''; saveSyncCfg(c); renderSync(); setSyncStatus('Jeton supprimé de cet appareil.'); });
+  $('syncAuto').addEventListener('change',e=>{ const c=syncCfg(); c.auto=e.target.checked; saveSyncCfg(c); });
+  $('btnTokShow').addEventListener('click',()=>{ const i=$('syncToken'); i.type=i.type==='password'?'text':'password'; });
+  renderSync();
+  const c=syncCfg(); if(c.token&&c.auto) syncNow({silent:true}).then(renderSync);
 }
 
 /* ---------- Données ---------- */
@@ -522,7 +686,7 @@ function validImport(o){ return o&&Array.isArray(o.sessions)&&o.sessions.every(s
 /* ---------- Nav ---------- */
 let curPage='journal';
 function show(p){ curPage=p; document.querySelectorAll('.page').forEach(x=>x.classList.toggle('on',x.id==='p-'+p)); document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
-  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='equip') renderEquip();
+  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='equip') renderEquip(); if(p==='data') renderSync();
   window.scrollTo(0,0); }
 function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderEquip(); }
 
@@ -537,18 +701,18 @@ function init(){
   $('f_type').addEventListener('change',updExos);
   $('eqList').addEventListener('click',e=>{ if(e.target.matches('input[type=checkbox]')) return; equipClick(e); });
   $('eqList').addEventListener('change',e=>{ if(e.target.matches('input[type=checkbox]')) equipClick(e); });
-  $('btnAddCat').addEventListener('click',()=>{ const n=$('eqNewCat').value.trim(); if(!n) return; DB.equip.push({id:uid(),name:n,items:[]}); $('eqNewCat').value=''; save(); renderEquip(); toast('Catégorie ajoutée'); });
+  $('btnAddCat').addEventListener('click',()=>{ const n=$('eqNewCat').value.trim(); if(!n) return; DB.equip.push({id:uid(),name:n,items:[],updatedAt:Date.now()}); $('eqNewCat').value=''; save(); renderEquip(); toast('Catégorie ajoutée'); });
   $('sessList').addEventListener('click',e=>{ const ed=e.target.closest('[data-edit]'), de=e.target.closest('[data-del]');
     if(ed){ fillForm(DB.sessions.find(s=>s.id===ed.dataset.edit)); show('add'); }
-    if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); save(); renderJournal(); toast('Séance supprimée'); } } });
+    if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); DB.tomb.s[s.id]=Date.now(); save(); renderJournal(); toast('Séance supprimée'); } } });
   ['f_dist','f_dur','f_dplus'].forEach(id=>$(id).addEventListener('input',updAuto));
   $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();
     if(errs.length){ alert('Valeurs invalides : '+errs.join(', ')); return; }
     const id=$('f_id').value;
-    if(id){ const i=DB.sessions.findIndex(x=>x.id===id); if(i>=0) DB.sessions[i]=Object.assign({id},s); } else DB.sessions.push(Object.assign({id:uid()},s));
+    s.updatedAt=Date.now(); if(id){ const i=DB.sessions.findIndex(x=>x.id===id); if(i>=0) DB.sessions[i]=Object.assign({id},s); } else DB.sessions.push(Object.assign({id:uid()},s));
     save(); fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); show('journal'); });
   $('btnCancel').addEventListener('click',()=>{ fillForm(null); show('journal'); });
-  $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj; DB.objectifs[n]=Object.assign(objState(n),{[t.dataset.k]:t.value}); save(); toast('Objectif mis à jour'); });
+  $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj; DB.objectifs[n]=Object.assign(objState(n),{[t.dataset.k]:t.value,updatedAt:Date.now()}); save(); toast('Objectif mis à jour'); });
   $('sgW').addEventListener('click',()=>{ $('sgW').classList.add('on'); $('sgM').classList.remove('on'); $('evoW').style.display=''; $('evoM').style.display='none'; });
   $('sgM').addEventListener('click',()=>{ $('sgM').classList.add('on'); $('sgW').classList.remove('on'); $('evoM').style.display=''; $('evoW').style.display='none'; });
   const stamp=()=>todayISO();
@@ -563,6 +727,7 @@ function init(){
     rd.readAsText(file); });
   $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ?')){ DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
   fillForm(null); renderAll(); show('journal');
+  initSync();
   if('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 document.addEventListener('DOMContentLoaded',init);
