@@ -142,6 +142,10 @@ header h1.swap{animation:ttl .35s cubic-bezier(.2,.8,.2,1)}
 @keyframes ttl{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .syncpill{position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 18px);display:flex;align-items:center;gap:6px;font-size:12px;color:var(--snow);background:rgba(124,200,234,.16);border:1px solid rgba(124,200,234,.35);padding:4px 10px;border-radius:999px;opacity:0;transform:translateY(-6px) scale(.96);transition:opacity .25s,transform .25s;pointer-events:none}
 .syncpill.on{opacity:1;transform:none}
+.offpill{right:auto;left:auto;position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 18px);background:rgba(251,146,60,.16);border-color:rgba(251,146,60,.45)}
+body.syncing .offpill{opacity:0}
+.toast.act{pointer-events:auto}
+.toast .tbtn{margin-left:10px;background:none;border:1px solid rgba(124,200,234,.6);color:var(--glacier);font:600 13px var(--font);padding:3px 10px;border-radius:999px;cursor:pointer}
 .spin{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:var(--glacier);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* nav + indicateur glissant */
@@ -313,6 +317,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
     <div><small class="eyebrow" id="hdrSub">Suivi Montagne</small><h1 id="pageTitle">Journal</h1></div>
   </div>
   <div class="syncpill" id="syncPill" aria-live="polite"><span class="spin"></span>Synchro…</div>
+  <div class="syncpill offpill" id="offPill" role="status">⛰︎ Hors ligne</div>
 </header>
 <main>
 
@@ -456,7 +461,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
       <button class="btn" id="btnTokSave">Enregistrer et synchroniser</button>
       <button class="btn sec" id="btnSync">Synchroniser</button>
     </div>
-    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;color:var(--txt)"><input type="checkbox" id="syncAuto" style="width:20px;height:20px"> Synchroniser automatiquement à l’ouverture</label>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;color:var(--txt)"><input type="checkbox" id="syncAuto" style="width:20px;height:20px"> Synchroniser automatiquement (à l’ouverture et après chaque modification)</label>
     <div class="row" style="margin-top:8px"><button class="btn bad sm" id="btnTokForget">Oublier le jeton</button></div>
     <details style="margin-top:10px" class="small"><summary>Comment créer le jeton (2 minutes)</summary>
       <ol style="padding-left:18px;margin:8px 0">
@@ -892,7 +897,12 @@ function isoWeekYear(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),
 const MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 function speed(s){ return (s.dist!=null&&s.dur>0)? s.dist/(s.dur/3600):null; }
 function vasc(s){ return (s.dplus!=null&&s.dur>0)? s.dplus/(s.dur/3600):null; }
-function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2400); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.remove('act'); t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2400); }
+// toast avec bouton « Annuler » (suppressions) : 6 s pour revenir en arrière
+function toastUndo(m,undo){ const t=document.getElementById('toast'); t.textContent=m+' '; const b=document.createElement('button'); b.className='tbtn'; b.type='button'; b.textContent='Annuler';
+  b.addEventListener('click',()=>{ t.classList.remove('show','act'); clearTimeout(toast._t); undo(); }); t.appendChild(b); t.classList.add('show','act'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show','act'),6000); }
+// remet un élément supprimé : plus récent que sa pierre tombale, donc gagnant à la prochaine synchro
+function undoDelete(kind,list,obj){ const now=Date.now(); delete DB.tomb[kind][obj.id]; obj.updatedAt=now; list.push(obj); save(); renderAll(); toast('Suppression annulée'); }
 function todayISO(){ return toISO(new Date()); }
 
 /* ---------- Store ---------- */
@@ -913,6 +923,7 @@ function load(){ let r=null; try{ r=localStorage.getItem(KEY); DB = r? JSON.pars
   normalizeDB(DB); if(dedupeBivouac(DB)) save();
   snapshot('copie automatique du jour'); }
 function save(){ const j=JSON.stringify(DB);
+  if(typeof scheduleSync==='function'){ if(syncing){ if(!syncSaving) syncPending=true; } else scheduleSync(); }
   try{ localStorage.setItem(KEY, j); }
   catch(e){ // stockage plein : on libère d'abord les copies de sécurité locales, jamais les données
     try{ localStorage.removeItem(KEY+'.snapshots'); localStorage.setItem(KEY, j); }catch(e2){ alert('Stockage du navigateur plein : exporte tes données (Données → Exporter JSON).'); throw e2; } } }
@@ -1114,7 +1125,8 @@ function equipClick(e){
   const cid=card.dataset.cat, row=b.closest('[data-item]'), iid=row&&row.dataset.item; const [c,it]=findItem(cid,iid); if(!c) return; const act=b.dataset.act;
   const now=Date.now();
   if(act==='tog'){ it.bought=b.checked; it.updatedAt=now; }
-  else if(act==='del'){ if(!confirm('Supprimer « '+it.name+' » ?')) return; c.items=c.items.filter(i=>i.id!==iid); DB.tomb.i[iid]=now; }
+  else if(act==='del'){ if(!confirm('Supprimer « '+it.name+' » ?')) return; c.items=c.items.filter(i=>i.id!==iid); DB.tomb.i[iid]=now; save(); renderEquip();
+    toastUndo('« '+it.name+' » supprimé',()=>{ const cc=DB.equip.find(x=>x.id===cid); if(cc) undoDelete('i',cc.items,it); else toast('Catégorie supprimée entre-temps'); }); return; }
   else if(act==='edit'){ const n=prompt('Nom de l’article',it.name); if(n===null) return; if(n.trim()) it.name=n.trim();
     const no=prompt('Note (optionnelle)',it.note||''); if(no!==null) it.note=no.trim();
     const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p!==null){ const x=num(p.replace(/€/g,'')); if(x!=null&&(isNaN(x)||x<0)) alert('Prix invalide'); else it.price=x; } it.updatedAt=now; }
@@ -1158,35 +1170,42 @@ async function findGist(token){
 async function readGistFile(gist){ const f=gist.files&&gist.files[GIST_FILE]; if(!f) return null;
   if(f.truncated&&f.raw_url){ try{ return await (await fetch(f.raw_url,{cache:'no-store'})).text(); }catch(e){ throw new SyncError('Impossible de télécharger le fichier du gist.'); } } // sans jeton
   return f.content; }
-let syncing=false;
+let syncing=false, syncSaving=false, syncPending=false, syncTimer=null, appReady=false;
+// Synchro automatique (si activée) quelques secondes après une modification, au retour du réseau et au retour dans l'appli
+function scheduleSync(delay){ if(!appReady) return; const c=syncCfg(); if(!c.token||!c.auto) return; clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>{ if(navigator.onLine===false) return; syncNow({silent:true}).then(()=>{ if(curPage==='data') renderSync(); }); }, delay==null?4000:delay); }
+function ssave(){ syncSaving=true; try{ save(); } finally{ syncSaving=false; } }
 async function syncNow(opts={}){
   const c=syncCfg(); if(!c.token){ setSyncStatus('Aucun jeton enregistré : colle ton jeton GitHub ci-dessus.','red'); return false; }
-  if(syncing) return false; syncing=true; setSyncStatus('Synchronisation en cours…');
+  if(syncing) return false; syncing=true; document.body.classList.add('syncing'); setSyncStatus('Synchronisation en cours…');
   const btn=$('btnSync'); if(btn) btn.disabled=true;
   try{
     let gist=null;
     if(c.gistId){ try{ gist=await gh(c.token,'/gists/'+encodeURIComponent(c.gistId)); }catch(e){ if(e.status!==404) throw e; c.gistId=''; } }
     if(!gist){ const g=await findGist(c.token); if(g) gist=await gh(c.token,'/gists/'+encodeURIComponent(g.id)); }
-    let remote=null;
-    if(gist){ const txt=await readGistFile(gist);
+    let remote=null, gistTxt=null;
+    if(gist){ const txt=await readGistFile(gist); gistTxt=txt;
       if(txt){ try{ remote=JSON.parse(txt); }catch(e){ throw new SyncError('Le fichier du gist est illisible (JSON invalide).'); }
         if(!validImport(remote)) throw new SyncError('Le fichier du gist n’a pas le format attendu.'); migrate(remote); } }
-    if(remote&&adoptSeedIds(DB,remote)) save();
+    if(remote&&adoptSeedIds(DB,remote)) ssave();
     const snapshot=JSON.parse(JSON.stringify(DB));
     const merged=remote? mergeDB(snapshot,remote) : snapshot; normalizeDB(merged); dedupeBivouac(merged);
-    const body={files:{[GIST_FILE]:{content:JSON.stringify(merged)}}};
-    if(gist){ await gh(c.token,'/gists/'+encodeURIComponent(gist.id),{method:'PATCH',body}); c.gistId=gist.id; }
+    const content=JSON.stringify(merged), body={files:{[GIST_FILE]:{content}}};
+    if(gist){ if(content!==gistTxt) await gh(c.token,'/gists/'+encodeURIComponent(gist.id),{method:'PATCH',body}); c.gistId=gist.id; } // rien de nouveau : pas d'écriture (pas de révision inutile)
     else { const g=await gh(c.token,'/gists',{method:'POST',body:Object.assign({description:'Suivi montagne – données (gist secret, ne pas rendre public)',public:false},body)}); c.gistId=g.id; }
+    const before=JSON.stringify(DB);
     DB=mergeDB(merged,DB); // conserve une éventuelle saisie faite pendant la synchro
     normalizeDB(DB); dedupeBivouac(DB);
-    save(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); saveSyncCfg(c2);
-    renderAll(); setSyncStatus('Synchronisé ✔','green'); if(!opts.silent) toast('Synchronisation réussie');
+    const changed=JSON.stringify(DB)!==before;
+    ssave(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); saveSyncCfg(c2);
+    if(changed||!opts.silent) renderAll(); // pas de re-rendu (ni perte de focus) si rien n'a changé
+    setSyncStatus('Synchronisé ✔','green'); if(!opts.silent) toast('Synchronisation réussie');
     return true;
   }catch(e){
     const m=e instanceof SyncError? e.message : 'Erreur inattendue pendant la synchronisation : '+e.message;
     if(c.gistId!==syncCfg().gistId){ const c3=syncCfg(); c3.gistId=c.gistId; saveSyncCfg(c3); }
     setSyncStatus(m,'red'); if(!opts.silent) toast(m); return false;
-  }finally{ syncing=false; if(btn) btn.disabled=false; }
+  }finally{ syncing=false; if(btn) btn.disabled=false; document.body.classList.remove('syncing'); if(syncPending){ syncPending=false; scheduleSync(1500); } }
 }
 function fmtDT(t){ const d=new Date(t); return dFR(toISO(d))+' à '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 function setSyncStatus(msg,cls){ const el=$('syncMsg'); if(el){ el.textContent=msg||''; el.className='small '+(cls||'mut'); } }
@@ -1206,6 +1225,11 @@ function initSync(){
   $('btnTokShow').addEventListener('click',()=>{ const i=$('syncToken'); i.type=i.type==='password'?'text':'password'; });
   renderSync();
   const c=syncCfg(); if(c.token&&c.auto) syncNow({silent:true}).then(renderSync);
+  // hors ligne / retour du réseau / retour dans l'appli
+  const net=()=>{ const off=navigator.onLine===false; $('offPill').classList.toggle('on',off); };
+  addEventListener('offline',()=>{ net(); toast('Hors ligne : tout reste enregistré sur l’appareil'); });
+  addEventListener('online',()=>{ net(); scheduleSync(1500); }); net();
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&Date.now()-(syncCfg().lastSync||0)>10*60e3) scheduleSync(800); });
 }
 
 /* ---------- Données ---------- */
@@ -1256,7 +1280,10 @@ function gearStatus(n){
     for(const c of DB.equip) for(const i of c.items) if(g.re.test(i.name)){ if(!it||(!it.bought&&i.bought)){ it=i; cat=c; } }
     return {k, l:g.l, st: it? (it.bought?'ok':'buy') : 'missing', it, cat}; });
 }
-function nextObjective(){ return OBJECTIFS.find(o=>objState(o.n).statut!=='Fait')||null; }
+// prochaine ascension : celle dont la date prévue (à venir) est la plus proche ; sinon la première non faite de la liste
+function nextObjective(){ const today=todayISO(), open=OBJECTIFS.filter(o=>objState(o.n).statut!=='Fait');
+  const planned=open.filter(o=>objState(o.n).datePrevue>=today).sort((a,b)=>objState(a.n).datePrevue.localeCompare(objState(b.n).datePrevue));
+  return planned[0]||open[0]||null; }
 function closuresFor(o, fromISO, toISO_){ return (CLOSURES[o.n]||[]).filter(c=>c.to>=fromISO && c.from<=toISO_); }
 // Conseils concrets pour un objectif
 function advise(o, ref){
@@ -1447,7 +1474,7 @@ function poidsClick(e){
   if(e.target.closest('[data-w-new]')){ IMP.manualWeigh(); return; }
   if(e.target.closest('#btnExpW')){ download('suivi-montagne-pesees-'+todayISO()+'.csv',weightsCSV(),'text/csv;charset=utf-8'); return; }
   if(ed){ const w=DB.weights.find(x=>x.id===ed.dataset.wEdit); if(w) IMP.manualWeigh(w); return; }
-  if(de){ const w=DB.weights.find(x=>x.id===de.dataset.wDel); if(w&&confirm('Supprimer la pesée du '+dFR(w.date)+' ('+f(w.weight,1)+' kg) ?')){ DB.weights=DB.weights.filter(x=>x.id!==w.id); DB.tomb.w[w.id]=Date.now(); save(); renderPoids(); toast('Pesée supprimée'); } }
+  if(de){ const w=DB.weights.find(x=>x.id===de.dataset.wDel); if(w&&confirm('Supprimer la pesée du '+dFR(w.date)+' ('+f(w.weight,1)+' kg) ?')){ DB.weights=DB.weights.filter(x=>x.id!==w.id); DB.tomb.w[w.id]=Date.now(); save(); renderPoids(); toastUndo('Pesée supprimée',()=>undoDelete('w',DB.weights,w)); } }
 }
 
 /* ---------- Import Mi Fitness : OCR dans le navigateur (Tesseract.js, modèle « fra ») ----------
@@ -2071,7 +2098,7 @@ function init(){
   $('btnAddCat').addEventListener('click',()=>{ const n=$('eqNewCat').value.trim(); if(!n) return; DB.equip.push({id:uid(),name:n,items:[],updatedAt:Date.now()}); $('eqNewCat').value=''; save(); renderEquip(); toast('Catégorie ajoutée'); });
   $('sessList').addEventListener('click',e=>{ const ed=e.target.closest('[data-edit]'), de=e.target.closest('[data-del]');
     if(ed){ fillForm(DB.sessions.find(s=>s.id===ed.dataset.edit)); show('add'); }
-    if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); DB.tomb.s[s.id]=Date.now(); save(); renderJournal(); toast('Séance supprimée'); } } });
+    if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); DB.tomb.s[s.id]=Date.now(); save(); renderJournal(); toastUndo('Séance supprimée',()=>undoDelete('s',DB.sessions,s)); } } });
   ['f_dist','f_dur','f_dplus'].forEach(id=>$(id).addEventListener('input',updAuto));
   $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();
     if(errs.length){ alert('Valeurs invalides : '+errs.join(', ')); return; }
@@ -2084,7 +2111,10 @@ function init(){
     else { for(const k of ['heure','incline',...FX]) if(s[k]==null) delete s[k]; DB.sessions.push(Object.assign({id:uid()},s)); }
     save(); fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); show('journal'); });
   $('btnCancel').addEventListener('click',()=>{ fillForm(null); show('journal'); });
-  $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj; DB.objectifs[n]=Object.assign(objState(n),{[t.dataset.k]:t.value,updatedAt:Date.now()}); save(); toast('Objectif mis à jour'); });
+  $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj, o=Object.assign(objState(n),{[t.dataset.k]:t.value,updatedAt:Date.now()});
+    if(t.dataset.k==='statut'&&t.value==='Fait'&&!o.dateRealisee){ o.dateRealisee=todayISO(); const d=t.closest('.card').querySelector('[data-k=dateRealisee]'); if(d) d.value=o.dateRealisee; }
+    if(t.dataset.k==='dateRealisee'&&t.value&&o.statut!=='Fait'){ o.statut='Fait'; const d=t.closest('.card').querySelector('[data-k=statut]'); if(d) d.value='Fait'; }
+    DB.objectifs[n]=o; save(); toast(o.statut==='Fait'&&(t.dataset.k==='statut'||t.dataset.k==='dateRealisee')?'Bravo ! Objectif marqué fait 🎉':'Objectif mis à jour'); });
   $('sgW').addEventListener('click',()=>{ $('sgW').classList.add('on'); $('sgM').classList.remove('on'); $('evoW').style.display=''; $('evoM').style.display='none'; });
   $('sgM').addEventListener('click',()=>{ $('sgM').classList.add('on'); $('sgW').classList.remove('on'); $('evoM').style.display=''; $('evoW').style.display='none'; });
   const stamp=()=>todayISO();
@@ -2099,7 +2129,7 @@ function init(){
     rd.readAsText(file); });
   $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ? (une copie de sécurité est faite avant)')){ snapshot('avant réinitialisation',true); DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
   fillForm(null); renderAll(); show('journal');
-  initSync();
+  initSync(); appReady=true;
   initUI();
   if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
     const hadCtl=!!navigator.serviceWorker.controller; let reloaded=false;

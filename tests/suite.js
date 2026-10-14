@@ -124,9 +124,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v7') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v8') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v7'), 'anciens caches de l’appli supprimés, v7 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v8'), 'anciens caches de l’appli supprimés, v8 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -219,6 +219,55 @@ function FIXTURE() {
     await p.reload({waitUntil:'networkidle0'});
     const c = await p.evaluate(() => ({n: DB.sessions.length, kept: Object.keys(localStorage).some(k => k.startsWith(KEY + '.corrupt.') && localStorage.getItem(k) === '{"sessions":[{"date":')}));
     ok(c.n === n0 && c.kept, 'données illisibles : dernière copie restaurée, original gardé', [c, n0]);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 9d. Synchro automatique (API GitHub simulée), hors ligne, annulation, objectifs ----------
+  out.push('9d. Synchro automatique, hors ligne, annuler une suppression, objectifs');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    await p.evaluate(() => { // faux serveur de gists dans la page
+      window.FAKE = {content: null, patches: 0, gets: 0, delay: 0}; const F = window.FAKE;
+      const gist = () => ({id: 'g1', files: F.content == null ? {} : {'suivi-montagne-data.json': {content: F.content, truncated: false}}});
+      window.fetch = async (url, o = {}) => { const u = String(url), m = o.method || 'GET'; if (F.delay) await new Promise(r => setTimeout(r, F.delay));
+        const J = (x, st = 200) => new Response(JSON.stringify(x), {status: st, headers: {'Content-Type': 'application/json'}});
+        if (/\/gists\/g1$/.test(u) && m === 'GET') { F.gets++; return J(gist()); }
+        if (/\/gists\/g1$/.test(u) && m === 'PATCH') { F.patches++; F.content = JSON.parse(o.body).files['suivi-montagne-data.json'].content; return J(gist()); }
+        if (/\/gists\?/.test(u)) return J([]);
+        if (/\/gists$/.test(u) && m === 'POST') { F.content = JSON.parse(o.body).files['suivi-montagne-data.json'].content; return J(gist(), 201); }
+        return J({message: 'x'}, 404); };
+      saveSyncCfg({token: 'ghp_test', gistId: 'g1', lastSync: 0, auto: true}); });
+    await p.evaluate(() => syncNow({silent: true}));
+    const a0 = await p.evaluate(() => ({p: FAKE.patches, n: JSON.parse(FAKE.content).sessions.length}));
+    await p.evaluate(() => syncNow({silent: true})); const a1 = await p.evaluate(() => FAKE.patches);
+    ok(a0.p === 1 && a1 === 1, 'synchro sans changement : aucune écriture inutile dans le gist', [a0, a1]);
+    await p.evaluate(() => { DB.sessions.push({id: 'auto1', date: todayISO(), type: 'Marche', dist: 3, dplus: 50, dur: 1800, updatedAt: Date.now()}); save(); });
+    await W(5500); const a2 = await p.evaluate(() => ({p: FAKE.patches, has: JSON.parse(FAKE.content).sessions.some(s => s.id === 'auto1')}));
+    ok(a2.p === 2 && a2.has, 'modification → synchronisée automatiquement (≈ 4 s)', a2);
+    // saisie pendant une synchro lente → resynchronisée ensuite, sans boucle
+    await p.evaluate(() => { FAKE.delay = 1200; syncNow({silent: true}); }); await W(300);
+    await p.evaluate(() => { DB.sessions.push({id: 'auto2', date: todayISO(), type: 'Marche', dist: 2, dplus: 20, dur: 1200, updatedAt: Date.now()}); save(); });
+    await W(9000); const a3 = await p.evaluate(() => ({p: FAKE.patches, has: JSON.parse(FAKE.content).sessions.some(s => s.id === 'auto2')}));
+    await W(6000); const a4 = await p.evaluate(() => FAKE.patches);
+    ok(a3.has && a4 === a3.p, 'saisie pendant la synchro : envoyée juste après, sans boucle de synchro', [a3, a4]);
+    // hors ligne : rien n'est tenté, indicateur affiché ; retour du réseau → synchro
+    await p.evaluate(() => { FAKE.delay = 0; }); await p.setOfflineMode(true); await W(200);
+    const g0 = await p.evaluate(() => { DB.sessions.push({id: 'off1', date: todayISO(), type: 'Marche', dist: 1, dplus: 10, dur: 600, updatedAt: Date.now()}); save(); return {g: FAKE.gets, pill: $('offPill').classList.contains('on')}; });
+    await W(5000); const g1 = await p.evaluate(() => FAKE.gets);
+    ok(g0.pill && g1 === g0.g, 'hors ligne : indicateur « Hors ligne », aucune requête', [g0, g1]);
+    await p.setOfflineMode(false); await W(4500);
+    const g2 = await p.evaluate(() => ({pill: $('offPill').classList.contains('on'), has: JSON.parse(FAKE.content).sessions.some(s => s.id === 'off1')}));
+    ok(!g2.pill && g2.has, 'retour du réseau : synchronisé automatiquement', g2);
+    // annuler une suppression (séance, pesée, article) — la version restaurée gagne sur la pierre tombale
+    const u = await p.evaluate(() => { const id = DB.sessions[0].id; show('journal'); document.querySelector(`[data-del="${id}"]`).click(); const gone = !DB.sessions.some(s => s.id === id);
+      document.querySelector('#toast .tbtn').click(); const back = DB.sessions.find(s => s.id === id); const M = mergeDB({sessions: [], tomb: {s: {[id]: back.updatedAt - 5}}}, DB);
+      const wid = DB.weights[0].id; show('poids'); document.querySelector(`[data-w-del="${wid}"]`).click(); document.querySelector('#toast .tbtn').click();
+      show('equip'); const row = document.querySelector('#eqList [data-item]'), iid = row.dataset.item; row.querySelector('[data-act=del]').click(); document.querySelector('#toast .tbtn').click();
+      return {gone, back: !!back, tomb: DB.tomb.s[id], alive: M.sessions.some(s => s.id === id), w: DB.weights.some(w => w.id === wid), i: DB.equip.some(c => c.items.some(x => x.id === iid))}; });
+    ok(u.gone && u.back && u.tomb === undefined && u.alive && u.w && u.i, '« Annuler » après suppression : séance, pesée et article restaurés', u);
+    // objectifs : « Fait » remplit la date ; prochaine ascension = date prévue la plus proche
+    const o = await p.evaluate(() => { show('obj'); const sel = document.querySelector('#objList select[data-obj="1"]'); sel.value = 'Fait'; sel.dispatchEvent(new Event('change', {bubbles: true}));
+      const d1 = objState(1).dateRealisee; const f = new Date(); f.setDate(f.getDate() + 20); DB.objectifs[6] = {statut: 'À préparer', datePrevue: toISO(f), dateRealisee: '', updatedAt: 1};
+      return {d1, next: nextObjective().n}; });
+    ok(o.d1 === await p.evaluate(() => todayISO()) && o.next === 6, 'objectif « Fait » : date du jour ; prochaine ascension = date prévue la plus proche', o);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 10. Import Mi Fitness : OCR sur les captures + écran de vérification ----------
