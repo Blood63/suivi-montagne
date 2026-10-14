@@ -124,9 +124,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v6') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v7') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v6'), 'anciens caches de l’appli supprimés, v6 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v7'), 'anciens caches de l’appli supprimés, v7 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -178,6 +178,48 @@ function FIXTURE() {
       restoreSnap(i); return {v1, v2, nS, after: DB.sessions.length, csv: weightsCSV().split('\n').length}; });
     ok(r.v1 && !r.v2, 'validation de l’import (pesées incluses)'); ok(r.after === NFIX, 'restauration d’une copie de sécurité', r); ok(r.csv === 2, 'export CSV des pesées');
     await ctx.close(); }
+
+  // ---------- 9b. Barre d'onglets : indicateur aligné ----------
+  out.push('9b. Barre d’onglets (indicateur aligné à toutes les largeurs)');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const meas = () => p.evaluate(() => { const n = document.querySelector('nav'), i = n.querySelector('.ind').getBoundingClientRect(), t = n.querySelector('.tab.on').getBoundingClientRect();
+      const fit = [...n.querySelectorAll('.tab .lb')].every(l => l.scrollWidth <= l.clientWidth + 0.5);
+      return {d: Math.max(Math.abs(i.left - t.left), Math.abs(i.right - t.right), Math.abs(i.top - t.top), Math.abs(i.bottom - t.bottom)), fit}; });
+    let worst = 0, fitAll = true, cases = 0;
+    for (const [w, h] of [[320,640],[360,780],[390,844],[412,915],[768,1024],[1024,768],[1440,900],[844,390]]) {
+      await p.setViewport({width:w, height:h});
+      for (const t of ['journal','obj','prep','evo','poids','equip','data']) { await p.evaluate(t => show(t), t); await W(480); const m = await meas(); worst = Math.max(worst, m.d); fitAll = fitAll && m.fit; cases++; } }
+    ok(worst < 0.5, `indicateur aligné sur l’onglet actif (${cases} cas, écart max ${worst.toFixed(2)} px)`, worst);
+    ok(fitAll, 'libellés entiers dans leur onglet dès 320 px');
+    // redimensionnement / rotation sans changer d'onglet, encoches simulées (marges gauche/droite différentes)
+    await p.setViewport({width:390, height:844}); await p.evaluate(() => show('evo')); await W(480); await p.setViewport({width:844, height:390}); await W(100); const r1 = await meas();
+    await p.evaluate(() => { const n = document.querySelector('nav'); n.style.left = '54px'; n.style.right = '30px'; }); await W(100); const r2 = await meas();
+    await p.evaluate(() => { document.documentElement.style.fontSize = '22px'; document.querySelector('nav').style.fontFamily = 'serif'; }); await W(100); const r3 = await meas();
+    ok(r1.d < 0.5 && r2.d < 0.5 && r3.d < 0.5, 'aligné après rotation, avec encoches et changement de police', [r1, r2, r3]);
+    await p.evaluate(() => openSummit(3)); await W(480); const r4 = await p.evaluate(() => ({on: document.querySelector('nav .tab.on').dataset.p, cur: document.querySelector('nav .tab[aria-current]').dataset.p}));
+    ok(r4.on === 'evo' && r4.cur === 'evo', 'fiche sommet : l’onglet d’origine reste indiqué', r4);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 9c. Dates, plages, durées, données illisibles ----------
+  out.push('9c. Mois / semaines / années, durées, données illisibles');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    const r = await p.evaluate(() => { DB.sessions.push({id:'old1', date:'2026-06-17', type:'Randonnée', dist:3, dplus:160, dur:9000, updatedAt:1});
+      const ms = monthsRange(), ws = weeksRange(); const cur = todayISO().slice(0, 7);
+      return {first: ms[0], hasCur: ms.includes(cur), last: ms[ms.length - 1], w0: ws[0], wy: isoWeekYear(new Date(2027, 0, 1)), ww: isoWeek(new Date(2027, 0, 1)), wy2: isoWeekYear(new Date(2026, 11, 28)),
+        h1: Number.isNaN(hms('1:75')), h2: hms('0:59:59'), h3: hms('45'), csv: sessionsCSV().includes('17/06/2026;2026-S25')}; });
+    ok(r.first === '2026-06' && r.hasCur, 'Évolution mensuelle : séance de juin 2026 incluse, jusqu’au mois en cours', r);
+    ok(r.w0 === '2026-06-15', 'Évolution hebdo : commence à la semaine de la 1re séance', r.w0);
+    ok(r.wy === 2026 && r.ww === 53 && r.wy2 === 2026, '01/01/2027 = semaine 53 de 2026 (année ISO correcte dans le CSV)', r);
+    ok(r.h1 === true && r.h2 === 3599 && r.h3 === 2700 && r.csv, 'durée « 1:75 » refusée, « 45 » = 45 min', r);
+    // séance modifiée alors qu'elle a été supprimée par un autre appareil
+    const e = await p.evaluate(() => { const s = DB.sessions.find(x => x.id === 'fx-1'); fillForm(s); show('add'); DB.sessions = DB.sessions.filter(x => x.id !== 'fx-1'); $('f_notes').value = 'gardée'; $('fSess').requestSubmit(); return DB.sessions.some(x => x.notes === 'gardée' && x.date === s.date); });
+    ok(e, 'modification d’une séance supprimée entre-temps : recréée, rien de perdu');
+    // données locales illisibles → copie de sécurité restaurée, original conservé à part
+    const n0 = await p.evaluate(() => { snapshot('test', true); localStorage.setItem(KEY, '{"sessions":[{"date":'); return DB.sessions.length; });
+    await p.reload({waitUntil:'networkidle0'});
+    const c = await p.evaluate(() => ({n: DB.sessions.length, kept: Object.keys(localStorage).some(k => k.startsWith(KEY + '.corrupt.') && localStorage.getItem(k) === '{"sessions":[{"date":')}));
+    ok(c.n === n0 && c.kept, 'données illisibles : dernière copie restaurée, original gardé', [c, n0]);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 10. Import Mi Fitness : OCR sur les captures + écran de vérification ----------
   if (process.env.SAMPLES) {
