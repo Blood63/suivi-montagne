@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v10') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v11') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v10'), 'anciens caches de l’appli supprimés, v10 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v11'), 'anciens caches de l’appli supprimés, v11 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -314,6 +314,15 @@ function FIXTURE() {
     ok(imp.keys.join() === 'date,pas,kcal,actMin' && /Statistiques du/.test(imp.st), 'carte « Statistiques » : formulaire de vérification (date, pas, kcal, minutes)', imp);
     ok(imp.n0 === 0 && imp.n1 === 1 && imp.pas === 5000 && imp.id === 'day-' + imp.Y, 'rien avant validation, puis une entrée pour le jour', imp);
     ok(imp.dup && imp.n2 === 1 && imp.pas2 === 6200, 'ré-import du même jour : « mise à jour » annoncée, pas de doublon', imp);
+    // variante de carte « Pauses actives N coups » (au lieu des minutes) : champ séparé, minutes laissées vides
+    const pa = await p.evaluate(() => { const Y = addDays(todayISO(), -2); DB.daily = []; save();
+      const R = {kind:'daily', activity:{v:'Statistiques',conf:99}, fields:{date:{v:Y,conf:95}, pas:{v:4321,conf:97}, kcal:{v:210,conf:96}, pausesActives:{v:7,conf:96}}};
+      const it = {id:'t3', name:'c.png', status:'reading', file:null}; IMP.items = [it]; IMP.prepare(it, R); IMP.open();
+      const keys = [...document.querySelectorAll('[data-it="t3"] [data-k]')].map(e => e.dataset.k); IMP.saveOne(it, true); IMP.close();
+      const x = dayOf(Y); show('evo'); $('sgD').click(); const txt = $('evoD').innerText, csv = dailyCSV();
+      return {keys, x, one: /7 pauses actives/.test(txt), csv: csv.split('\n')[0].includes('Pauses actives') && csv.includes(';;7;')}; });
+    ok(pa.keys.join() === 'date,pas,kcal,actMin,pausesActives' && pa.x && pa.x.actMin === null && pa.x.pausesActives === 7 && pa.x.pas === 4321, 'carte « Pauses actives » : champ séparé, minutes vides (pas 0)', pa);
+    ok(pa.one && pa.csv, 'pauses actives affichées dans l’historique et exportées en CSV', pa);
     const man = await p.evaluate(() => { IMP.items = []; IMP.manualDaily(); const it = IMP.items[0]; const c = document.querySelector('[data-it="' + it.id + '"]');
       c.querySelector('[data-k="date"]').value = addDays(todayISO(), -3); c.querySelector('[data-k="pas"]').value = '9 876'; c.querySelector('[data-k="actMin"]').value = '-4';
       const e1 = IMP.saveOne(it, true); c.querySelector('[data-k="actMin"]').value = '44'; const e2 = IMP.saveOne(it, true); IMP.close(); const x = dayOf(addDays(todayISO(), -3)); return {e1, e2, x}; });
@@ -356,9 +365,10 @@ function FIXTURE() {
     out.push('10. Import Mi Fitness (OCR dans le navigateur, index.html réel)');
     { const [ctx, p] = await fresh(BASE + '/index.html'); const SYN = require(__dirname + '/synth-card.js');
       const cases = [{date:'2 octobre 2026',kcal:1234,pas:12345,min:87,seed:3,iso:'2026-10-02'},{date:'28 février 2027',kcal:356,pas:8021,min:41,seed:11,c1:'#244a6b',c2:'#6b8fb5',c3:'#c9b38a',iso:'2027-02-28'},
-        {date:'1 août 2026',kcal:0,pas:76,min:0,seed:5,lines:9,c1:'#d8c9a0',c2:'#a08050',c3:'#504030',iso:'2026-08-01'},{date:'15 décembre 2026',kcal:2876,pas:25003,min:205,seed:9,c1:'#1d3b2a',c2:'#5d7d4a',c3:'#9db08a',iso:'2026-12-15'}];
+        {date:'1 août 2026',kcal:0,pas:76,min:0,seed:5,lines:9,c1:'#d8c9a0',c2:'#a08050',c3:'#504030',iso:'2026-08-01'},{date:'15 décembre 2026',kcal:2876,pas:25003,min:205,seed:9,c1:'#1d3b2a',c2:'#5d7d4a',c3:'#9db08a',iso:'2026-12-15'},
+        {date:'9 mars 2027',kcal:812,pas:11204,pauses:7,seed:13,iso:'2027-03-09'},{date:'21 juin 2026',kcal:57,pas:1320,pauses:0,seed:17,c1:'#3b2d5a',c2:'#7a5a9a',c3:'#c0a070',iso:'2026-06-21'}];
       for (const o of cases) { const r = await p.evaluate(async (S, o) => { const bl = await (eval(S))(o); const r = await MiFit.analyze(bl); return {kind: r.kind, f: Object.fromEntries(Object.entries(r.fields).map(([k, x]) => [k, x.v]))}; }, SYN, o);
-        ok(r.kind === 'daily' && r.f.date === o.iso && r.f.kcal === o.kcal && r.f.pas === o.pas && r.f.actMin === o.min, 'carte « Statistiques » synthétique sur photo (' + o.date + ') lue exactement', r); }
+        ok(r.kind === 'daily' && r.f.date === o.iso && r.f.kcal === o.kcal && r.f.pas === o.pas && r.f.actMin === o.min && r.f.pausesActives === o.pauses, 'carte « Statistiques » synthétique sur photo (' + o.date + (o.pauses != null ? ', variante « Pauses actives »' : '') + ') lue exactement', r); }
       await ctx.close(); }
     const acc = {};
     { const [ctx, p] = await fresh(BASE + '/index.html');

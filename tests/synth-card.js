@@ -7,7 +7,7 @@ module.exports = `(async (o) => { const W=1050,H=1442, c=document.createElement(
   g.fillStyle='#fff'; g.textBaseline='alphabetic'; const F=(w,s)=>w+' '+s+'px Roboto, Arial, sans-serif';
   g.font=F(400,30); g.fillText('Prénom Nom',190,95);
   g.font=F(700,44); g.fillText(o.date+'Statistiques',70,190);
-  const L=[['Calories',o.kcal,'kcal',610],['Pas',o.pas,'pas',862],['Durée de l’activité',o.min,'min',1088]];
+  const L=[['Calories',o.kcal,'kcal',610],['Pas',o.pas,'pas',862],(o.pauses!=null?['Pauses actives',o.pauses,'coups',1088]:['Durée de l’activité',o.min,'min',1088])];
   for(const [lab,v,u,y] of L){ g.font=F(400,34); g.fillText(lab,(lab==='Pas'?130:75),y); g.font=F(700,82); g.fillText(String(v),70,y+110); const w=g.measureText(String(v)).width; g.font=F(400,36); g.fillText(' '+u,70+w+6,y+110); }
   const cx=800,cy=880; [['#ff6a3d',230],['#ffd23f',175],['#3dd5ff',120]].forEach(([col,r])=>{ g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=44; g.beginPath(); g.arc(cx,cy,r,0,7); g.stroke(); g.strokeStyle=col; g.beginPath(); g.arc(cx,cy,r,-1.57,-1.57+rnd()*5); g.stroke(); });
   g.font=F(500,32); g.fillText('Mi Fitness',120,1395);

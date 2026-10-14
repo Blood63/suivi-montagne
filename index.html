@@ -1557,7 +1557,10 @@ function refTableHTML(){ const L=DB.sessions.filter(isOutdoorHike).sort(byDateDe
   return `<div class="card"><h3>⛰️ Sorties en montagne (référence)</h3><div class="scroll"><table class="tbl"><tr><th>Date</th><th style="text-align:left">Lieu</th><th>km</th><th>D+ m</th><th>Durée</th><th>FC moy/max</th><th>km/h</th><th>m/h</th><th>Alt. max</th></tr>${L.map(s=>`<tr><td>${dFR(s.date)}</td><td style="text-align:left;white-space:normal;min-width:96px" title="${esc(s.lieu||'')}">${esc((s.lieu||s.type).split(' – ')[0])}</td><td>${f(s.dist,2)}</td><td>${f(s.dplus,0)}</td><td>${fmtDur(s.dur)}</td><td>${s.bpm?s.bpm+(s.bpmMax?' / '+s.bpmMax:''):'–'}</td><td>${f(speed(s),1)}</td><td>${s.dplus>0?f(vasc(s),0):'–'}</td><td>${f(s.altMax,0)}</td></tr>`).join('')}</table></div>
   <div class="small mut" style="margin-top:6px">Repères pour comparer tes séances d’entraînement à de vraies sorties en terrain montagneux (vitesse et m/h incluent les pauses).</div></div>`; }
 /* ---------- Activité quotidienne (carte « Statistiques » Mi Fitness, une entrée par jour) ---------- */
-const DAILY_F=[['pas','Pas','pas'],['kcal','Calories','kcal'],['actMin','Durée de l’activité','min']];
+const DAILY_F=[['pas','Pas','pas'],['kcal','Calories','kcal'],['actMin','Durée de l’activité','min'],['pausesActives','Pauses actives','coups']];
+// champs affichés pour une journée : « Pauses actives » seulement si la carte (ou l'entrée) en contient
+function dailyKeys(v){ return DAILY_F.filter(([k])=>k!=='pausesActives'||(v&&v.pausesActives!=null)); }
+function dayThird(x){ return x.actMin!=null? f(x.actMin,0)+' min' : x.pausesActives!=null? f(x.pausesActives,0)+' pause'+(x.pausesActives>1?'s':'')+' active'+(x.pausesActives>1?'s':'') : '– min'; }
 const ACT_MIN=30; // minutes d'activité pour qu'une journée compte comme « active »
 function dayId(d){ return 'day-'+d; }
 function addDays(iso,k){ const d=parseISO(iso); d.setDate(d.getDate()+k); return toISO(d); }
@@ -1592,7 +1595,7 @@ function hintHidden(){ try{ return localStorage.getItem(HINT_KEY)===todayISO(); 
 function needDailyHint(){ const D=DB.daily||[]; if(!D.length) return false; return !dayOf(addDays(todayISO(),-1)) && !hintHidden(); }
 function weekColsHTML(S){ const days=[...Array(7)].map((_,i)=>addDays(S.T,-6+i)), mx=Math.max(S.goal*1.25,...days.map(d=>(dayOf(d)||{}).pas||0));
   return `<div class="dwk" role="img" aria-label="Pas des 7 derniers jours">${days.map(d=>{ const x=dayOf(d), k=S.state(d), h=x&&x.pas?Math.min(1,x.pas/mx):0;
-    return `<div class="c${d===S.T?' tdy':''}"><div class="col${x?(x.pas>=S.goal?' ok':''):' na'}" title="${dayLbl(d)}${x?' : '+f(x.pas,0)+' pas · '+f(x.kcal,0)+' kcal · '+f(x.actMin,0)+' min':' : pas de données'}${k==='train'?' · séance':''}"><i style="--h:${h.toFixed(3)}"></i><span class="gl" style="bottom:${(S.goal/mx*100).toFixed(1)}%"></span></div>
+    return `<div class="c${d===S.T?' tdy':''}"><div class="col${x?(x.pas>=S.goal?' ok':''):' na'}" title="${dayLbl(d)}${x?' : '+f(x.pas,0)+' pas · '+f(x.kcal,0)+' kcal · '+dayThird(x):' : pas de données'}${k==='train'?' · séance':''}"><i style="--h:${h.toFixed(3)}"></i><span class="gl" style="bottom:${(S.goal/mx*100).toFixed(1)}%"></span></div>
       <b class="s">${x&&x.pas!=null?(x.pas>=10000?f(x.pas/1000,0)+'k':x.pas>=1000?f(x.pas/1000,1)+'k':f(x.pas,0)):'–'}</b><span>${k==='train'?'⛰️':k==='active'?'✓':k==='rest'?'·':''}${JOURS[parseISO(d).getDay()].slice(0,3)}</span></div>`; }).join('')}</div>`; }
 function dailyCardHTML(){ const S=dailyStats(), y=S.yesterday;
   if(!S.n) return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">👣 Activité quotidienne</h3></div>
@@ -1600,7 +1603,7 @@ function dailyCardHTML(){ const S=dailyStats(), y=S.yesterday;
     <div class="row"><button class="btn sm" data-imp-open>📷 Importer la carte d’hier</button><button class="btn sm sec" data-d-new>Saisir à la main</button></div></div>`;
   const hint=needDailyHint()? `<div class="dhint" id="dHint"><span>☀️</span><div>Les statistiques d’hier (${dayLbl(S.Y)}) ne sont pas encore importées.</div><div class="row"><button class="btn sm" data-imp-open>📷 Importer</button><button class="btn sm sec" data-dhint-x aria-label="Me le rappeler demain">Plus tard</button></div></div>`:'';
   return `<div class="card" id="dailyCard"><div class="row" style="justify-content:space-between"><h3 style="margin:0">👣 Activité quotidienne</h3><span class="tag">${S.streak?'🔥 '+S.streak+' j actif'+(S.streak>1?'s':'')+' d’affilée':'objectif '+f(S.goal,0)+' pas'}</span></div>
-    <div class="small" style="margin-top:6px">${y?`<span class="mut">Hier :</span> <b>${f(y.pas,0)}</b> pas · <b>${f(y.kcal,0)}</b> kcal · <b>${f(y.actMin,0)}</b> min d’activité`:`<span class="mut">Hier : pas encore de données</span>`}</div>
+    <div class="small" style="margin-top:6px">${y?`<span class="mut">Hier :</span> <b>${f(y.pas,0)}</b> pas · <b>${f(y.kcal,0)}</b> kcal · ${y.actMin==null&&y.pausesActives!=null?'<b>'+dayThird(y)+'</b>':'<b>'+f(y.actMin,0)+'</b> min d’activité'}`:`<span class="mut">Hier : pas encore de données</span>`}</div>
     <div class="small mut" style="margin-top:2px">7 derniers jours : ${S.days7?`<b>${f(S.pas7,0)}</b> pas/jour en moyenne (objectif ${f(S.goal,0)}) · `:''}${S.active7} jour${S.active7>1?'s':''} actif${S.active7>1?'s':''} · ${S.rest7} de repos${S.known7<7?' · '+(7-S.known7)+' sans données':''}</div>
     ${weekColsHTML(S)}${hint}</div>`; }
 function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats(), L=(DB.daily||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
@@ -1611,7 +1614,7 @@ function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats
   // calendrier 8 semaines : séance / journée active / repos / sans données
   const m0=monday(new Date()), cal=[]; for(let w=7;w>=0;w--){ const a=toISO(new Date(m0.getFullYear(),m0.getMonth(),m0.getDate()-7*w));
     cal.push(`<span>S${isoWeek(parseISO(a))}</span>`+[...Array(7)].map((_,i)=>{ const d=addDays(a,i); if(d>S.T) return '<i class="f"></i>'; const st=S.state(d), x=dayOf(d);
-      return `<i class="${st==='train'?'t':st==='active'?'a':st==='rest'?'r':''}" title="${dayLbl(d)} : ${st==='train'?'séance':st==='active'?'journée active':st==='rest'?'repos':'pas de données'}${x?' · '+f(x.pas,0)+' pas · '+f(x.actMin,0)+' min':''}"></i>`; }).join('')); }
+      return `<i class="${st==='train'?'t':st==='active'?'a':st==='rest'?'r':''}" title="${dayLbl(d)} : ${st==='train'?'séance':st==='active'?'journée active':st==='rest'?'repos':'pas de données'}${x?' · '+f(x.pas,0)+' pas · '+dayThird(x):''}"></i>`; }).join('')); }
   box.innerHTML=`<div class="card"><div class="kpis">
       ${k(S.days7?f(S.pas7,0):'–','pas/jour (7 j)','k-dist')}${k(S.days7?f(S.kcal7,0):'–','kcal/jour (7 j)')}${k(S.days7?f(S.min7,0):'–','min act./jour')}
       ${k(S.streak+' j','série active','k-dplus')}${k(S.best+' j','meilleure série')}${k(S.active7+' / 7','jours actifs')}</div>
@@ -1623,13 +1626,13 @@ function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats
       <div class="legend"><span><i style="background:linear-gradient(135deg,#fb923c,#34b38a)"></i>séance</span><span><i style="background:#34b38a"></i>journée active</span><span><i style="background:rgba(124,200,234,.28)"></i>repos</span><span><i style="background:rgba(255,255,255,.05)"></i>pas de données</span></div></div>
     <div class="card"><h3>Moyennes par semaine</h3><div class="scroll"><table class="tbl"><tr><th>Semaine</th><th>Jours</th><th>Pas/j</th><th>kcal/j</th><th>min/j</th><th>Actifs</th><th>Repos</th></tr>${wk.slice().reverse().filter(w=>w.n||w.days.some(d=>S.state(d)==='train')).map(w=>`<tr><td>S${isoWeek(parseISO(w.mon))} ${dFR(w.mon).slice(0,5)}</td><td>${w.n}</td><td>${f(w.pas,0)}</td><td>${f(w.kcal,0)}</td><td>${f(w.min,0)}</td><td>${w.days.filter(d=>/train|active/.test(S.state(d))).length}</td><td>${w.days.filter(d=>S.state(d)==='rest').length}</td></tr>`).join('')}</table></div></div>
     <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:4px"><h3 style="margin:0">Historique (${L.length})</h3><button class="btn sm sec" id="btnExpD2">CSV</button></div>
-      ${L.slice(0,60).map((x,i)=>(i===10?'<details class="small"><summary>Journées plus anciennes ('+(Math.min(60,L.length)-10)+')</summary>':'')+`<div class="drow"><div class="nm"><b>${dayLbl(x.date)}</b> <span class="small mut">${x.date.slice(0,4)}</span><div class="small">${f(x.pas,0)} pas · ${f(x.kcal,0)} kcal · ${f(x.actMin,0)} min${S.state(x.date)==='train'?' · ⛰️ séance':''}</div></div><button class="btn sm sec" data-d-edit="${x.date}" aria-label="Modifier">✏️</button><button class="btn sm bad" data-d-del="${x.date}" aria-label="Supprimer">🗑️</button></div>`).join('')}${L.length>10?'</details>':''}
+      ${L.slice(0,60).map((x,i)=>(i===10?'<details class="small"><summary>Journées plus anciennes ('+(Math.min(60,L.length)-10)+')</summary>':'')+`<div class="drow"><div class="nm"><b>${dayLbl(x.date)}</b> <span class="small mut">${x.date.slice(0,4)}</span><div class="small">${f(x.pas,0)} pas · ${f(x.kcal,0)} kcal · ${dayThird(x)}${S.state(x.date)==='train'?' · ⛰️ séance':''}</div></div><button class="btn sm sec" data-d-edit="${x.date}" aria-label="Modifier">✏️</button><button class="btn sm bad" data-d-del="${x.date}" aria-label="Supprimer">🗑️</button></div>`).join('')}${L.length>10?'</details>':''}
       ${L.length>60?`<div class="small mut">… ${L.length-60} journées plus anciennes (export CSV)</div>`:''}</div>`;
   chart($('chD1'),lab,[{name:'Pas',type:'bar',color:'#7cc8ea',values:days.map(d=>(dayOf(d)||{}).pas??null)},{name:'Minutes d’activité',type:'line',axis:'right',color:'#fb923c',values:days.map(d=>{ const x=dayOf(d); return x?x.actMin:null; })}]);
   chart($('chD2'),wl,[{name:'Pas / jour',type:'bar',color:'#34b38a',values:wk.map(w=>w.pas)},{name:'kcal / jour',type:'line',axis:'right',color:'#fda4af',values:wk.map(w=>w.kcal)}]);
 }
 function dailyCSV(){ const L=(DB.daily||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-  return '\ufeff'+['Date','Pas','Calories (kcal)','Durée de l’activité (min)','Source'].join(';')+'\n'+L.map(x=>[dFR(x.date),csvN(x.pas),csvN(x.kcal),csvN(x.actMin),csvS(x.src)].join(';')).join('\n'); }
+  return '\ufeff'+['Date','Pas','Calories (kcal)','Durée de l’activité (min)','Pauses actives','Source'].join(';')+'\n'+L.map(x=>[dFR(x.date),csvN(x.pas),csvN(x.kcal),csvN(x.actMin),csvN(x.pausesActives),csvS(x.src)].join(';')).join('\n'); }
 function dailyClick(e){ const ed=e.target.closest('[data-d-edit]'), de=e.target.closest('[data-d-del]'), nw=e.target.closest('[data-d-new]'), hx=e.target.closest('[data-dhint-x]');
   if(nw){ IMP.manualDaily(); return true; }
   if(hx){ try{ localStorage.setItem(HINT_KEY,todayISO()); }catch(err){} const h=$('dHint'); if(h) h.remove(); toast('D’accord, rappel demain matin'); return true; }
@@ -1832,7 +1835,7 @@ const MiFit = (()=>{
       const scores=L=>{ const has=re=>L.some(s=>re.test(s.n));
         return [[/^score corporel/,/^composition corporelle/,/^masse musculaire/,/^masse grasse/,/^imc$/,/^taux metabolique/,/^type de corps/],
           [/^mi fitness /,/^effet d ?entrainement/,/^temps$/,/^frequence cardiaque bpm/,/^kcal actif/,/^rythme/,/^fc moy/],
-          [/statistiques/,/(^| )calories$/,/^pas$/,/duree de l ?activite/]].map(R=>R.filter(has).length); };
+          [/statistiques/,/(^| )calories$/,/^pas$/,/duree de l ?activite|pauses actives/]].map(R=>R.filter(has).length); };
       let [wScore,sScore,dScore]=scores(segs);
       // carte courte sur photo (« Statistiques ») : si la passe 1 n'a rien reconnu, 2e passe sur le seul texte blanc (le fond photo disparaît)
       if(wScore<2&&sScore<2&&dScore<3&&H<2.2*NW){ const sw=[];
@@ -1885,14 +1888,17 @@ const MiFit = (()=>{
         for(const sg of segs){ const m=sg.n.match(/(\d{1,2}) ?(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre) ?(\d{4})/) ;
           if(m&&+m[1]>=1&&+m[1]<=31){ res.fields.date={v:m[3]+'-'+String(MO.indexOf(m[2])+1).padStart(2,'0')+'-'+m[1].padStart(2,'0'),conf:sg.conf}; break; }
           const m2=sg.text.match(/(\d{2})\/(\d{2})\/(\d{4})/); if(m2&&/statistiques/.test(sg.n)){ res.fields.date={v:m2[3]+'-'+m2[2]+'-'+m2[1],conf:sg.conf}; break; } }
-        const DL=[['kcal',/(^| )calories$/],['pas',/^pas$/],['actMin',/duree de l ?activite/]];
+        // 3e bloc : « Durée de l'activité » (min) ou, selon la version de Mi Fitness, « Pauses actives » (coups)
+        const has3=re=>segs.some(sg=>re.test(sg.n)), third=has3(/duree de l ?activite/)?['actMin',/duree de l ?activite/]:has3(/pauses actives/)?['pausesActives',/pauses actives/]:null;
+        const DL=[['kcal',/(^| )calories$/],['pas',/^pas$/],third||['?',/^$a/]];
         // un « pas » / « kcal » à droite d'un nombre sur la même ligne est l'unité de la valeur, pas le libellé
         const isUnit=sg=>segs.some(o=>o!==sg&&/\d/.test(o.n)&&o.x1<=sg.x0+4&&o.y0<sg.y1&&o.y1>sg.y0);
         const labs=DL.map(([k,re])=>[k,segs.filter(sg=>re.test(sg.n)&&!isUnit(sg)).sort((a,b)=>a.x0-b.x0)[0]]);
         // libellé illisible (mot court sur une rayure…) : position déduite de la mise en page fixe (Calories, Pas, Durée, espacés régulièrement)
         { const f=labs.map(x=>x[1]), idx=[0,1,2].filter(i=>f[i]);
           if(idx.length>=2){ const [i,j]=[idx[0],idx[idx.length-1]], step=(f[j].y0-f[i].y0)/(j-i);
-            if(step>40) for(let k=0;k<3;k++) if(!f[k]){ const r=f[i], y0=r.y0+(k-i)*step; labs[k][1]={text:'(position déduite)',n:'',x0:r.x0,x1:r.x1,y0,y1:y0+r.h,h:r.h,conf:50,guess:true}; } } }
+            // jamais de 3e bloc deviné : son type (minutes ou pauses) serait inconnu
+            if(step>40) for(let k=0;k<3;k++) if(!f[k]&&labs[k][0]!=='?'){ const r=f[i], y0=r.y0+(k-i)*step; labs[k][1]={text:'(position déduite)',n:'',x0:r.x0,x1:r.x1,y0,y1:y0+r.h,h:r.h,conf:50,guess:true}; } } }
         for(let k=labs.length-1;k>=0;k--) if(!labs[k][1]) labs.splice(k,1);
         const ys=labs.map(x=>x[1].y0).sort((a,b)=>a-b);
         for(const [k,sg] of labs){ const lh=Math.max(18,Math.min(44,sg.h)), nxt=labs.map(x=>x[1].y0).sort((a,b)=>a-b).find(y=>y>sg.y1+lh)||Math.min(H,sg.y1+7*lh);
@@ -1957,7 +1963,7 @@ const MiFit = (()=>{
     } finally { if(url) URL.revokeObjectURL(url); }
   }
   // Statistiques du jour : bornes plausibles ; une valeur hors bornes est signalée (jamais corrigée en silence)
-  function validateDaily(F){ const R={pas:[0,120000],kcal:[0,15000],actMin:[0,1440]};
+  function validateDaily(F){ const R={pas:[0,120000],kcal:[0,15000],actMin:[0,1440],pausesActives:[0,300]};
     for(const [k,[a,b]] of Object.entries(R)) if(F[k]){ if(F[k].v<a||F[k].v>b){ F[k].conf=Math.min(F[k].conf,40); F[k].warn=true; } }
     if(F.actMin&&F.pas&&F.actMin.v>0&&F.pas.v/F.actMin.v>400){ F.actMin.warn=true; F.pas.warn=true; } }
   // Pesée : contrôles croisés (les pourcentages et masses de Mi Fitness sont liés au poids).
@@ -2094,21 +2100,21 @@ const IMP={ items:[], running:false,
     if(it.status==='skipped') body=`<div class="small mut">Ignorée.</div>`;
     return `<div class="card impc ${it.status}" data-it="${it.id}">${head}${body}</div>`; },
   dailyDupHTML(it){ const d=it.dDup, v=it.v, T=todayISO();
-    return `<div data-ddup>${d&&(!it.editId||it.editId!==d.date)?`<div class="dup"><b>Statistiques du ${dFR(d.date)} déjà enregistrées</b> (${f(d.pas,0)} pas · ${f(d.kcal,0)} kcal · ${f(d.actMin,0)} min) : elles seront <b>mises à jour</b> avec les valeurs ci-dessus (une seule entrée par jour).</div>`:''}
+    return `<div data-ddup>${d&&(!it.editId||it.editId!==d.date)?`<div class="dup"><b>Statistiques du ${dFR(d.date)} déjà enregistrées</b> (${f(d.pas,0)} pas · ${f(d.kcal,0)} kcal · ${dayThird(d)}) : elles seront <b>mises à jour</b> avec les valeurs ci-dessus (une seule entrée par jour).</div>`:''}
       ${v.date&&v.date>T?'<div class="tip">⚠️ Date dans le futur : vérifie la date.</div>':v.date===T?'<div class="tip">Journée en cours : tu pourras la mettre à jour demain matin avec la carte complète.</div>':''}</div>`; },
   dailyForm(it){ const v=it.v, id=k=>'i_'+it.id+'_'+k;
     const warns=Object.entries(it.res&&it.res.fields||{}).filter(([k,x])=>x.warn&&DAILY_F.some(y=>y[0]===k)).map(([k])=>DAILY_F.find(y=>y[0]===k)[1]);
     return `<div class="small mut" style="margin-top:6px">${it.editId?'Modification d’une journée':it.res?'Statistiques du jour détectées (Mi Fitness)':'Nouvelle journée'}</div>
       <div class="grid" style="margin-top:8px"><div><label for="${id('date')}">Date ${cfBadge(it.cf.date,it.edited.date)}</label><input type="date" id="${id('date')}" data-k="date" value="${esc(v.date||'')}"></div>
-      ${DAILY_F.map(([k,l,u])=>`<div class="${(it.cf[k]!=null&&it.cf[k]<60&&!it.edited[k])?'lowc':''}"><label for="${id(k)}">${l}${u!=='pas'?' ('+u+')':''} ${cfBadge(it.cf[k],it.edited[k])}</label><input id="${id(k)}" data-k="${k}" inputmode="numeric" value="${esc(v[k]==null?'':String(v[k]))}"></div>`).join('')}</div>
+      ${dailyKeys(it.v).map(([k,l,u])=>`<div class="${(it.cf[k]!=null&&it.cf[k]<60&&!it.edited[k])?'lowc':''}"><label for="${id(k)}">${l}${u!=='pas'?' ('+u+')':''} ${cfBadge(it.cf[k],it.edited[k])}</label><input id="${id(k)}" data-k="${k}" inputmode="numeric" value="${esc(v[k]==null?'':String(v[k]))}"></div>`).join('')}</div>
       ${warns.length?`<div class="tip">⚠️ Valeur inhabituelle, à vérifier : ${warns.join(', ')}</div>`:''}
       ${this.dailyDupHTML(it)}
       <div class="row" style="margin-top:12px"><button class="btn" data-imp-save="${it.id}">Enregistrer la journée</button><button class="btn sec" data-imp-skip="${it.id}">${it.res?'Ignorer':'Annuler'}</button></div>`; },
   saveDaily(it,silent){ this.readInputs(it); const r=it.raw||{}, errs=[], x={};
     const date=(r.date!=null?r.date:it.v.date||'').trim(); if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('Date');
-    for(const [k,l] of DAILY_F){ const raw=r[k]!=null?r[k]:(it.v[k]==null?'':String(it.v[k])); const n=num(String(raw).replace(/[\s\u00a0\u202f.]/g,''));
-      if(n!=null&&(isNaN(n)||n<0||(k==='actMin'&&n>1440)||(k==='pas'&&n>200000)||(k==='kcal'&&n>20000))) errs.push(l); x[k]=n==null||isNaN(n)?null:Math.round(n); }
-    if(!errs.length&&x.pas==null&&x.kcal==null&&x.actMin==null) errs.push('au moins une valeur');
+    for(const [k,l] of dailyKeys(it.v)){ const raw=r[k]!=null?r[k]:(it.v[k]==null?'':String(it.v[k])); const n=num(String(raw).replace(/[\s\u00a0\u202f.]/g,''));
+      if(n!=null&&(isNaN(n)||n<0||(k==='actMin'&&n>1440)||(k==='pas'&&n>200000)||(k==='kcal'&&n>20000)||(k==='pausesActives'&&n>500))) errs.push(l); x[k]=n==null||isNaN(n)?null:Math.round(n); }
+    if(!errs.length&&Object.values(x).every(v=>v==null)) errs.push('au moins une valeur');
     if(errs.length){ if(!silent) alert('Valeurs invalides : '+errs.join(', ')); return errs; }
     const now=Date.now(); DB.daily=DB.daily||[];
     if(it.editId&&it.editId!==date){ const old=dayOf(it.editId); if(old){ DB.daily=DB.daily.filter(y=>y!==old); DB.tomb.d[old.id]=now; } }
@@ -2117,7 +2123,7 @@ const IMP={ items:[], running:false,
     const msg='Journée du '+dFR(date)+(cur?' mise à jour':' ajoutée')+(x.pas!=null?' ('+f(x.pas,0)+' pas)':'');
     save(); it.status='saved'; it.msg=msg; if(!silent){ this.render(); toast(msg); renderAll(); } return null; },
   manualDaily(x){ const y=addDays(todayISO(),-1); const it={id:uid(),name:x?'Journée du '+dFR(x.date):'Saisie manuelle (journée)',status:'done',kind:'daily',res:null,edited:{},cf:{},editId:x?x.date:null,
-      v:x?{date:x.date,pas:x.pas,kcal:x.kcal,actMin:x.actMin}:{date:y,pas:null,kcal:null,actMin:null}}; it.dDup=x?null:dayOf(y);
+      v:x?{date:x.date,pas:x.pas,kcal:x.kcal,actMin:x.actMin,pausesActives:x.pausesActives??null}:{date:y,pas:null,kcal:null,actMin:null}}; it.dDup=x?null:dayOf(y);
     this.items.unshift(it); this.open(); },
   weighForm(it){ const v=it.v;
     const fld=k=>{ const F=WFK[k]; const id='i_'+it.id+'_'+k; return `<div class="${(it.cf[k]!=null&&it.cf[k]<60&&!it.edited[k])?'lowc':''}"><label for="${id}">${F[1]}${F[2]?' ('+F[2]+')':''} ${cfBadge(it.cf[k],it.edited[k])}</label><input id="${id}" data-k="${k}" inputmode="${SIGNED_W.has(k)?'text':'decimal'}" value="${esc(v[k]==null?'':String(v[k]).replace('.',','))}"></div>`; };
