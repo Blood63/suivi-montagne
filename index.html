@@ -46,7 +46,7 @@ nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width
 nav button.on{color:var(--snow);background:linear-gradient(180deg,rgba(124,200,234,.22),rgba(124,200,234,.08))}
 nav button.on svg{stroke:var(--glacier)}
 nav button:active{transform:scale(.94)}
-nav .lb{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav .lb{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:.25em;margin-top:-.25em} /* marge haute : l'accent de « É » n'est pas rogné */
 .page{display:none}.page.on{display:block;animation:rise .32s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.page.on{animation:none}*{transition:none!important}}
@@ -743,11 +743,14 @@ function untouchedDefaultCat(c){ return c&&c.id===BIV_ID&&!c.updatedAt&&c.items.
 function dedupeBivouac(db){ const mine=db.equip.find(c=>c.id!==BIV_ID&&/bivouac/i.test(c.name)), def=db.equip.find(c=>c.id===BIV_ID);
   if(!mine||!def||!untouchedDefaultCat(def)) return false;
   db.equip=db.equip.filter(c=>c!==def); db.tomb.c[BIV_ID]=1; def.items.forEach(i=>db.tomb.i[i.id]=1); return true; }
+const NUM_S=['dist','dplus','dminus','dur','bpm','bpmMax','pas','sac','sauts','ress','incline','kcal','kcalTot','cadence','foulee','altMin','altMax','te','tl','recup','pauses'];
+function numify(o,keys){ for(const k of keys){ const v=o[k]; if(typeof v==='string'){ const t=v.trim().replace(/\s/g,'').replace(',','.'); if(t==='') o[k]=null; else if(isFinite(+t)) o[k]=+t; } } }
 function normalizeDB(db){
+  if(Array.isArray(db.sessions)) db.sessions.forEach(x=>{ if(x&&typeof x==='object') numify(x,NUM_S); });
   db.tomb=Object.assign(newTomb(),db.tomb||{}); for(const k of ['s','c','i','w']) if(!db.tomb[k]||typeof db.tomb[k]!=='object') db.tomb[k]={};
   if(!Array.isArray(db.weights)) db.weights=[];
   db.weights=db.weights.filter(w=>w&&typeof w==='object'&&typeof w.date==='string');
-  db.weights.forEach(w=>{ if(!w.id) w.id=uid(); if(typeof w.updatedAt!=='number') w.updatedAt=1; });
+  db.weights.forEach(w=>{ if(!w.id) w.id=uid(); if(typeof w.updatedAt!=='number') w.updatedAt=1; numify(w,WF.map(x=>x[0])); });
   if(!db.prefs||typeof db.prefs!=='object') db.prefs={}; if(!db.prefs.actMap||typeof db.prefs.actMap!=='object') db.prefs.actMap={};
   return db; }
 /* Copies de sécurité locales (5 max) : une par jour à l'ouverture + avant import, restauration ou réinitialisation */
@@ -997,7 +1000,8 @@ function renderJournal(){
   const ymNow = todayISO().slice(0,7); // mois en cours (même vide en début de mois)
   const ma=monthAgg(ymNow); const [yy,mm]=ymNow.split('-');
   const pd=new Date(+yy,+mm-2,1), ymPrev=toISO(pd).slice(0,7), pa=monthAgg(ymPrev), wkA=weekAgg(toISO(monday(new Date())));
-  const sumLine=`<div class="small mut kline" style="grid-column:1/-1">Cette semaine : <b>${wkA.n}</b> séance${wkA.n>1?'s':''} · ${f(wkA.dplus,0)} m D+ · ${f(wkA.dist,1)} km${pa.n?` — ${MOIS[pd.getMonth()]} ${pd.getFullYear()} : ${pa.n} séance${pa.n>1?'s':''} · ${f(pa.dist,1)} km · ${f(pa.dplus,0)} m D+`:''}</div>`;
+  const nxO=nextObjective(), wkT=nxO?(nxO.multi?1.5*nxO.multi.dpJ:nxO.dplus):0, wkP=wkT?Math.min(1,wkA.dplus/wkT):0;
+  const sumLine=`<div class="small kline" style="grid-column:1/-1"><div><span class="mut">Cette semaine :</span> <b>${wkA.n}</b> séance${wkA.n>1?'s':''} · <b>${f(wkA.dplus,0)}</b>${wkT?` / ${f(wkT,0)}`:''} m D+ · ${f(wkA.dist,1)} km</div>${wkT?`<div class="bar" style="margin:6px 0 3px"><i style="--v:${wkP.toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div><div class="mut">D+ hebdo visé pour ${esc(nxO.sommet)}${wkA.dplus>=wkT?' : atteint ✔':''}</div>`:''}${pa.n?`<div class="mut" style="margin-top:4px">${MOIS[pd.getMonth()].replace(/^./,c=>c.toUpperCase())} ${pd.getFullYear()} : ${pa.n} séance${pa.n>1?'s':''} · ${f(pa.dist,1)} km · ${f(pa.dplus,0)} m D+</div>`:''}</div>`;
   document.getElementById('kpiMonth').innerHTML=`<div class="hero"><h2>${MOIS[+mm-1]} ${yy}</h2><span class="tag">${ma.n??0} séances</span></div>`+
     [['km',f(ma.dist,1),'k-dist',ma.dist,1],['D+ m',f(ma.dplus,0),'k-dplus',ma.dplus,0],['durée',fmtDur(ma.dur),''],['km/h moy.',f(ma.speed,2),'',ma.speed,2],['BPM moy.',f(ma.bpm,0),'',ma.bpm,0],['sauts',f(ma.sauts,0),'',ma.sauts,0]].map(([k,v,c,n,d])=>`<div class="kpi ${c}"><b${(n!=null&&isFinite(n))?` data-count="${n}" data-dec="${d}"`:''}>${v}</b><small>${k}</small></div>`).join('')+sumLine;
   const nx=nextObjective(); $('jAdv').innerHTML= nx? adviceCard(advise(nx),{compact:true}) : '';
@@ -1014,7 +1018,7 @@ function renderJournal(){
       isTapis(s.type)&&s.incline!=null&&s.type==='Tapis'?'pente '+f(s.incline,1)+' %':null, s.kcal?'🔥 '+f(s.kcal,0)+' kcal':null, s.te?'TE '+f(s.te,1):null ].filter(Boolean);
     html+=`<div class="sess" data-id="${s.id}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
       <div class="b"><span class="tag">${esc(s.type)}</span> <span class="small mut">${dFR(s.date)}${s.heure?' '+esc(s.heure):''} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
-      <div class="acts"><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`; }
+      <div class="acts"><button class="btn sec sm" data-dup="${s.id}" aria-label="Refaire cette séance aujourd’hui" title="Refaire aujourd’hui">⧉</button><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`; }
   box.innerHTML=html;
 }
 
@@ -1315,7 +1319,7 @@ function advise(o, ref){
   if(st.muscu28===0 && R.r<0.8) tips.push({ic:'🏋️',t:'Renforcement : aucune séance de musculation en 4 semaines. 2 × 30 min/sem (squats, fentes, step-ups, gainage, mollets) protègent genoux et chevilles.'});
   if(R.r>=0.8){ tips.unshift({ic:'✅',t:`Tu as le niveau pour cet objectif : entretiens (2–3 séances/sem) et allège la semaine précédente${when?' (dernière grosse séance 4–5 jours avant le '+dFR(when)+')':''}.`});
     const nx2=OBJECTIFS.find(x=>x.n!==o.n&&OBJECTIFS.indexOf(x)>OBJECTIFS.indexOf(o)&&objState(x.n).statut!=='Fait');
-    if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)} %. ${R2.a<1?'Monte progressivement ta grosse séance vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
+    if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)}&nbsp;%. ${R2.a<1?'Monte progressivement ta grosse séance vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
   // Saison, météo, fermetures, jour
   const m=whenD.getMonth(), sea=(SEASON[o.n]||[])[m];
   if(sea===0) warn.push(`Saison : ${MOIS_L[m]} est hors saison pour cet itinéraire. ${I.winter||''} Période conseillée : ${I.seasonTxt||'—'}`);
@@ -1948,7 +1952,7 @@ const IMP={ items:[], running:false,
   saveWeigh(it,silent){ this.readInputs(it); const r=it.raw||{}, w={}, errs=[];
     const date=(r.date||'').trim(), heure=(r.heure||'').trim(); if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('Date'); if(heure&&!/^\d{2}:\d{2}$/.test(heure)) errs.push('Heure');
     for(const [k,l] of WF){ const x=num((r[k]||'').replace(/^\+/,'').replace(/^[−–]/,'-')); if(x!=null&&(isNaN(x)||(!SIGNED_W.has(k)&&x<0))) errs.push(l); w[k]=x==null||isNaN(x)?null:x; }
-    if(w.weight==null) errs.push('Poids (obligatoire)'); else if(w.weight<20||w.weight>300) errs.push('Poids (20–300 kg)');
+    if(w.weight==null){ if(!errs.includes('Poids')) errs.push('Poids (obligatoire)'); } else if(w.weight<20||w.weight>300) errs.push('Poids (20–300 kg)');
     if(errs.length){ if(!silent) alert('Valeurs invalides : '+[...new Set(errs)].join(', ')); return errs; }
     for(const k of Object.keys(w)) if(w[k]==null) delete w[k];
     Object.assign(w,{date,heure:heure||'',bodyType:(r.bodyType||'').trim()||null,notes:(r.notes||'').trim()}); if(!w.bodyType) delete w.bodyType;
@@ -2098,6 +2102,8 @@ function init(){
   $('btnAddCat').addEventListener('click',()=>{ const n=$('eqNewCat').value.trim(); if(!n) return; DB.equip.push({id:uid(),name:n,items:[],updatedAt:Date.now()}); $('eqNewCat').value=''; save(); renderEquip(); toast('Catégorie ajoutée'); });
   $('sessList').addEventListener('click',e=>{ const ed=e.target.closest('[data-edit]'), de=e.target.closest('[data-del]');
     if(ed){ fillForm(DB.sessions.find(s=>s.id===ed.dataset.edit)); show('add'); }
+    const du=e.target.closest('[data-dup]'); if(du){ const o=DB.sessions.find(s=>s.id===du.dataset.dup); if(o){ // pré-remplit une nouvelle séance (rien n'est enregistré sans « Enregistrer »)
+      const c=Object.assign({},o,{date:todayISO(),heure:null,notes:'',bpm:null,bpmMax:null,pas:null,ress:null}); FX.forEach(k=>c[k]=null); fillForm(c); $('f_id').value=''; $('formTitle').textContent='Nouvelle séance (copie)'; show('add'); } }
     if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); DB.tomb.s[s.id]=Date.now(); save(); renderJournal(); toastUndo('Séance supprimée',()=>undoDelete('s',DB.sessions,s)); } } });
   ['f_dist','f_dur','f_dplus'].forEach(id=>$(id).addEventListener('input',updAuto));
   $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();

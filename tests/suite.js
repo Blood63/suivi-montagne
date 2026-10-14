@@ -124,9 +124,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v8') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v9') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v8'), 'anciens caches de l’appli supprimés, v8 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v9'), 'anciens caches de l’appli supprimés, v9 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -268,6 +268,21 @@ function FIXTURE() {
       const d1 = objState(1).dateRealisee; const f = new Date(); f.setDate(f.getDate() + 20); DB.objectifs[6] = {statut: 'À préparer', datePrevue: toISO(f), dateRealisee: '', updatedAt: 1};
       return {d1, next: nextObjective().n}; });
     ok(o.d1 === await p.evaluate(() => todayISO()) && o.next === 6, 'objectif « Fait » : date du jour ; prochaine ascension = date prévue la plus proche', o);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 9e. Nombres en texte, « Refaire », objectif hebdo ----------
+  out.push('9e. Nombres en texte, « Refaire une séance », objectif de la semaine');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    await p.evaluate(() => { const D = JSON.parse(localStorage.getItem(KEY)); D.sessions.push({id:'str1', date:todayISO(), type:'Marche', dist:'5,5', dplus:'120', dur:'3600', updatedAt:1}); D.weights.push({id:'ws', date:'2026-10-20', weight:'79,5', updatedAt:1}); localStorage.setItem(KEY, JSON.stringify(D)); });
+    await p.reload({waitUntil:'networkidle0'});
+    const r = await p.evaluate(() => { const s = DB.sessions.find(x => x.id === 'str1'), w = DB.weights.find(x => x.id === 'ws'); const a = monthAgg(todayISO().slice(0, 7));
+      return {d: s.dist, p: s.dplus, w: w.weight, sum: typeof a.dist === 'number', kl: $('kpiMonth').innerText.replace(/\s+/g, ' ')}; });
+    ok(r.d === 5.5 && r.p === 120 && r.w === 79.5 && r.sum, 'nombres enregistrés en texte convertis (totaux justes)', r);
+    ok(/\/ [\d\s  ]+ m D\+/.test(r.kl) && /D\+ hebdo visé/.test(r.kl), 'Journal : D+ de la semaine comparé à l’objectif de la prochaine ascension', r.kl);
+    const d = await p.evaluate(() => { const n0 = DB.sessions.length; show('journal'); document.querySelector('[data-dup="fx-2"]').click();
+      const st = {open: document.body.classList.contains('sheet-open'), date: $('f_date').value, type: $('f_type').value, dist: $('f_dist').value, id: $('f_id').value, n1: DB.sessions.length};
+      $('fSess').requestSubmit(); return Object.assign(st, {n2: DB.sessions.length, n0, orig: DB.sessions.filter(s => s.id === 'fx-2').length}); });
+    ok(d.open && d.date === await p.evaluate(() => todayISO()) && d.type === 'Tapis 6%' && d.dist === '6' && d.id === '' && d.n1 === d.n0 && d.n2 === d.n0 + 1 && d.orig === 1, '« Refaire » : copie pré-remplie à la date du jour, l’originale intacte', d);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 10. Import Mi Fitness : OCR sur les captures + écran de vérification ----------
