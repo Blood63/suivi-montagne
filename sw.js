@@ -2,7 +2,7 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v11';            // fichiers de l'appli (renouvelé à chaque version)
+const CACHE = PREFIX + 'v12';            // fichiers de l'appli (renouvelé à chaque version)
 const EXT = PREFIX + 'ext-v1';          // polices + moteur OCR Tesseract (stables, conservés entre versions)
 const KEEP = [CACHE, EXT];
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];

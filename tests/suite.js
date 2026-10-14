@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v11') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v12') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v11'), 'anciens caches de l’appli supprimés, v11 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v12'), 'anciens caches de l’appli supprimés, v12 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -415,6 +415,69 @@ function FIXTURE() {
       ok(sug.type === 'Tapis' && sug.pref && sug.incl === 8, 'capture suivante « Marche » : Tapis 8 % suggéré (modifiable)', sug);
       ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
   }
+
+  // ---------- 12. Ascensions : séances de montre rattachées à un objectif (v12) ----------
+  out.push('12. Ascensions (séances rattachées à un objectif)');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    const n0 = await p.evaluate(() => DB.sessions.length);
+    await p.evaluate(() => show('obj'));
+    await p.select('select[data-obj="1"][data-k="statut"]', 'Fait'); await W(600);
+    ok(await p.evaluate(() => $('ascDlg').classList.contains('on') && /Bravo/.test($('ascBox').textContent)), 'objectif marqué fait → proposition d’ajouter les séances de la montre');
+    ok(await p.evaluate(() => objState(1).statut === 'Fait' && objState(1).dateRealisee === todayISO()), 'statut Fait + date réalisée');
+    await p.click('#ascBox [data-asc-man]'); await W(300);
+    ok(await p.evaluate(() => $('f_obj').value === '1' && $('f_type').value === 'Randonnée'), 'saisie manuelle : objectif pré-sélectionné');
+    await p.evaluate(() => { $('f_dist').value = '6,5'; $('f_dplus').value = '420'; $('f_dur').value = '2:10:00'; $('f_x_kcal').value = '700'; });
+    await p.click('#btnSave'); await W(400);
+    // 2e enregistrement : séance déjà existante
+    await p.evaluate(() => openSummitNoPush(1)); await p.evaluate(() => document.querySelector('#ascCard [data-asc-link]').click()); await W(200);
+    const pickId = await p.evaluate(() => { const b = document.querySelector('#ascBox [data-asc-pick]'); const id = b.dataset.ascPick; b.click(); return id; }); await W(300);
+    const r = await p.evaluate(id => { const T = ascTotals(1), x = DB.sessions.find(s => s.id === id); return {n:T.n, dist:T.dist, dplus:T.dplus, kcal:T.kcal, len:DB.sessions.length, page:curPage, card:$('ascCard').textContent, xd:x.dist, xp:x.dplus}; }, pickId);
+    ok(r.n === 2 && Math.abs(r.dist - (6.5 + r.xd)) < 1e-9 && r.dplus === 420 + r.xp && r.kcal === 700, 'totaux cumulés sur 2 séances (distance, D+, kcal)', r);
+    ok(r.len === n0 + 1, 'séance existante rattachée sans duplication (1 seule séance créée)', [r.len, n0]);
+    ok(r.page === 'sum' && /Mon ascension/.test(r.card) && /2 séances/.test(r.card), 'fiche du sommet : carte « Mon ascension » avec la liste', r.card.slice(0, 120));
+    await p.evaluate(id => document.querySelector(`#ascCard [data-asc-rm="${id}"]`).click(), pickId); await W(200);
+    ok(await p.evaluate(() => ascTotals(1).n === 1), 'retirer une séance de l’objectif');
+    await p.evaluate(() => document.querySelector('#toast .tbtn').click()); await W(200);
+    ok(await p.evaluate(() => ascTotals(1).n === 2), '« Annuler » remet la séance dans l’objectif');
+    // modification : le lien est conservé
+    const mid = await p.evaluate(() => ascSessions(1).find(s => s.dist === 6.5).id);
+    await p.evaluate(id => document.querySelector(`#ascCard [data-asc-edit="${id}"]`).click(), mid); await W(200);
+    await p.evaluate(() => { $('f_notes').value = 'sommet'; }); await p.click('#btnSave'); await W(300);
+    ok(await p.evaluate(id => { const s = DB.sessions.find(x => x.id === id); return s.objN === 1 && s.notes === 'sommet' && curPage === 'sum'; }, mid), 'modifier une séance de l’objectif garde le lien et revient à la fiche');
+    // import Mi Fitness (revue identique) : la séance va dans l’objectif ciblé
+    const im = await p.evaluate(() => { IMP.target = 1; const it = {id:'t1', objN:IMP.target, name:'x', status:'queued'}; IMP.items.push(it);
+      IMP.prepare(it, {kind:'workout', activity:{v:'Randonnée'}, fields:{date:{v:'2026-10-13',conf:99}, dist:{v:4.2,conf:99}, dplus:{v:310,conf:99}, dur:{v:5400,conf:99}}});
+      IMP.open(); const html = $('impList').innerHTML; it.mode = 'new'; IMP.saveOne(it, true); IMP.close(); return {html:/Ascension d’un objectif/.test(html), n:ascTotals(1).n, s:DB.sessions.find(s => s.date === '2026-10-13' && s.dist === 4.2)}; });
+    ok(im.html && im.n === 3 && im.s && im.s.objN === 1 && im.s.src === 'mifit', 'import Mi Fitness : choix de l’objectif dans la revue, séance cumulée', im);
+    ok(await p.evaluate(() => { renderJournal(); return document.querySelectorAll('#sessList .tag.asc').length === 3; }), 'Journal : séances d’objectif signalées 🏁 (comptées une seule fois)');
+    ok(await p.evaluate(() => { renderObj(); return /3 séances/.test(document.querySelector('#objList .asc-mini').textContent); }), 'liste des objectifs : résumé de l’ascension');
+    // « Refaire » une séance d’objectif ne copie pas le lien
+    ok(await p.evaluate(id => { renderJournal(); document.querySelector(`[data-dup="${id}"]`).click(); return $('f_obj').value === ''; }, mid), '« Refaire » ne recopie pas l’objectif');
+    await p.evaluate(() => { fillForm(null); show('journal'); });
+    // synchro : champ conservé par la fusion, y compris face à une copie distante plus ancienne sans le champ
+    ok(await p.evaluate(id => { const L = JSON.parse(JSON.stringify(DB)), R = JSON.parse(JSON.stringify(DB)); const r = R.sessions.find(s => s.id === id); delete r.objN; r.updatedAt = 1;
+      const M = mergeDB(L, R); return M.sessions.find(s => s.id === id).objN === 1; }, mid), 'fusion : objN conservé');
+    // marquer fait depuis la fiche (objectif 2) sans séance → proposition
+    await p.evaluate(() => { openSummitNoPush(2); document.querySelector('#ascCard [data-asc-done]').click(); }); await W(600);
+    ok(await p.evaluate(() => objState(2).statut === 'Fait' && $('ascDlg').classList.contains('on')), 'bouton « Marquer comme fait » sur la fiche → proposition');
+    await p.evaluate(() => document.querySelector('#ascBox [data-asc-x]').click());
+    ok(await p.evaluate(() => !$('ascDlg').classList.contains('on') && /Mon ascension/.test($('sumBody').textContent)), '« Plus tard » ferme ; on peut ajouter plus tard depuis la fiche');
+    for (const t of ['journal','obj','prep','evo','poids','equip','data']) await p.evaluate(t => show(t), t);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 13. Catégorie « Roadtrip en voiture » ----------
+  out.push('13. Équipement : Roadtrip en voiture');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => { const c = DB.equip.find(x => x.id === RT_ID); return c && {name:c.name, n:c.items.length, ids:new Set(c.items.map(i => i.id)).size, txt:c.items.map(i => i.name).join('|')}; });
+    ok(r && r.name === 'Roadtrip en voiture' && r.n >= 30 && r.ids === r.n, 'catégorie présente, ids stables et uniques', r && r.n);
+    ok(r && ['Gilet','Triangle|triangle','Matelas','Réchaud','Bidon','Batterie','GPS','Permis','Trousse de secours'].every(k => new RegExp(k).test(r.txt)), 'sécurité, couchage, cuisine, eau, énergie, navigation, papiers');
+    await withFix(p); // utilisateur existant (données sans la catégorie)
+    const x = await p.evaluate(() => { const before = JSON.parse(localStorage.getItem(KEY)); return {has:DB.equip.some(c => c.id === RT_ID), others:DB.equip.filter(c => c.id !== RT_ID).length, sess:DB.sessions.length}; });
+    ok(x.has && x.sess === NFIX, 'ajoutée aux données existantes sans toucher aux séances');
+    ok(await p.evaluate(() => { const D = JSON.parse(JSON.stringify(DB)); D.equip = D.equip.filter(c => c.id !== RT_ID); D.tomb.c[RT_ID] = Date.now(); return ensureRoadtrip(D) === false && !D.equip.some(c => c.id === RT_ID); }), 'supprimée par l’utilisateur : pas recréée');
+    ok(await p.evaluate(() => { const D = JSON.parse(JSON.stringify(DB)); D.equip = D.equip.filter(c => c.id !== RT_ID); D.equip.push({id:'mine', name:'Road trip', items:[], updatedAt:3}); return ensureRoadtrip(D) === false; }), 'catégorie perso « Road trip » existante : pas de doublon');
+    await p.evaluate(() => show('equip'));
+    ok(await p.evaluate(() => /Roadtrip en voiture/.test($('eqList').textContent)) && p.errs.length === 0, 'affichée dans Équipement, aucune erreur JS', p.errs); await ctx.close(); }
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });
