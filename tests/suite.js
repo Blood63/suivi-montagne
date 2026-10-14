@@ -24,6 +24,8 @@ function FIXTURE() {
 (async () => {
   const b = await puppeteer.launch({executablePath: process.env.CHROME || '/usr/bin/google-chrome', args: ['--no-sandbox','--lang=fr-FR']});
   const fresh = async (url) => { const ctx = await b.createBrowserContext(); const p = await ctx.newPage(); await p.setViewport({width:390,height:844});
+    // un doigt touche ce qu'il voit : on centre l'élément avant le clic/la frappe (sinon la barre d'actions collante peut le recouvrir)
+    for (const m of ['click','type']) { const o = p[m].bind(p); p[m] = async (sel, ...a) => { await p.evaluate(s => { const e = document.querySelector(s); if (e) e.scrollIntoView({block:'center'}); }, sel).catch(()=>{}); return o(sel, ...a); }; }
     p.errs = []; p.on('pageerror', e => p.errs.push(e.message)); p.on('dialog', d => d.accept()); if (url) await p.goto(url, {waitUntil:'networkidle0'}); return [ctx, p]; };
 
   const withFix = async (p, idPrefix, wHeure) => { await p.evaluate((F, pre, h) => { if (h) F.weights[0].heure = h; const D = JSON.parse(JSON.stringify(DB));
@@ -124,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v9') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v10') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v9'), 'anciens caches de l’appli supprimés, v9 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v10'), 'anciens caches de l’appli supprimés, v10 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -285,9 +287,79 @@ function FIXTURE() {
     ok(d.open && d.date === await p.evaluate(() => todayISO()) && d.type === 'Tapis 6%' && d.dist === '6' && d.id === '' && d.n1 === d.n0 && d.n2 === d.n0 + 1 && d.orig === 1, '« Refaire » : copie pré-remplie à la date du jour, l’originale intacte', d);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
+  // ---------- 9f. Activité quotidienne (cartes « Statistiques ») et sorties de référence — données fictives ----------
+  out.push('9f. Activité quotidienne et sorties de référence (données fictives)');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    const n = await p.evaluate(() => { const D = {sessions:[], daily:[{date:'2026-01-02',pas:'1 000',kcal:5,actMin:1,updatedAt:3},{date:'2026-01-02',pas:2000,updatedAt:9},{date:'bad'},{id:'x',date:'2026-01-03',pas:10}]}; normalizeDB(D); return D.daily; });
+    ok(n.length === 2 && n.find(x => x.date === '2026-01-02').pas === 2000 && n.every(x => x.id === 'day-' + x.date), 'une seule entrée par jour (id = date), la plus récente gagne, dates invalides écartées', n);
+    const m = await p.evaluate(() => { const L = {sessions:[], daily:[{id:'day-2026-01-01',date:'2026-01-01',pas:100,updatedAt:5},{id:'day-2026-01-02',date:'2026-01-02',pas:7,updatedAt:5}], tomb:{d:{'day-2026-01-02':6}}};
+      const R = {sessions:[], daily:[{id:'day-2026-01-01',date:'2026-01-01',pas:900,updatedAt:8},{id:'day-2026-01-02',date:'2026-01-02',pas:7,updatedAt:5},{id:'day-2026-01-03',date:'2026-01-03',pas:3,updatedAt:1}]};
+      const M = mergeDB(L, R); return {d: M.daily.map(x => x.id + ':' + x.pas).sort(), t: M.tomb.d}; });
+    ok(JSON.stringify(m.d) === JSON.stringify(['day-2026-01-01:900','day-2026-01-03:3']) && m.t['day-2026-01-02'] === 6, 'fusion : union par jour, plus récente gagne, suppression propagée (tomb.d)', m);
+    // ancien client (v4) : la clé « daily » inconnue est conservée
+    const NEW = await p.evaluate(() => { DB.daily = [{id:'day-2026-02-01',date:'2026-02-01',pas:4321,kcal:99,actMin:12,src:'Mi Fitness',updatedAt:10}]; save(); return JSON.stringify(DB); });
+    const [ctx2, o] = await fresh(BASE + '/old.html');
+    const viaOld = await o.evaluate(n => { const R = JSON.parse(n); if (!validImport(R)) return 'invalid'; migrate(R); return JSON.stringify(mergeDB(JSON.parse(JSON.stringify(DB)), R)); }, NEW);
+    ok(viaOld !== 'invalid' && JSON.parse(viaOld).daily && JSON.parse(viaOld).daily[0].pas === 4321, 'ancien client : activité quotidienne conservée à la fusion (clé inconnue gardée)');
+    await ctx2.close();
+    // import (résultat OCR simulé) → vérification → enregistrement ; ré-import du même jour = mise à jour, jamais de doublon
+    const imp = await p.evaluate(() => { const Y = addDays(todayISO(), -1); DB.daily = []; save();
+      const R = v => ({kind:'daily', activity:{v:'Statistiques',conf:99}, fields:{date:{v:Y,conf:95}, pas:{v:v,conf:97}, kcal:{v:150,conf:96}, actMin:{v:25,conf:96}}});
+      const it = {id:'t1', name:'a.png', status:'reading', file:null}; IMP.items = [it]; IMP.prepare(it, R(5000)); IMP.open();
+      const c = document.querySelector('[data-it="t1"]'), keys = [...c.querySelectorAll('[data-k]')].map(e => e.dataset.k), st = IMP.statusText(it);
+      const n0 = DB.daily.length; IMP.saveOne(it, true); const a = {n0, n1: DB.daily.length, pas: DB.daily[0].pas, id: DB.daily[0].id};
+      const it2 = {id:'t2', name:'b.png', status:'reading', file:null}; IMP.items = [it2]; IMP.prepare(it2, R(6200)); IMP.render();
+      const dup = !!document.querySelector('[data-it="t2"] .dup') && /mises à jour/.test(document.querySelector('[data-it="t2"] .dup').textContent);
+      IMP.saveOne(it2, true); IMP.close(); return Object.assign(a, {keys, st, dup, n2: DB.daily.length, pas2: DB.daily[0].pas, Y}); });
+    ok(imp.keys.join() === 'date,pas,kcal,actMin' && /Statistiques du/.test(imp.st), 'carte « Statistiques » : formulaire de vérification (date, pas, kcal, minutes)', imp);
+    ok(imp.n0 === 0 && imp.n1 === 1 && imp.pas === 5000 && imp.id === 'day-' + imp.Y, 'rien avant validation, puis une entrée pour le jour', imp);
+    ok(imp.dup && imp.n2 === 1 && imp.pas2 === 6200, 'ré-import du même jour : « mise à jour » annoncée, pas de doublon', imp);
+    const man = await p.evaluate(() => { IMP.items = []; IMP.manualDaily(); const it = IMP.items[0]; const c = document.querySelector('[data-it="' + it.id + '"]');
+      c.querySelector('[data-k="date"]').value = addDays(todayISO(), -3); c.querySelector('[data-k="pas"]').value = '9 876'; c.querySelector('[data-k="actMin"]').value = '-4';
+      const e1 = IMP.saveOne(it, true); c.querySelector('[data-k="actMin"]').value = '44'; const e2 = IMP.saveOne(it, true); IMP.close(); const x = dayOf(addDays(todayISO(), -3)); return {e1, e2, x}; });
+    ok(man.e1 && man.e1.length && !man.e2 && man.x && man.x.pas === 9876 && man.x.actMin === 44 && man.x.src === 'saisie', 'saisie manuelle d’une journée (valeur négative refusée)', man);
+    // indicateurs : série, jours actifs / repos, rappel du matin
+    const S = await p.evaluate(() => { const T = todayISO(); DB.sessions = DB.sessions.filter(s => s.date < addDays(T, -10)); DB.daily = [];
+      for (let i = 2; i <= 6; i++) DB.daily.push({id:'day-' + addDays(T, -i), date:addDays(T, -i), pas: i === 4 ? 1500 : 9000, kcal:100, actMin: i === 4 ? 5 : 40, updatedAt:1});
+      save(); const s = dailyStats(); localStorage.removeItem(KEY + '.dailyHint'); show('journal'); renderJournal();
+      const hint = !!document.querySelector('#dailyCard #dHint'); document.querySelector('[data-dhint-x]').click(); const hint2 = !!document.querySelector('#dHint'); renderJournal(); const hint3 = !!document.querySelector('#dHint');
+      DB.daily.push({id:'day-' + addDays(T, -1), date:addDays(T, -1), pas:8000, kcal:1, actMin:31, updatedAt:1}); localStorage.removeItem(KEY + '.dailyHint'); renderJournal();
+      return {streak: s.streak, best: s.best, a7: s.active7, r7: s.rest7, hint, hint2, hint3, hint4: !!document.querySelector('#dHint'), s2: dailyStats().streak, card: $('jDaily').innerText}; });
+    ok(S.streak === 2 && S.best === 2 && S.a7 === 4 && S.r7 === 1, 'série active (hier pas encore importé → compte jusqu’à avant-hier), jours actifs / repos', S);
+    ok(S.hint && !S.hint2 && !S.hint3 && !S.hint4 && S.s2 === 3, 'rappel doux si hier manque, « Plus tard » le masque pour la journée, disparaît une fois importé', S);
+    const adv = await p.evaluate(() => { const T = todayISO(); DB.daily = []; for (let i = 1; i <= 7; i++) DB.daily.push({id:'day-' + addDays(T, -i), date:addDays(T, -i), pas:3000, kcal:50, actMin:10, updatedAt:1});
+      const A = advise(nextObjective()); return {t: A.tips.map(x => x.t).join(' | '), p: A.plan.map(x => x.t)}; });
+    ok(/pas\/jour/.test(adv.t) && /5 jours actifs/.test(adv.t) && adv.p.includes('Au quotidien'), 'conseils : objectif de pas quotidien et régularité', adv);
+    const evo = await p.evaluate(() => { show('evo'); $('sgD').click(); return {c1: !!$('chD1').querySelector('svg rect'), c2: !!$('chD2').querySelector('svg'), cal: document.querySelectorAll('#evoD .cal i').length, csv: dailyCSV().split('\n').length}; });
+    ok(evo.c1 && evo.c2 && evo.cal === 56 && evo.csv === 8, 'Évolution → Quotidien : graphiques, calendrier 8 semaines, export CSV', evo);
+    // sorties de référence : comparaison et dédoublonnage
+    const ref = await p.evaluate(() => { const o = OBJECTIFS[0];
+      DB.sessions.push({id:'ref-2025-01-05-1000', date:'2025-01-05', heure:'10:00', type:'Randonnée', dist:4, dur:7200, dplus:300, bpm:120, bpmMax:160, altMax:1200, lieu:'Sommet fictif', ref:true, objs:[o.n], updatedAt:1});
+      DB.sessions.push({id:'ref-2025-02-05-1000', date:'2025-02-05', type:'Randonnée', dist:2, dur:3600, dplus:100, lieu:'Autre lieu', ref:true, updatedAt:1});
+      const c = comparableFor(o), h = adviceCard(advise(o)), j = adviceCard(advise(o), {compact:true});
+      const o2 = OBJECTIFS.find(x => x.n !== o.n && !(x.n === 2)); const c2 = comparableFor(o2);
+      show('evo'); $('sgW').click(); const tbl = $('refTbl').innerText, gapr = /\d+ semaines sans séance/.test($('tblW').innerText) && $('tblW').querySelectorAll('tr').length < 40;
+      return {same: c && c.s.id, why: c && c.why, other: c2 && c2.s.id, card: /dernière sortie comparable/.test(h) && /Sommet fictif/.test(h), compact: /Dernière sortie comparable/.test(j), tbl: /Sommet fictif/.test(tbl) && /Autre lieu/.test(tbl), gapr}; });
+    ok(ref.same === 'ref-2025-01-05-1000' && ref.why === 'même sommet' && ref.other === 'ref-2025-02-05-1000', 'sortie comparable : même sommet d’abord, sinon la plus récente', ref);
+    ok(ref.card && ref.compact && ref.tbl, 'comparaison affichée (conseil, Journal) et tableau des sorties en montagne (Évolution)', ref);
+    ok(ref.gapr, 'Évolution : les longues séries de semaines sans séance tiennent sur une ligne', ref);
+    const dd = await p.evaluate(() => { const D = {sessions:[{id:'u1', date:'2025-03-03', type:'Marche', dist:5.01, dur:3000, updatedAt:2}, {id:'ref-2025-03-03-0900', date:'2025-03-03', type:'Randonnée', dist:5.0, dur:3010, lieu:'Lieu fictif', ref:true, bpmMax:150, updatedAt:1}], tomb:newTomb()};
+      const ch = dedupeRef(D); return {ch, n: D.sessions.length, u: D.sessions[0], t: D.tomb.s['ref-2025-03-03-0900'] > 1}; });
+    ok(dd.ch && dd.n === 1 && dd.u.id === 'u1' && dd.u.ref && dd.u.lieu === 'Lieu fictif' && dd.u.bpmMax === 150 && dd.u.type === 'Marche' && dd.t, 'sortie de référence déjà présente sur l’appareil : pas de doublon, séance locale enrichie', dd);
+    const fm = await p.evaluate(() => { show('journal'); fillForm(DB.sessions.find(s => s.id === 'ref-2025-02-05-1000')); const a = {l: $('f_lieu').value, r: $('f_ref').checked}; $('f_lieu').value = 'Lieu modifié'; $('fSess').requestSubmit();
+      const s = DB.sessions.find(x => x.id === 'ref-2025-02-05-1000'); return Object.assign(a, {l2: s.lieu, r2: s.ref, chip: /📍 Lieu modifié/.test($('sessList').innerText)}); });
+    ok(fm.l === 'Autre lieu' && fm.r && fm.l2 === 'Lieu modifié' && fm.r2 && fm.chip, 'formulaire : lieu et repère « référence » modifiables, affichés dans le Journal', fm);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
   // ---------- 10. Import Mi Fitness : OCR sur les captures + écran de vérification ----------
   if (process.env.SAMPLES) {
     out.push('10. Import Mi Fitness (OCR dans le navigateur, index.html réel)');
+    { const [ctx, p] = await fresh(BASE + '/index.html'); const SYN = require(__dirname + '/synth-card.js');
+      const cases = [{date:'2 octobre 2026',kcal:1234,pas:12345,min:87,seed:3,iso:'2026-10-02'},{date:'28 février 2027',kcal:356,pas:8021,min:41,seed:11,c1:'#244a6b',c2:'#6b8fb5',c3:'#c9b38a',iso:'2027-02-28'},
+        {date:'1 août 2026',kcal:0,pas:76,min:0,seed:5,lines:9,c1:'#d8c9a0',c2:'#a08050',c3:'#504030',iso:'2026-08-01'},{date:'15 décembre 2026',kcal:2876,pas:25003,min:205,seed:9,c1:'#1d3b2a',c2:'#5d7d4a',c3:'#9db08a',iso:'2026-12-15'}];
+      for (const o of cases) { const r = await p.evaluate(async (S, o) => { const bl = await (eval(S))(o); const r = await MiFit.analyze(bl); return {kind: r.kind, f: Object.fromEntries(Object.entries(r.fields).map(([k, x]) => [k, x.v]))}; }, SYN, o);
+        ok(r.kind === 'daily' && r.f.date === o.iso && r.f.kcal === o.kcal && r.f.pas === o.pas && r.f.actMin === o.min, 'carte « Statistiques » synthétique sur photo (' + o.date + ') lue exactement', r); }
+      await ctx.close(); }
     const acc = {};
     { const [ctx, p] = await fresh(BASE + '/index.html');
       for (const [file, T] of Object.entries(TRUTH)) {
