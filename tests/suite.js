@@ -128,7 +128,7 @@ function FIXTURE() {
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
     let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v12') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v12'), 'anciens caches de l’appli supprimés, v12 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v13'), 'anciens caches de l’appli supprimés, v13 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -478,6 +478,33 @@ function FIXTURE() {
     ok(await p.evaluate(() => { const D = JSON.parse(JSON.stringify(DB)); D.equip = D.equip.filter(c => c.id !== RT_ID); D.equip.push({id:'mine', name:'Road trip', items:[], updatedAt:3}); return ensureRoadtrip(D) === false; }), 'catégorie perso « Road trip » existante : pas de doublon');
     await p.evaluate(() => show('equip'));
     ok(await p.evaluate(() => /Roadtrip en voiture/.test($('eqList').textContent)) && p.errs.length === 0, 'affichée dans Équipement, aucune erreur JS', p.errs); await ctx.close(); }
+  // ---------- 14. Objectif de pas quotidien personnalisé (v13) ----------
+  out.push('14. Objectif de pas quotidien personnalisé');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => { const out = {};
+      out.def = stepGoal(); // aucun objectif perso : adapté (8000 par défaut sans prochaine ascension éligible, ou selon objectif)
+      DB.prefs.stepGoal = {v:6000, updatedAt:100}; save();
+      out.user = userStepGoal(); out.goal = stepGoal(); out.ds = dailyStats().goal;
+      show('data'); out.input = $('stepGoalInput').value; out.state = $('stepGoalState').textContent;
+      show('evo'); $('sgD').click(); out.evoTxt = $('evoD').innerText.includes('6 000');
+      show('journal'); out.jTxt = $('jDaily').innerText.includes('6 000');
+      // fusion : le plus récent gagne, dans les deux sens
+      const L = JSON.parse(JSON.stringify(DB)); L.prefs.stepGoal = {v:6000, updatedAt:100};
+      const R = JSON.parse(JSON.stringify(DB)); R.prefs.stepGoal = {v:9000, updatedAt:50};
+      out.merge1 = mergeDB(L, R).prefs.stepGoal.v; out.merge2 = mergeDB(R, L).prefs.stepGoal.v;
+      // ancien format (nombre brut) normalisé, valeur invalide écartée
+      const D = {sessions:[], prefs:{stepGoal:6000}}; normalizeDB(D); out.normNum = D.prefs.stepGoal;
+      const D2 = {sessions:[], prefs:{stepGoal:{v:999999, updatedAt:5}}}; normalizeDB(D2); out.normBad = D2.prefs.stepGoal;
+      // saisie via l'UI Données → Préférences
+      show('data'); $('stepGoalInput').value = '6000'; $('btnStepGoal').click();
+      out.ui = {v: DB.prefs.stepGoal && DB.prefs.stepGoal.v, stored: JSON.parse(localStorage.getItem(KEY)).prefs.stepGoal.v};
+      return out; });
+    ok(r.user === 6000 && r.goal === 6000 && r.ds === 6000, 'objectif personnalisé 6 000 utilisé partout (stepGoal, dailyStats)', r);
+    ok(r.input === '6000' && /Objectif actuel : 6\s000/.test(r.state), 'Données → Préférences affiche l’objectif actuel', r.state);
+    ok(r.merge1 === 6000 && r.merge2 === 6000, 'fusion gist : stepGoal le plus récent gagne (merge-safe)', [r.merge1, r.merge2]);
+    ok(r.normNum && r.normNum.v === 6000 && r.normBad === undefined, 'normalizeDB : nombre brut converti, valeur hors limites écartée', [r.normNum, r.normBad]);
+    ok(r.ui.v === 6000 && r.ui.stored === 6000, 'bouton Enregistrer : 6 000 persisté dans le stockage local', r.ui);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });

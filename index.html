@@ -318,7 +318,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v12 : ascensions (séances rattachées à un objectif) */
+/* v13 : objectif de pas quotidien personnalisé (6 000) ; v12 : ascensions (séances rattachées à un objectif) */
 .tag.asc{background:rgba(52,179,138,.16);color:#a7f3d0;border-color:rgba(52,179,138,.4)}
 .asc-card h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .asc-tot{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
@@ -487,6 +487,12 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
       <label for="impFile">Importer une sauvegarde JSON (remplace les données actuelles)</label>
       <input type="file" id="impFile" accept="application/json,.json">
     </div>
+  </div>
+  <div class="card">
+    <h2>Préférences</h2>
+    <label for="stepGoalInput">Objectif de pas quotidien (pas/jour)</label>
+    <div class="row"><input id="stepGoalInput" type="number" inputmode="numeric" min="500" max="50000" step="500" style="flex:1"><button class="btn" id="btnStepGoal" type="button">Enregistrer</button></div>
+    <p class="small mut" id="stepGoalState" style="margin:6px 0 0"></p>
   </div>
   <div class="card" id="syncCard">
     <h2>Synchronisation (GitHub Gist privé)</h2>
@@ -820,6 +826,9 @@ function normalizeDB(db){
     numify(x,DAILY_F.map(y=>y[0])); x.id=dayId(x.date); if(typeof x.updatedAt!=='number') x.updatedAt=1; const p=dm.get(x.date); if(!p||x.updatedAt>=p.updatedAt) dm.set(x.date,x); }
   db.daily=[...dm.values()];
   if(!db.prefs||typeof db.prefs!=='object') db.prefs={}; if(!db.prefs.actMap||typeof db.prefs.actMap!=='object') db.prefs.actMap={};
+  if(db.prefs.stepGoal!=null){ const g=db.prefs.stepGoal, v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
+    if(!isFinite(v)||v<500||v>50000) delete db.prefs.stepGoal;
+    else if(typeof g==='number') db.prefs.stepGoal={v:Math.round(v),updatedAt:1}; else { g.v=Math.round(v); if(typeof g.updatedAt!=='number') g.updatedAt=1; } }
   return db; }
 /* Copies de sécurité locales (5 max) : une par jour à l'ouverture + avant import, restauration ou réinitialisation */
 const SNAP_KEY=KEY+'.snapshots';
@@ -945,7 +954,8 @@ function mergeDB(L,R){
   const daily=[...dmm.values()].filter(x=>alive('d',x)).map(x=>Object.assign({},x));
   const LA=(L.prefs&&L.prefs.actMap)||{}, RA=(R.prefs&&R.prefs.actMap)||{}, actMap={};
   for(const k of new Set([...Object.keys(LA),...Object.keys(RA)])){ const v=pick(LA[k],RA[k]); if(v) actMap[k]=Object.assign({},v); }
-  const prefs=Object.assign({},R.prefs||{},L.prefs||{},{actMap});
+  const sg=pick((L.prefs||{}).stepGoal,(R.prefs||{}).stepGoal);
+  const prefs=Object.assign({},R.prefs||{},L.prefs||{},{actMap}); if(sg) prefs.stepGoal=Object.assign({},sg); else delete prefs.stepGoal;
   return Object.assign({}, R, L, {version:Math.max(L.version||1,R.version||1,DATA_VERSION), sessions, objectifs, equip, weights, daily, prefs, tomb});
 }
 
@@ -1318,6 +1328,8 @@ function initSync(){
 }
 
 /* ---------- Données ---------- */
+function renderPrefs(){ const i=$('stepGoalInput'); if(!i) return; const u=userStepGoal(); if(document.activeElement!==i) i.value=u==null?'':u;
+  $('stepGoalState').textContent=u!=null?('Objectif actuel : '+f(u,0)+' pas/jour (synchronisé sur tes appareils). Vide + Enregistrer pour revenir à l’objectif adapté à ta prochaine ascension.'):'Aucun objectif personnalisé : l’appli adapte l’objectif à ta prochaine ascension ('+f(stepGoal(),0)+' pas/jour en ce moment).'; }
 function download(name, text, mime){ const blob=new Blob([text],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }
 const csvN=v=>(v==null||v===''||(typeof v==='number'&&!isFinite(v)))?'':String(typeof v==='number'?Math.round(v*100)/100:v).replace('.',',');
 const csvS=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
@@ -1605,8 +1617,11 @@ const ACT_MIN=30; // minutes d'activité pour qu'une journée compte comme « ac
 function dayId(d){ return 'day-'+d; }
 function addDays(iso,k){ const d=parseISO(iso); d.setDate(d.getDate()+k); return toISO(d); }
 function dayOf(iso){ return (DB.daily||[]).find(x=>x.date===iso)||null; }
-// objectif de pas quotidien selon la prochaine ascension (longue sortie / altitude / itinérance → plus de pas)
-function stepGoal(o){ if(o===undefined) o=nextObjective(); if(!o) return 8000; const H=(o.multi?o.multi.hJ:o.h)||3;
+// objectif de pas personnalisé (Données → Préférences, synchronisé entre appareils) ; null si non défini
+function userStepGoal(){ const g=DB&&DB.prefs&&DB.prefs.stepGoal; const v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
+  return isFinite(v)&&v>=500&&v<=50000? Math.round(v) : null; }
+// objectif de pas quotidien : le choix de l'utilisateur d'abord, sinon adapté à la prochaine ascension (longue sortie / altitude / itinérance → plus de pas)
+function stepGoal(o){ const u=userStepGoal(); if(u!=null) return u; if(o===undefined) o=nextObjective(); if(!o) return 8000; const H=(o.multi?o.multi.hJ:o.h)||3;
   return o.multi||H>=6? 10000 : H>=4||o.altSom>=2500? 9000 : 8000; }
 // une journée est active si une séance est enregistrée, ou ≥ 30 min d'activité, ou objectif de pas atteint
 function dayState(iso,goal,sessDays){ const x=dayOf(iso), tr=sessDays.has(iso);
@@ -1658,7 +1673,7 @@ function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats
   box.innerHTML=`<div class="card"><div class="kpis">
       ${k(S.days7?f(S.pas7,0):'–','pas/jour (7 j)','k-dist')}${k(S.days7?f(S.kcal7,0):'–','kcal/jour (7 j)')}${k(S.days7?f(S.min7,0):'–','min act./jour')}
       ${k(S.streak+' j','série active','k-dplus')}${k(S.best+' j','meilleure série')}${k(S.active7+' / 7','jours actifs')}</div>
-      <div class="small mut" style="margin-top:8px">Journée active = séance enregistrée, ≥ ${ACT_MIN} min d’activité ou ≥ ${f(S.goal,0)} pas (objectif adapté à ta prochaine ascension). ${S.goalDays7} jour${S.goalDays7>1?'s':''} sur ${S.days7||0} au-dessus de l’objectif cette semaine.</div>
+      <div class="small mut" style="margin-top:8px">Journée active = séance enregistrée, ≥ ${ACT_MIN} min d’activité ou ≥ ${f(S.goal,0)} pas (${userStepGoal()!=null?'ton objectif personnalisé, modifiable dans Données':'objectif adapté à ta prochaine ascension'}). ${S.goalDays7} jour${S.goalDays7>1?'s':''} sur ${S.days7||0} au-dessus de l’objectif cette semaine.</div>
       <div class="row" style="margin-top:10px"><button class="btn sm" data-imp-open>📷 Importer</button><button class="btn sm sec" data-d-new>Saisir une journée</button></div></div>
     <div class="card"><h3>Pas (colonnes) et minutes d’activité (ligne), 30 derniers jours</h3><div class="chart" id="chD1"></div></div>
     <div class="card"><h3>Moyennes hebdomadaires : pas/jour (colonnes) et kcal/jour (ligne)</h3><div class="chart" id="chD2"></div></div>
@@ -2343,7 +2358,7 @@ function show(p){
   document.querySelectorAll('.page:not(#p-add)').forEach(x=>{ const on=x.id==='p-'+p; if(on&&changed){ x.classList.remove('on'); void x.offsetWidth; x.dataset.dir=dir; } x.classList.toggle('on',on); });
   const tabP=p==='sum'?sumFrom:p; document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('on',b.dataset.p===tabP));
   [...TABS,'sum'].forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
-  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); }
+  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); renderPrefs(); }
   const t=$('pageTitle'); if(t&&t.textContent!==TITLES[p]){ t.textContent=TITLES[p]; t.classList.remove('swap'); void t.offsetWidth; t.classList.add('swap'); }
   moveInd(); animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
 function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderPoids(); renderEquip(); if(curPage==='sum'&&curSum) renderSummit(curSum); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
@@ -2476,6 +2491,10 @@ function init(){
       catch(err){ alert('Fichier invalide : JSON de sauvegarde attendu.'); } finally { e.target.value=''; } };
     rd.readAsText(file); });
   $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ? (une copie de sécurité est faite avant)')){ snapshot('avant réinitialisation',true); DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
+  $('btnStepGoal').addEventListener('click',()=>{ const raw=$('stepGoalInput').value.trim();
+    if(raw===''){ delete DB.prefs.stepGoal; save(); renderPrefs(); renderAll(); toast('Objectif de pas : adapté à ta prochaine ascension'); return; }
+    const v=num(raw); if(v==null||isNaN(v)||v<500||v>50000){ alert('Objectif de pas : entre un nombre entre 500 et 50 000 pas.'); return; }
+    DB.prefs=DB.prefs||{}; DB.prefs.stepGoal={v:Math.round(v),updatedAt:Date.now()}; save(); renderPrefs(); renderAll(); toast('Objectif quotidien : '+f(Math.round(v),0)+' pas'); });
   fillForm(null); renderAll(); show('journal');
   initSync(); appReady=true;
   initUI();
