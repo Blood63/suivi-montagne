@@ -325,7 +325,15 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v14 : graphiques interactifs (curseur tactile), réglage des semaines affichées, conseils entraînement, lien d'achat sur le matériel ; v13 : objectif de pas quotidien personnalisé ; v12 : ascensions */
+/* v15 : premier chargement OCR expliqué étape par étape (moteur, modèle français, initialisation), doublons même jour explicites (ajout forcé toujours possible, types différents jamais fusionnés par défaut) ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+.imp-load{margin-top:8px;padding:9px 11px;border-radius:12px;background:rgba(124,200,234,.08);border:1px solid rgba(124,200,234,.28);font-size:13px;display:flex;gap:9px;align-items:flex-start}
+.imp-load[hidden]{display:none}
+.imp-spin{flex:none;width:16px;height:16px;margin-top:1px;border-radius:50%;border:2px solid rgba(124,200,234,.3);border-top-color:#7cc8ea;animation:impspin .8s linear infinite}
+@keyframes impspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.imp-spin{animation-duration:2.4s}}
+.dup.exact{background:rgba(248,113,113,.10);border-color:rgba(248,113,113,.5)}
+.dup.diff{background:rgba(52,179,138,.08);border-color:rgba(52,179,138,.35)}
+.dup .why{margin-top:4px}
 .tag.asc{background:rgba(52,179,138,.16);color:#a7f3d0;border-color:rgba(52,179,138,.4)}
 .asc-card h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .asc-tot{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
@@ -1814,7 +1822,7 @@ function poidsClick(e){
 const MiFit = (()=>{
   const TJS='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
   const NW=1100, TILE=1000, OV=150;
-  let libP=null, wP=null, curLog=null;
+  let libP=null, wP=null, loadLog=null, workerReady=false;
   function loadLib(){
     if(window.Tesseract) return Promise.resolve();
     if(!libP) libP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=TJS; s.async=true;
@@ -1822,9 +1830,20 @@ const MiFit = (()=>{
       document.head.appendChild(s); });
     return libP;
   }
-  async function worker(){
+  // Premier chargement (cache froid) : étapes honnêtes remontées par le logger Tesseract (aucune progression inventée).
+  const LOAD_STAGES=[['engine',0,'Chargement du moteur OCR…'],['lang',.013,'Téléchargement du modèle français…'],['init',.026,'Initialisation du moteur OCR…']];
+  async function worker(report){
+    if(workerReady) return wP;
+    const rep=(key,frac,label)=>{ try{ report&&report(key,frac,label); }catch(e){} };
+    if(!window.Tesseract){ rep('engine',null,'Téléchargement du moteur OCR…'); }
     await loadLib();
-    if(!wP) wP=Tesseract.createWorker('fra',1,{logger:m=>{ if(curLog) curLog(m); }}).catch(e=>{ wP=null; throw e; });
+    if(!wP){ rep('lang',null,'Téléchargement du modèle français…');
+      loadLog=m=>{ if(!m||m.progress==null) return; const st=String(m.status||'');
+        if(/loading tesseract core/.test(st)) rep('engine',m.progress,'Chargement du moteur OCR…');
+        else if(/loading language traineddata/.test(st)) rep('lang',m.progress,'Téléchargement du modèle français…');
+        else if(/initializing/.test(st)) rep('init',m.progress,'Initialisation du moteur OCR…'); };
+      wP=Tesseract.createWorker('fra',1,{logger:m=>{ if(loadLog) loadLog(m); }}).then(w=>{ workerReady=true; loadLog=null; return w; })
+        .catch(e=>{ wP=null; loadLog=null; throw new Error('Moteur OCR indisponible : une connexion internet est nécessaire la première fois. Vérifie ta connexion puis réessaie.'); }); }
     return wP;
   }
   async function loadImage(src){
@@ -1976,9 +1995,12 @@ const MiFit = (()=>{
   }
 
   async function analyze(src, onProgress){
-    const prog=(k,msg)=>{ try{ onProgress&&onProgress(Math.max(0,Math.min(1,k)),msg); }catch(e){} };
-    prog(0,'Chargement du moteur OCR…');
-    const w=await worker();
+    const prog=(k,msg,info)=>{ try{ onProgress&&onProgress(Math.max(0,Math.min(1,k)),msg,info); }catch(e){} };
+    const cold=!workerReady;
+    prog(0,cold?'Téléchargement du moteur OCR…':'Chargement du moteur OCR…',{phase:'load',cold});
+    const w=await worker((key,frac,label)=>{ const st=LOAD_STAGES.find(x=>x[0]===key)||LOAD_STAGES[0];
+      prog(st[1]+(frac!=null?frac*0.012:0),label+(frac!=null?' '+Math.round(frac*100)+' %':''),{phase:'load',cold,pct:frac}); });
+    if(cold) prog(0.038,'Lecture de la capture…',{phase:'read',cold});
     const {img,url}=await loadImage(src);
     try{
       if(img.naturalWidth<300||img.naturalHeight<300) throw new Error('Image trop petite pour être lue.');
@@ -2162,7 +2184,7 @@ const MiFit = (()=>{
     if(has('dur')){ const s=F.dur.v, t=String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); seen('dur',t); }
     for(const k of ['sauts','pas','bpm','bpmMax','cadence']) if(has(k)) seen(k,String(F[k].v));
   }
-  return {analyze, loadLib, norm, P, validate, validateWeigh, validateDaily, BODY_TYPES};
+  return {analyze, loadLib, norm, P, validate, validateWeigh, validateDaily, BODY_TYPES, isReady:()=>workerReady};
 })();
 
 /* ---------- Import de captures Mi Fitness : analyse → vérification → enregistrement (jamais automatique) ---------- */
@@ -2262,7 +2284,7 @@ const IMP={ items:[], running:false, target:null,
     this.open(); this.run(); },
   async run(){ if(this.running) return; this.running=true;
     try{ let it; while((it=this.items.find(x=>x.status==='queued'))){ it.status='reading'; it.msg='Préparation…'; this.renderItem(it);
-        try{ const r=await MiFit.analyze(it.file,(k,m)=>{ it.prog=k; it.msg=m||it.msg; this.paintProg(it); }); this.prepare(it,r); }
+        try{ const r=await MiFit.analyze(it.file,(k,m,info)=>{ it.prog=k; it.msg=m||it.msg; if(info){ it.loadPhase=info.phase; if(info.phase==='load'){ it.loadCold=!!info.cold; it.loadPct=info.pct; } else it.loadCold=false; } this.paintProg(it); }); this.prepare(it,r); }
         catch(e){ it.status='error'; it.msg=e&&e.message||String(e); }
         this.renderItem(it); } }
     finally{ this.running=false; } },
@@ -2274,7 +2296,12 @@ const IMP={ items:[], running:false, target:null,
       it.incline= sg.incline!=null? sg.incline : (typeIncline(sg.type)!=null? typeIncline(sg.type) : 6);
       it.v=v; it.cf=cf; this.applyType(it,true); this.findDup(it); }
     else if(r.kind==='daily'){ it.v=v; it.cf=cf; it.dDup=v.date?dayOf(v.date):null; }
-    else if(r.kind==='weigh'){ it.v=v; it.cf=cf; it.wDup=(DB.weights||[]).find(w=>w.date===v.date&&(w.heure||'')===(v.heure||'')); it.wMode=it.wDup?'update':'new'; }
+    else if(r.kind==='weigh'){ it.v=v; it.cf=cf; const sameDay=(DB.weights||[]).filter(w=>w.date===v.date);
+      it.wDup=sameDay.find(w=>v.heure&&w.heure&&w.heure===v.heure)||sameDay.find(w=>!v.heure&&!w.heure)||sameDay[0]||null;
+      it.wHeureMatch=!!(it.wDup&&v.heure&&it.wDup.heure&&v.heure===it.wDup.heure);
+      it.wExact=!!(it.wDup&&(it.wHeureMatch||(!v.heure&&!it.wDup.heure))&&v.weight!=null&&it.wDup.weight!=null&&Math.abs(v.weight-it.wDup.weight)<=0.15);
+      // même jour mais autre heure (matin / soir) : nouvelle pesée par défaut, jamais d'écrasement silencieux
+      it.wMode=it.wHeureMatch?'update':'new'; }
   },
   applyType(it,init){ const fam=typeFamily(it.type);
     if(fam==='tapis'){ const ti=typeIncline(it.type); if(ti!=null){ it.incline=ti; it.edited.incline=false; } it.v.incline=it.incline;
@@ -2282,9 +2309,21 @@ const IMP={ items:[], running:false, target:null,
       if(!it.edited.dminus) it.v.dminus=null; }
     else { it.calc={}; if(!it.edited.dplus&&it.res.fields.dplus) it.v.dplus=it.res.fields.dplus.v; if(!it.edited.dminus&&it.res.fields.dminus) it.v.dminus=it.res.fields.dminus.v; }
   },
-  findDup(it){ const v=it.v; it.dup=null; if(!v.date) return;
-    const near=DB.sessions.filter(s=>s.date===v.date && ((v.dur&&s.dur&&Math.abs(s.dur-v.dur)<=240)||(v.dist!=null&&s.dist!=null&&Math.abs(s.dist-v.dist)<=0.06)||(v.sauts&&s.sauts&&Math.abs(s.sauts-v.sauts)<=20)));
-    it.dup=near[0]||null; it.mode=it.dup?'merge':'new'; },
+  findDup(it){ const v=it.v; it.dup=null; it.dupExact=false; it.dupWhy=[]; it.dupDiffType=false; it.mode='new'; if(!v.date) return;
+    const fam=typeFamily(it.type), cand=[];
+    for(const s of DB.sessions.filter(x=>x.date===v.date)){ const why=[]; let score=0, strong=0;
+      if(v.heure&&s.heure&&v.heure===s.heure){ why.push('même heure ('+s.heure+')'); score+=3; strong++; }
+      if(v.dur&&s.dur){ const d=Math.abs(s.dur-v.dur); if(d<=240){ why.push('durée '+(d<=60?'identique ou presque':'proche')+' ('+fmtDur(s.dur)+' contre '+fmtDur(v.dur)+')'); score+=d<=60?4:2; if(d<=60) strong++; } }
+      if(v.dist!=null&&s.dist!=null){ const d=Math.abs(s.dist-v.dist); if(d<=0.06){ why.push('distance '+(d<=0.02?'identique ou presque':'proche')+' ('+f(s.dist,2)+' km contre '+f(v.dist,2)+' km)'); score+=d<=0.02?4:2; if(d<=0.02) strong++; } }
+      if(v.sauts&&s.sauts){ const d=Math.abs(s.sauts-v.sauts); if(d<=20){ why.push('sauts '+(d<=2?'identiques':'proches')+' ('+f(s.sauts,0)+' contre '+f(v.sauts,0)+')'); score+=d<=2?4:2; if(d<=2) strong++; } }
+      if(v.kcal&&s.kcal&&Math.abs(s.kcal-v.kcal)<=5){ why.push('calories quasi identiques ('+f(s.kcal,0)+' contre '+f(v.kcal,0)+' kcal)'); score+=2; strong++; }
+      if(!why.length) continue;
+      const sameFam=typeFamily(s.type)===fam;
+      cand.push({s,why,score:score+(sameFam?3:0),strong,sameFam}); }
+    cand.sort((a,b)=>b.score-a.score); const c=cand[0]; if(!c) return;
+    it.dup=c.s; it.dupWhy=c.why; it.dupDiffType=!c.sameFam; it.dupExact=c.sameFam&&c.strong>=2;
+    // types différents = sans doute deux vraies séances (rando le matin, corde le soir) : jamais de fusion par défaut
+    it.mode=it.dupDiffType?'new':'merge'; },
   fieldHTML(it,k){ const K=SF[k]; let [lab,kind,unit]=K; if(k==='cadence'){ [lab,unit]=cadLabel(it.type); }
     const val=fmtIn(k,it.v[k]), b=cfBadge(it.cf[k],it.edited[k],it.calc&&it.calc[k]&&!it.edited[k]);
     const id='i_'+it.id+'_'+k, L=`<label for="${id}">${lab}${unit?' ('+unit+')':''} ${b}</label>`;
@@ -2294,7 +2333,8 @@ const IMP={ items:[], running:false, target:null,
     return `<div class="${(it.cf[k]!=null&&it.cf[k]<60&&!it.edited[k])?'lowc':''}">${L}<input id="${id}" type="${ty}" data-k="${k}" inputmode="${im}" value="${esc(val)}"${k==='incline'?' placeholder="6"'+(typeIncline(it.type)!=null?' readonly title="Inclinaison fixée par le type (choisis « Tapis » pour une autre valeur)"':''):''}></div>`; },
   cardHTML(it){
     const head=`<div class="imph"><img src="${it.thumb||''}" alt="" ${it.thumb?'':'style="visibility:hidden"'}><div style="flex:1;min-width:0"><b class="ell">${esc(it.name)}</b><div class="small mut" data-msg>${esc(this.statusText(it))}</div>
-      ${it.status==='reading'||it.status==='queued'?`<div class="bar" style="margin-top:6px"><i data-prog style="--v:${(it.prog||0).toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div>`:''}</div>
+      ${it.status==='reading'||it.status==='queued'?`<div class="bar" style="margin-top:6px"><i data-prog style="--v:${(it.prog||0).toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div>
+      <div class="imp-load" data-loadnote ${it.loadCold?'':'hidden'}><span class="imp-spin" aria-hidden="true"></span><span>Premier chargement : le moteur de lecture et le modèle français (≈ 6 Mo) se téléchargent — cela peut prendre quelques secondes selon le réseau. Ensuite, les imports seront rapides et fonctionneront hors-ligne.</span></div>`:''}</div>
       ${it.status!=='reading'?`<button class="xbtn" data-imp-x="${it.id}" aria-label="Retirer">✕</button>`:''}</div>`;
     let body='';
     if(it.status==='error'||it.status==='unknown') body=`<div class="tip">${it.status==='error'?'⚠️ '+esc(it.msg):'Capture non reconnue : ni une séance Mi Fitness, ni une pesée « Composition corporelle », ni une carte « Statistiques » du jour. Vérifie qu’il s’agit bien de la capture longue complète.'}</div>
@@ -2307,10 +2347,14 @@ const IMP={ items:[], running:false, target:null,
         <div class="grid" style="margin-top:10px">${['date','heure'].map(k=>this.fieldHTML(it,k)).join('')}${keys.map(k=>this.fieldHTML(it,k)).join('')}</div>
         ${warns.length?`<div class="tip">⚠️ Valeurs incohérentes entre elles, à vérifier : ${warns.join(', ')}</div>`:''}
         ${this.derivedHTML(it)}
-        ${it.dup?`<div class="dup"><b>Séance existante le ${dFR(it.dup.date)}</b> : ${esc(it.dup.type)}${it.dup.dist!=null?' · '+f(it.dup.dist,2)+' km':''}${it.dup.dur?' · '+fmtDur(it.dup.dur):''}
+        ${it.dup?`<div class="dup${it.dupExact?' exact':it.dupDiffType?' diff':''}"><b>${it.dupExact?'⚠️ Capture probablement déjà importée':it.dupDiffType?'Deux séances différentes le même jour ?':'Séance existante le '+dFR(it.dup.date)}</b><br>
+          <span>Séance déjà enregistrée : <b>${esc(it.dup.type)}</b>${it.dup.heure?' à '+esc(it.dup.heure):''}${it.dup.dist!=null?' · '+f(it.dup.dist,2)+' km':''}${it.dup.dur?' · '+fmtDur(it.dup.dur):''}${it.dup.sauts?' · '+f(it.dup.sauts,0)+' sauts':''}${it.dup.kcal?' · '+f(it.dup.kcal,0)+' kcal':''}</span>
+          ${it.dupWhy&&it.dupWhy.length?`<div class="why small">Points communs : ${esc(it.dupWhy.join(' · '))}.</div>`:''}
+          ${it.dupExact?`<div class="why small">Les valeurs sont quasi identiques : importer la même capture deux fois créerait un doublon. « Compléter » est le choix sûr.</div>`:''}
+          ${it.dupDiffType?`<div class="why small">Les types sont différents (<b>${esc(it.dup.type)}</b> contre <b>${esc(it.type)}</b>) : ce sont sans doute deux vraies séances (par exemple une randonnée le matin et de la corde le soir). La fusion écraserait l’une des deux — « Ajouter quand même » est sélectionné par défaut.</div>`:''}
           <label class="rad"><input type="radio" name="m_${it.id}" value="merge" data-mode ${it.mode==='merge'?'checked':''}> Compléter cette séance (tes valeurs existantes sont gardées, les champs vides sont remplis)</label>
           <label class="rad"><input type="radio" name="m_${it.id}" value="replace" data-mode ${it.mode==='replace'?'checked':''}> Mettre à jour cette séance avec les valeurs ci-dessus</label>
-          <label class="rad"><input type="radio" name="m_${it.id}" value="new" data-mode ${it.mode==='new'?'checked':''}> Créer une nouvelle séance</label></div>`:''}
+          <label class="rad"><input type="radio" name="m_${it.id}" value="new" data-mode ${it.mode==='new'?'checked':''}> Ajouter quand même comme nouvelle séance (deuxième séance du même jour)</label></div>`:''}
         <div class="row" style="margin-top:12px"><button class="btn" data-imp-save="${it.id}">Enregistrer la séance</button><button class="btn sec" data-imp-skip="${it.id}">Ignorer</button></div>`; }
     if(it.status==='done'&&it.kind==='weigh') body=this.weighForm(it);
     if(it.status==='done'&&it.kind==='daily') body=this.dailyForm(it);
@@ -2353,14 +2397,16 @@ const IMP={ items:[], running:false, target:null,
       <details class="more" ${it.res?'open':''}><summary>Composition détaillée (${WF.length-1} mesures)</summary><div class="grid" style="margin-top:10px">${WF.filter(([k])=>k!=='weight').map(([k])=>fld(k)).join('')}
        <div class="full"><label for="i_${it.id}_notes">Notes</label><input id="i_${it.id}_notes" data-k="notes" value="${esc(v.notes||'')}"></div></div></details>
       ${warns.length?`<div class="tip">⚠️ À vérifier (incohérence entre valeurs) : ${warns.join(', ')}</div>`:''}
-      ${it.wDup&&!it.editId?`<div class="dup"><b>Pesée déjà enregistrée le ${dFR(it.wDup.date)}${it.wDup.heure?' à '+esc(it.wDup.heure):''}</b> (${f(it.wDup.weight,1)} kg)
-        <label class="rad"><input type="radio" name="m_${it.id}" value="update" data-wmode ${it.wMode==='update'?'checked':''}> La mettre à jour</label><label class="rad"><input type="radio" name="m_${it.id}" value="new" data-wmode ${it.wMode==='new'?'checked':''}> Créer une nouvelle pesée</label></div>`:''}
+      ${it.wDup&&!it.editId?`<div class="dup${it.wExact?' exact':''}"><b>${it.wExact?'⚠️ Pesée probablement déjà importée':it.wHeureMatch?'Pesée déjà enregistrée à la même heure':'Autre pesée le même jour'}</b><br>
+        <span>Déjà enregistrée le ${dFR(it.wDup.date)}${it.wDup.heure?' à '+esc(it.wDup.heure):''} : <b>${f(it.wDup.weight,1)} kg</b>${it.v.heure?' · cette capture : '+esc(it.v.heure):''}${it.v.weight!=null?' · '+f(it.v.weight,1)+' kg':''}</span>
+        ${it.wExact?`<div class="why small">Même moment et poids quasi identique : c’est sans doute la même capture importée deux fois. « Mettre à jour » est le choix sûr.</div>`:it.wHeureMatch?`<div class="why small">Même heure mais valeurs différentes : mets à jour si c’est une relecture, ou ajoute-la en plus si c’est une vraie deuxième pesée.</div>`:`<div class="why small">Deux pesées le même jour (matin et soir, par exemple), c’est normal : celle-ci sera <b>ajoutée en plus</b> par défaut, sans écraser l’autre.</div>`}
+        <label class="rad"><input type="radio" name="m_${it.id}" value="update" data-wmode ${it.wMode==='update'?'checked':''}> Mettre à jour cette pesée avec les valeurs ci-dessus</label><label class="rad"><input type="radio" name="m_${it.id}" value="new" data-wmode ${it.wMode==='new'?'checked':''}> Ajouter quand même comme nouvelle pesée (deuxième pesée du jour)</label></div>`:''}
       <div class="row" style="margin-top:12px"><button class="btn" data-imp-save="${it.id}">Enregistrer la pesée</button><button class="btn sec" data-imp-skip="${it.id}">${it.res?'Ignorer':'Annuler'}</button></div>`; },
   derivedHTML(it){ const s={dist:num(fmtIn('dist',it.v.dist)),dur:hms(fmtIn('dur',it.v.dur)),dplus:num(fmtIn('dplus',it.v.dplus))}; const sp=speed(s), va=vasc(s), pc=sp?3600/sp:null;
     return `<div class="auto" style="margin-top:10px" data-derived>Vitesse : ${sp?f(sp,2)+' km/h':'–'} · Allure : ${pc?Math.floor(pc/60)+'\''+String(Math.round(pc%60)).padStart(2,'0')+'"/km':'–'} · Vitesse asc. : ${va&&s.dplus>0?f(va,0)+' m/h':'–'}</div>`; },
   statusText(it){ return it.status==='queued'?'En attente…':it.status==='reading'?it.msg:it.status==='error'?'Échec de la lecture':it.status==='unknown'?'Capture non reconnue':it.status==='saved'?'Enregistrée':it.status==='skipped'?'Ignorée':
      it.kind==='weigh'?(it.res?'Pesée · vérifie puis enregistre':'Saisie manuelle'):it.kind==='daily'?(it.res?'Statistiques du '+(it.v&&it.v.date?dFR(it.v.date):'?')+' · vérifie puis enregistre':'Saisie manuelle'):'Séance « '+(it.act||'?')+' » · vérifie puis enregistre'; },
-  paintProg(it){ const c=document.querySelector(`[data-it="${it.id}"]`); if(!c) return; const m=c.querySelector('[data-msg]'), p=c.querySelector('[data-prog]'); if(m) m.textContent=it.msg; if(p) p.style.setProperty('--v',(it.prog||0).toFixed(3)); },
+  paintProg(it){ const c=document.querySelector(`[data-it="${it.id}"]`); if(!c) return; const m=c.querySelector('[data-msg]'), p=c.querySelector('[data-prog]'), n=c.querySelector('[data-loadnote]'); if(m) m.textContent=it.msg; if(p) p.style.setProperty('--v',(it.prog||0).toFixed(3)); if(n) n.hidden=!it.loadCold; },
   render(){ const L=this.items, box=$('impList'); if(!box) return;
     box.innerHTML=L.length? L.map(it=>this.cardHTML(it)).join('') : `<div class="empty small mut" style="padding:12px 4px">Ajoute une ou plusieurs captures longues Mi Fitness (séance ou « Composition corporelle »). Rien n’est enregistré sans ta validation.</div>`;
     const ready=L.filter(x=>x.status==='done').length; $('btnImpAll').style.display=ready>1?'':'none'; $('btnImpAll').textContent='Tout enregistrer ('+ready+')'; },
@@ -2369,7 +2415,7 @@ const IMP={ items:[], running:false, target:null,
   byId(id){ return this.items.find(x=>x.id===id); },
   readInputs(it){ const c=document.querySelector(`[data-it="${it.id}"]`); if(!c) return; c.querySelectorAll('[data-k]').forEach(el=>{ const k=el.dataset.k; it.raw=it.raw||{}; it.raw[k]=el.value; }); },
   onInput(e){ const el=e.target, c=el.closest('[data-it]'); if(!c) return; const it=this.byId(c.dataset.it); if(!it) return;
-    if(el.matches('[data-type]')){ this.readInputs(it); this.syncRaw(it); it.type=el.value; it.pref=false; this.applyType(it); this.render(); return; }
+    if(el.matches('[data-type]')){ this.readInputs(it); this.syncRaw(it); it.type=el.value; it.pref=false; this.applyType(it); if(it.kind==='workout'){ const pd=it.dup&&it.dup.id, pm=it.mode; this.findDup(it); if(pd&&it.dup&&pd===it.dup.id&&!it.dupDiffType) it.mode=pm; } this.render(); return; }
     if(el.matches('[data-mode]')){ it.mode=el.value; return; } if(el.matches('[data-objsel]')){ it.objN=el.value?+el.value:null; return; } if(el.matches('[data-wmode]')){ it.wMode=el.value; return; }
     const k=el.dataset.k; if(!k) return; it.edited[k]=true; this.readInputs(it); this.syncRaw(it);
     if(it.kind==='daily'&&k==='date'){ it.v.date=el.value; it.dDup=/^\d{4}-\d{2}-\d{2}$/.test(el.value)?dayOf(el.value):null; const dd=c.querySelector('[data-ddup]'); if(dd) dd.outerHTML=this.dailyDupHTML(it); } const lab=c.querySelector(`label[for="${el.id}"] .cf`); if(lab){ lab.className='cf ed'; lab.textContent='modifié'; } el.parentElement.classList.remove('lowc');

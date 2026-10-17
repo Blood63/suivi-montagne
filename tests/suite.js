@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v14') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v15') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v14'), 'anciens caches de l’appli supprimés, v14 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v15'), 'anciens caches de l’appli supprimés, v14 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -551,6 +551,77 @@ function FIXTURE() {
       return out; });
     ok(eq.bad===null && eq.noscheme==='https://example.com/produit' && eq.stripped, 'lien matériel : seuls http(s) acceptés, https ajouté, lien dangereux retiré à la normalisation', eq);
     ok(eq.url==='https://example.com/chaussures' && eq.href===eq.url && eq.target==='_blank' && eq.kept, 'lien matériel : ajouté via le formulaire, cliquable (nouvel onglet), conservé à la fusion', eq);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+
+  // ---------- 16. v15 : chargement OCR à froid simulé + doublons même jour forçables ----------
+  out.push('16. Premier chargement OCR (étapes simulées) et doublons du même jour (v15)');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    // --- A. UI de chargement à froid / à chaud, sans vrai OCR ---
+    const cold = await p.evaluate(async () => { const seen = [];
+      MiFit.analyze = async (f, onP) => { const snap = tag => { const c = document.querySelector('[data-it="cold1"]'); seen.push({tag, msg: c && c.querySelector('[data-msg]').textContent, note: c ? !c.querySelector('[data-loadnote]').hidden : null, bar: c && c.querySelector('[data-prog]') ? getComputedStyle(c.querySelector('[data-prog]')).getPropertyValue('--v') : null}); };
+        onP(0, 'Téléchargement du moteur OCR…', {phase:'load', cold:true}); snap('moteur');
+        onP(0.013, 'Téléchargement du modèle français… 42 %', {phase:'load', cold:true, pct:0.42}); snap('modele');
+        onP(0.026, 'Initialisation du moteur OCR…', {phase:'load', cold:true}); snap('init');
+        onP(0.04, 'Lecture de la capture (1/2)…', {phase:'read', cold:true}); snap('lecture');
+        return {kind:'workout', activity:{v:'Marche'}, fields:{date:{v:'2026-10-10',conf:99}, dist:{v:3,conf:99}, dur:{v:1800,conf:99}}}; };
+      const it = {id:'cold1', name:'fictive.png', status:'queued', prog:0, msg:'En attente…', file:null}; IMP.items = [it]; IMP.open(); await IMP.run(); IMP.close();
+      return {seen, status: it.status, ready: MiFit.isReady()}; });
+    ok(cold.seen[0].note === true && /Téléchargement du moteur/.test(cold.seen[0].msg), 'froid : note de premier chargement visible dès la 1re étape', cold.seen);
+    ok(/modèle français… 42 %/.test(cold.seen[1].msg) && cold.seen[1].note === true, 'froid : étape « modèle français » avec % réel du logger', cold.seen[1]);
+    ok(/Initialisation/.test(cold.seen[2].msg) && cold.seen[3].note === false && /Lecture de la capture/.test(cold.seen[3].msg), 'froid : initialisation puis lecture, note masquée ensuite', cold.seen);
+    ok(cold.status === 'done', 'froid simulé : analyse terminée, revue affichée', cold.status);
+    const warm = await p.evaluate(async () => { let noteDuring = null;
+      MiFit.analyze = async (f, onP) => { onP(0, 'Chargement du moteur OCR…', {phase:'load', cold:false}); const c = document.querySelector('[data-it="warm1"]'); noteDuring = c ? !c.querySelector('[data-loadnote]').hidden : null;
+        return {kind:'workout', activity:{v:'Marche'}, fields:{date:{v:'2026-10-09',conf:99}, dist:{v:2,conf:99}, dur:{v:1200,conf:99}}}; };
+      const it = {id:'warm1', name:'fictive2.png', status:'queued', prog:0, msg:'En attente…', file:null}; IMP.items = [it]; IMP.open(); await IMP.run(); IMP.close(); return {noteDuring, status: it.status}; });
+    ok(warm.noteDuring === false && warm.status === 'done', 'chaud : pas de note de premier chargement, import inchangé');
+    const err = await p.evaluate(async () => { MiFit.analyze = async () => { throw new Error('Moteur OCR indisponible : une connexion internet est nécessaire la première fois. Vérifie ta connexion puis réessaie.'); };
+      const it = {id:'err1', name:'fictive3.png', status:'queued', prog:0, msg:'En attente…', file:null}; IMP.items = [it]; IMP.open(); await IMP.run();
+      const c = document.querySelector('[data-it="err1"]'); const out = {status: it.status, txt: c ? c.textContent : ''}; IMP.close(); return out; });
+    ok(err.status === 'error' && /Moteur OCR indisponible/.test(err.txt) && /Réessayer/.test(err.txt), 'échec de chargement : message clair + bouton Réessayer', err);
+    // --- B. Séances : types différents le même jour, doublon exact, ajout forcé ---
+    const dup = await p.evaluate(() => { const out = {}; const D = '2026-10-10';
+      DB.sessions.push({id:'dup-hike', date:D, heure:'08:00', type:'Randonnée', dist:8, dplus:300, dur:3600, kcal:600, updatedAt:1});
+      const mk = (act, F) => { const it = {id:'d' + Math.random().toString(36).slice(2, 7), name:'x.png', status:'reading', file:null}; IMP.prepare(it, {kind:'workout', activity:{v:act}, fields:F}); return it; };
+      // corde le soir, même durée par hasard : types différents → jamais de fusion par défaut
+      const corde = mk('Corde à sauter', {date:{v:D,conf:99}, heure:{v:'19:00',conf:99}, dur:{v:3600,conf:99}, sauts:{v:900,conf:99}});
+      out.diff = {dup: corde.dup && corde.dup.id, mode: corde.mode, diffType: corde.dupDiffType, exact: corde.dupExact, type: corde.type};
+      const n0 = DB.sessions.length; corde.mode = corde.mode; IMP.saveOne(corde, true);
+      out.afterDiff = {n: DB.sessions.length - n0, hike: DB.sessions.find(s => s.id === 'dup-hike').sauts == null, corde: DB.sessions.some(s => s.type === 'Corde à sauter' && s.date === D)};
+      // même capture « Marche » que la séance existante du 11/10 (fx-1011) : doublon exact, défaut sûr = compléter
+      const ex = mk('Marche', {date:{v:'2026-10-11',conf:99}, heure:{v:'',conf:99}, dur:{v:3400,conf:99}, dist:{v:5,conf:99}});
+      out.exact = {dup: ex.dup && ex.dup.id, mode: ex.mode, exact: ex.dupExact, why: (ex.dupWhy || []).length};
+      IMP.items = [ex]; IMP.open(); const card = document.querySelector('[data-it="' + ex.id + '"]'); out.exactTxt = card ? card.textContent : '';
+      const n1 = DB.sessions.length; IMP.saveOne(ex, true); out.afterExactMerge = DB.sessions.length - n1;
+      // … mais l'utilisateur peut TOUJOURS forcer une nouvelle séance
+      const forced = mk('Marche', {date:{v:'2026-10-11',conf:99}, dur:{v:3400,conf:99}, dist:{v:5,conf:99}}); forced.mode = 'new';
+      const n2 = DB.sessions.length; IMP.saveOne(forced, true); out.forcedAdded = DB.sessions.length - n2; IMP.close();
+      // deux activités sans aucun point commun le même jour : aucun avertissement, ajout direct
+      const far = mk('Corde à sauter', {date:{v:D,conf:99}, dur:{v:600,conf:99}, sauts:{v:300,conf:99}});
+      out.far = {dup: far.dup && far.dup.id, mode: far.mode}; IMP.items = IMP.items.filter(x => x !== far);
+      return out; });
+    ok(dup.diff.dup === 'dup-hike' && dup.diff.diffType && dup.diff.mode === 'new' && !dup.diff.exact, 'rando le matin + corde le soir (durée proche) : types différents détectés, défaut = nouvelle séance', dup.diff);
+    ok(dup.afterDiff.n === 1 && dup.afterDiff.hike && dup.afterDiff.corde, 'séance du soir ajoutée en plus, celle du matin intacte', dup.afterDiff);
+    ok(dup.exact.dup === 'fx-1011' && dup.exact.exact && dup.exact.mode === 'merge' && dup.exact.why >= 2, 'capture identique : doublon exact détecté (points communs expliqués), défaut = compléter', dup.exact);
+    ok(/probablement déjà importée/.test(dup.exactTxt) && /Ajouter quand même comme nouvelle séance/.test(dup.exactTxt), 'revue : avertissement fort + choix « Ajouter quand même » toujours présent', dup.exactTxt.slice(0, 200));
+    ok(dup.afterExactMerge === 0 && dup.forcedAdded === 1, 'défaut sûr sans doublon, mais ajout forcé toujours possible (+1 séance)', dup);
+    ok(dup.far.dup === null && dup.far.mode === 'new', 'deux activités sans rapport le même jour : aucun faux doublon', dup.far);
+    // --- C. Pesées : matin + soir le même jour, ré-import exact ---
+    const weigh = await p.evaluate(() => { const out = {}; const D = '2026-10-08';
+      DB.weights.push({id:'w-am', date:D, heure:'08:00', weight:80, updatedAt:1});
+      const mk = F => { const it = {id:'w' + Math.random().toString(36).slice(2, 7), name:'p.png', status:'reading', file:null}; IMP.prepare(it, {kind:'weigh', activity:{v:'Pesée'}, fields:F}); return it; };
+      const soir = mk({date:{v:D,conf:99}, heure:{v:'19:30',conf:99}, weight:{v:79.4,conf:99}});
+      out.soir = {dup: soir.wDup && soir.wDup.id, mode: soir.wMode, exact: soir.wExact};
+      IMP.items = [soir]; IMP.open(); out.soirTxt = (document.querySelector('[data-it="' + soir.id + '"]') || {}).textContent || '';
+      const n0 = DB.weights.length; IMP.saveOne(soir, true); out.nSoir = DB.weights.length - n0;
+      const re = mk({date:{v:D,conf:99}, heure:{v:'08:00',conf:99}, weight:{v:80.1,conf:99}});
+      IMP.items = [re]; IMP.render(); out.re = {mode: re.wMode, exact: re.wExact}; const n1 = DB.weights.length; IMP.saveOne(re, true);
+      out.nRe = DB.weights.length - n1; out.total = DB.weights.filter(w => w.date === D).length; IMP.close();
+      IMP.items = IMP.items.filter(x => x.kind !== 'weigh'); return out; });
+    ok(weigh.soir.dup === 'w-am' && weigh.soir.mode === 'new' && !weigh.soir.exact && /Autre pesée le même jour/.test(weigh.soirTxt) && /Ajouter quand même comme nouvelle pesée/.test(weigh.soirTxt), 'pesée du soir : autre pesée du jour signalée, défaut = ajout en plus', weigh.soir);
+    ok(weigh.nSoir === 1 && weigh.total === 2, 'deux pesées le même jour enregistrées (matin + soir)', weigh);
+    ok(weigh.re.exact && weigh.re.mode === 'update' && weigh.nRe === 0, 'ré-import de la pesée du matin : mise à jour, pas de doublon', weigh.re);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   await b.close();
