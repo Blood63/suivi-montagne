@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v15') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v16') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v15'), 'anciens caches de l’appli supprimés, v14 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v16'), 'anciens caches de l’appli supprimés, v16 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -622,6 +622,56 @@ function FIXTURE() {
     ok(weigh.soir.dup === 'w-am' && weigh.soir.mode === 'new' && !weigh.soir.exact && /Autre pesée le même jour/.test(weigh.soirTxt) && /Ajouter quand même comme nouvelle pesée/.test(weigh.soirTxt), 'pesée du soir : autre pesée du jour signalée, défaut = ajout en plus', weigh.soir);
     ok(weigh.nSoir === 1 && weigh.total === 2, 'deux pesées le même jour enregistrées (matin + soir)', weigh);
     ok(weigh.re.exact && weigh.re.mode === 'update' && weigh.nRe === 0, 'ré-import de la pesée du matin : mise à jour, pas de doublon', weigh.re);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+
+  // ---------- 17. v16 : poids de base, GPX interactif, météo sommet ----------
+  out.push('17. Poids de base, trace GPX et météo du sommet (v16, fixtures fictives)');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    const eq = await p.evaluate(() => { const out={}; const c=DB.equip[0];
+      c.items[0].bought=true; c.items[0].wg=850; c.items[0].updatedAt=9; c.items[1].bought=true; delete c.items[1].wg; c.items[1].updatedAt=9;
+      if(c.items[2]){ c.items[2].bought=false; c.items[2].wg=5000; }
+      save(); renderEquip(); out.kpi=document.querySelector('#eqKpi').textContent; out.cat=document.querySelector('#eqList [data-cat]').textContent; out.fmt=[fmtW(450),fmtW(1250),fmtW(2000)];
+      out.base=baseWeight();
+      const D=JSON.parse(JSON.stringify(DB)); D.equip[0].items[0].wg=-4; D.equip[0].items[1].wg='abc'; normalizeDB(D); out.norm=[('wg' in D.equip[0].items[0]),('wg' in D.equip[0].items[1])];
+      const M=mergeDB(JSON.parse(JSON.stringify(DB)),JSON.parse(JSON.stringify(DB))); out.merged=M.equip[0].items[0].wg;
+      // ajout via le formulaire (poids en grammes)
+      const card=document.querySelector('#eqList [data-cat]'); card.querySelector('[data-new=name]').value='Poids fictif'; card.querySelector('[data-new=wg]').value='275'; card.querySelector('[data-act=add]').click();
+      out.added=DB.equip[0].items.find(i=>i.name==='Poids fictif'); return out; });
+    ok(eq.fmt.join('|')==='450 g|1,25 kg|2 kg', 'poids : format g / kg', eq.fmt);
+    ok(eq.base.w===850 && eq.base.miss===1 && /Poids de base : 850 g/.test(eq.kpi) && /sans poids/.test(eq.kpi), 'poids de base = articles cochés avec poids, manquants signalés (non cochés ignorés)', eq.base);
+    ok(/🎒 850 g/.test(eq.cat), 'sous-total poids par catégorie', eq.cat.slice(0,120));
+    ok(eq.norm.join()==='false,false' && eq.merged===850, 'poids invalide retiré à la normalisation, poids conservé à la fusion', eq);
+    ok(eq.added && eq.added.wg===275, 'ajout d’article avec poids (g) via le formulaire', eq.added);
+    // --- GPX fictif ---
+    const gx = await p.evaluate(() => { const out={}; let pts='';
+      for(let i=0;i<60;i++){ const la=45.7600+i*0.001, lo=2.9500+((i%2)?0.0012:-0.0012)+i*0.0004; pts+='<trkpt lat="'+la.toFixed(6)+'" lon="'+lo.toFixed(6)+'"><ele>'+(1000+i*10)+'</ele></trkpt>'; }
+      const txt='<?xml version="1.0"?><gpx><trk><trkseg>'+pts+'</trkseg></trk></gpx>';
+      const g=parseGpx(txt); out.g={n:g.pts.length,n0:g.n0,dist:g.dist,dplus:g.dplus};
+      // gros fichier : plafond de points
+      let big=''; for(let i=0;i<1500;i++){ const la=45.7+i*0.0004, lo=2.9+((i%2)?0.002:-0.002); big+='<trkpt lat="'+la+'" lon="'+lo+'"><ele>'+(1000+i)+'</ele></trkpt>'; }
+      out.big=parseGpx('<gpx><trk><trkseg>'+big+'</trkseg></trk></gpx>').pts.length;
+      try{ parseGpx('<gpx></gpx>'); out.err=''; }catch(e){ out.err=e.message; }
+      DB.objectifs[1]=Object.assign(objState(1),{gpx:g,updatedAt:Date.now()}); save();
+      renderSummit(1); out.hasFile=!!document.querySelector('#sumGpxFile'); out.profile=!!document.querySelector('#sumGpxChart'); out.stat=document.querySelector('#p-sum').textContent;
+      out.det=document.querySelector('#sumGpxChart .chart-detail')?.textContent||'';
+      const sg=sanGpx({pts:[[91,0,1],[0,0,1]]}); out.sanNull=sg===null;
+      removeGpx(1); out.afterDel=!!(DB.objectifs[1]&&DB.objectifs[1].gpx); return out; });
+    ok(gx.g.n>=10 && gx.g.n<=420 && gx.g.dist>2 && gx.g.dplus>=500, 'GPX fictif parsé : distance et D+ calculés, points simplifiés', gx.g);
+    ok(gx.big<=420, 'GPX volumineux : plafond de points pour la synchro', gx.big);
+    ok(/Aucune trace/.test(gx.err) && gx.sanNull, 'GPX invalide rejeté, trace stockée invalide nettoyée', gx.err);
+    ok(gx.hasFile && gx.profile && /Profil altimétrique/.test(gx.stat) && /Altitude/.test(gx.det), 'fiche sommet : profil interactif avec altitude au curseur', gx.det);
+    ok(gx.afterDel===false && /Ajouter une trace GPX/.test(await p.evaluate(()=>document.querySelector('#p-sum').textContent)), 'trace GPX retirable');
+    // --- Météo fictive (réseau simulé) ---
+    const wx = await p.evaluate(async () => { const out={}; const dates=['2026-10-19','2026-10-20'];
+      DB.objectifs[1]=Object.assign(objState(1),{datePrevue:'2026-10-20',updatedAt:Date.now()}); save(); localStorage.removeItem(KEY+'.wx');
+      const fx={daily:{time:dates,weather_code:[3,95],temperature_2m_max:[8,6],temperature_2m_min:[-1,-2],precipitation_probability_max:[20,90],precipitation_sum:[0,8.5],wind_speed_10m_max:[30,55],wind_gusts_10m_max:[60,95]},hourly:{time:['2026-10-19T12:00','2026-10-20T12:00'],apparent_temperature:[2,-4]}};
+      const oldFetch=window.fetch; window.fetch=async()=>({ok:true,json:async()=>fx});
+      renderSummit(1); await loadSummitWeather(1,true); out.txt=document.querySelector('#sumWx').textContent; out.cached=!!wxCache(1);
+      window.fetch=async()=>{ throw new Error('réseau fictif coupé'); }; localStorage.removeItem(KEY+'.wx'); await loadSummitWeather(1,true); out.errTxt=document.querySelector('#sumWx').textContent;
+      window.fetch=oldFetch; return out; });
+    ok(/20\/10\/2026/.test(wx.txt) && /Orage/.test(wx.txt) && /ressenti -4/.test(wx.txt.replace('\u2212','-')) && /rafales 95/.test(wx.txt) && wx.cached, 'météo fictive : date prévue, orage, ressenti, vent/rafales, cache 30 min', wx.txt.slice(0,220));
+    ok(/indisponible/.test(wx.errTxt), 'météo : échec réseau affiché proprement, sans blocage', wx.errTxt);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   await b.close();

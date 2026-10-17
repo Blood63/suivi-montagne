@@ -2,7 +2,7 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v15';            // fichiers de l'appli (renouvelé à chaque version)
+const CACHE = PREFIX + 'v16';            // fichiers de l'appli (renouvelé à chaque version)
 const EXT = PREFIX + 'ext-v1';          // polices + moteur OCR Tesseract (stables, conservés entre versions)
 const KEEP = [CACHE, EXT];
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url), origin = url.origin;
   // Polices et moteur OCR (versions figées dans l'URL) : cache d'abord, pour fonctionner hors-ligne
   if (EXT_HOSTS.includes(origin)) {
-    if (origin === 'https://cdn.jsdelivr.net' && !/tesseract/i.test(url.pathname)) return;
+    if (origin === 'https://cdn.jsdelivr.net' && !/(tesseract|leaflet@1\.9\.4)/i.test(url.pathname)) return; // OCR + Leaflet figés : mis en cache ; le reste passe sans interception
     e.respondWith(caches.open(EXT).then(c => c.match(e.request).then(hit => hit || fetch(e.request).then(r => {
       if (r.ok || r.type === 'opaque') c.put(e.request, r.clone()).catch(() => {});
       return r; }))));

@@ -325,7 +325,11 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v15 : premier chargement OCR expliqué étape par étape (moteur, modèle français, initialisation), doublons même jour explicites (ajout forcé toujours possible, types différents jamais fusionnés par défaut) ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+.bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
+.mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
+.wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
+.gpxstat{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.gpxstat div{background:rgba(255,255,255,.05);border-radius:10px;padding:8px 6px;text-align:center}.gpxstat b{display:block;font-size:16px}.gpxstat small{color:var(--mut);font-size:11px}
 .imp-load{margin-top:8px;padding:9px 11px;border-radius:12px;background:rgba(124,200,234,.08);border:1px solid rgba(124,200,234,.28);font-size:13px;display:flex;gap:9px;align-items:flex-start}
 .imp-load[hidden]{display:none}
 .imp-spin{flex:none;width:16px;height:16px;margin-top:1px;border-radius:50%;border:2px solid rgba(124,200,234,.3);border-top-color:#7cc8ea;animation:impspin .8s linear infinite}
@@ -485,7 +489,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
     <h3>Nouvelle catégorie</h3>
     <div class="row"><input id="eqNewCat" placeholder="ex. Bivouac" style="flex:1"><button class="btn sm" id="btnAddCat">Ajouter</button></div>
   </div>
-  <p class="small mut" style="text-align:center">Coche un article quand il est acheté. Prix optionnel (€).</p>
+  <p class="small mut" style="text-align:center">Coche un article quand il est acheté : les articles cochés composent ton sac. Prix et poids (g) optionnels. Le « poids de base » additionne les articles cochés dont le poids est renseigné.</p>
 </section>
 
 <!-- DONNEES -->
@@ -855,7 +859,9 @@ function normalizeDB(db){
   if(db.prefs.chartWeeks!=null){ const g=db.prefs.chartWeeks, v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
     if(!isFinite(v)||v<2||v>104) delete db.prefs.chartWeeks;
     else if(typeof g==='number') db.prefs.chartWeeks={v:Math.round(v),updatedAt:1}; else { g.v=Math.round(v); if(typeof g.updatedAt!=='number') g.updatedAt=1; } }
-  if(Array.isArray(db.equip)) db.equip.forEach(c=>(c.items||[]).forEach(i=>{ if(i&&'url' in i){ const u=safeUrl(i.url); if(u) i.url=u; else delete i.url; } }));
+  if(Array.isArray(db.equip)) db.equip.forEach(c=>(c.items||[]).forEach(i=>{ if(!i||typeof i!=='object') return; if('url' in i){ const u=safeUrl(i.url); if(u) i.url=u; else delete i.url; }
+    if('wg' in i){ const v=+i.wg; if(!isFinite(v)||v<=0) delete i.wg; else i.wg=Math.min(100000,Math.round(v)); } }));
+  if(db.objectifs&&typeof db.objectifs==='object') for(const o of Object.values(db.objectifs)){ if(o&&typeof o==='object'&&'gpx' in o){ const g=sanGpx(o.gpx); if(g) o.gpx=g; else delete o.gpx; } }
   return db; }
 /* Copies de sécurité locales (5 max) : une par jour à l'ouverture + avant import, restauration ou réinitialisation */
 const SNAP_KEY=KEY+'.snapshots';
@@ -1255,18 +1261,23 @@ function renderEvo(){
 
 /* ---------- Équipement ---------- */
 function findItem(cid,iid){ const c=DB.equip.find(x=>x.id===cid); return [c, c&&iid? c.items.find(i=>i.id===iid):null]; }
+function fmtW(g){ if(g==null||!isFinite(g)) return '–'; g=Math.round(g); return g>=1000? f(g/1000,2)+' kg' : f(g,0)+' g'; }
+function catWeight(c){ let w=0,miss=0,n=0; (c.items||[]).forEach(i=>{ if(!i.bought) return; n++; if(i.wg) w+=i.wg; else miss++; }); return {w,miss,n}; }
+function baseWeight(){ let w=0,miss=0,n=0; DB.equip.forEach(c=>{ const x=catWeight(c); w+=x.w; miss+=x.miss; n+=x.n; }); return {w,miss,n}; }
 function renderEquip(){
   let tot=0,bought=0,nb=0,nbB=0;
   DB.equip.forEach(c=>c.items.forEach(i=>{ nb++; if(i.bought) nbB++; if(i.price){ tot+=i.price; if(i.bought) bought+=i.price; } }));
-  $('eqKpi').innerHTML=[['articles achetés',nbB+' / '+nb],['budget total',f(tot,2)+' €'],['reste à acheter',f(tot-bought,2)+' €']].map(([k,v])=>`<div class="kpi"><b>${v}</b><small>${k}</small></div>`).join('');
-  $('eqList').innerHTML=DB.equip.map(c=>{ const st=c.items.reduce((t,i)=>t+(i.price||0),0); const done=c.items.filter(i=>i.bought).length;
-    return `<div class="card" data-cat="${c.id}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(c.name)} <span class="small mut">${done}/${c.items.length}${st?' · '+f(st,2)+' €':''}</span></h3>
+  const BW=baseWeight();
+  $('eqKpi').innerHTML=[['articles achetés',nbB+' / '+nb],['budget total',f(tot,2)+' €'],['reste à acheter',f(tot-bought,2)+' €']].map(([k,v])=>`<div class="kpi"><b>${v}</b><small>${k}</small></div>`).join('')
+    +`<div class="bw" style="grid-column:1/-1">🎒 <b>Poids de base : ${fmtW(BW.w)}</b> <span class="small mut">(articles cochés, hors eau/nourriture/consommables)</span>${BW.miss?`<div class="small miss">⚠ ${BW.miss} article${BW.miss>1?'s':''} coché${BW.miss>1?'s':''} sans poids renseigné : total sous-estimé. Ajoute leur poids via ✏️.</div>`:`<div class="small mut">Tous les articles cochés ont un poids renseigné.</div>`}</div>`;
+  $('eqList').innerHTML=DB.equip.map(c=>{ const st=c.items.reduce((t,i)=>t+(i.price||0),0); const done=c.items.filter(i=>i.bought).length; const cw=catWeight(c);
+    return `<div class="card" data-cat="${c.id}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(c.name)} <span class="small mut">${done}/${c.items.length}${st?' · '+f(st,2)+' €':''}${cw.w?' · 🎒 '+fmtW(cw.w):''}${cw.miss?' · ⚠ '+cw.miss+' sans poids':''}</span></h3>
       <div><button class="iconbtn" data-act="rencat" aria-label="Renommer la catégorie">✏️</button><button class="iconbtn" data-act="delcat" aria-label="Supprimer la catégorie">🗑️</button></div></div>
       ${c.items.map(i=>{ const u=i.url?safeUrl(i.url):null; return `<div class="eq${i.bought?' done':''}" data-item="${i.id}"><input type="checkbox" data-act="tog" ${i.bought?'checked':''} aria-label="Acheté">
         <div class="nm"><b>${esc(i.name)}</b>${i.note?`<div class="small mut">${esc(i.note)}</div>`:''}${u?`<div><a class="eq-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">🔗 Voir / acheter</a></div>`:''}</div>
-        <span class="pr">${i.price!=null?f(i.price,2)+' €':''}</span>
+        ${i.wg?`<span class="pr">⚖️ ${fmtW(i.wg)}</span>`:''}<span class="pr">${i.price!=null?f(i.price,2)+' €':''}</span>
         <button class="iconbtn" data-act="edit" aria-label="Modifier">✏️</button><button class="iconbtn" data-act="del" aria-label="Supprimer">🗑️</button></div>`; }).join('')}
-      <div class="row" style="margin-top:8px"><input data-new="name" placeholder="Nouvel article" style="flex:2;min-width:140px"><input data-new="price" placeholder="Prix €" inputmode="decimal" style="flex:1;min-width:80px"><input data-new="url" placeholder="Lien https://… (optionnel)" inputmode="url" style="flex:2;min-width:160px"><button class="btn sm" data-act="add">Ajouter</button></div></div>`; }).join('') || '<div class="card mut">Aucune catégorie.</div>';
+      <div class="row" style="margin-top:8px"><input data-new="name" placeholder="Nouvel article" style="flex:2;min-width:140px"><input data-new="price" placeholder="Prix €" inputmode="decimal" style="flex:1;min-width:80px"><input data-new="wg" placeholder="Poids g" inputmode="numeric" style="flex:1;min-width:80px"><input data-new="url" placeholder="Lien https://… (optionnel)" inputmode="url" style="flex:2;min-width:160px"><button class="btn sm" data-act="add">Ajouter</button></div></div>`; }).join('') || '<div class="card mut">Aucune catégorie.</div>';
 }
 function equipClick(e){
   const b=e.target.closest('[data-act]'); if(!b) return; const card=b.closest('[data-cat]'); if(!card) return;
@@ -1278,14 +1289,17 @@ function equipClick(e){
   else if(act==='edit'){ const n=prompt('Nom de l’article',it.name); if(n===null) return;
     const no=prompt('Note (optionnelle)',it.note||''); if(no===null) return;
     const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p===null) return;
+    const pw=prompt('Poids en grammes (vide = aucun, ex. 450)',it.wg!=null?String(it.wg):''); if(pw===null) return;
     const lu=prompt('Lien internet pour l’acheter (https://…, vide = aucun)',it.url||''); if(lu===null) return;
     const x=num(p.replace(/€/g,'')); if(x!=null&&(isNaN(x)||x<0)){ alert('Prix invalide'); return; }
+    const wv=num(pw.replace(/g/gi,'')); if(wv!=null&&(isNaN(wv)||wv<=0||wv>100000)){ alert('Poids invalide : nombre de grammes attendu (ex. 450).'); return; }
     const u=safeUrl(lu); if(u===null){ alert('Lien invalide : adresse http(s) attendue, par exemple https://…'); return; }
-    if(n.trim()) it.name=n.trim(); it.note=no.trim(); it.price=x; if(u) it.url=u; else delete it.url; it.updatedAt=now; }
+    if(n.trim()) it.name=n.trim(); it.note=no.trim(); it.price=x; if(wv==null) delete it.wg; else it.wg=Math.round(wv); if(u) it.url=u; else delete it.url; it.updatedAt=now; }
   else if(act==='add'){ const inp=card.querySelector('[data-new=name]'); const nm=inp.value.trim(); if(!nm){ inp.focus(); return; }
     const pr=num(card.querySelector('[data-new=price]').value.replace(/€/g,'')); if(pr!=null&&(isNaN(pr)||pr<0)){ alert('Prix invalide'); return; }
+    const wEl=card.querySelector('[data-new=wg]'); const wv=wEl?num(wEl.value.replace(/g/gi,'')):null; if(wv!=null&&(isNaN(wv)||wv<=0||wv>100000)){ alert('Poids invalide : nombre de grammes attendu (ex. 450).'); return; }
     const lu=card.querySelector('[data-new=url]')?card.querySelector('[data-new=url]').value:''; const u=safeUrl(lu); if(u===null){ alert('Lien invalide : adresse http(s) attendue, par exemple https://…'); return; }
-    const ni={id:uid(),name:nm,note:'',price:pr,bought:false,updatedAt:now}; if(u) ni.url=u; c.items.push(ni); }
+    const ni={id:uid(),name:nm,note:'',price:pr,bought:false,updatedAt:now}; if(wv!=null) ni.wg=Math.round(wv); if(u) ni.url=u; c.items.push(ni); }
   else if(act==='rencat'){ const n=prompt('Nom de la catégorie',c.name); if(n===null||!n.trim()) return; c.name=n.trim(); c.updatedAt=now; }
   else if(act==='delcat'){ if(!confirm('Supprimer la catégorie « '+c.name+' » et ses '+c.items.length+' articles ?')) return; DB.equip=DB.equip.filter(x=>x.id!==cid); DB.tomb.c[cid]=now; c.items.forEach(i=>DB.tomb.i[i.id]=now); }
   else return;
@@ -1585,6 +1599,96 @@ function osmEmbed(I){ const pts=[I.sum,I.start.ll], la=pts.map(p=>p[0]), lo=pts.
   const pad=Math.max(0.012,(Math.max(...la)-Math.min(...la))*0.35,(Math.max(...lo)-Math.min(...lo))*0.35);
   const bb=[Math.min(...lo)-pad,Math.min(...la)-pad,Math.max(...lo)+pad,Math.max(...la)+pad].map(x=>x.toFixed(4)).join(',');
   return `https://www.openstreetmap.org/export/embed.html?bbox=${bb}&layer=mapnik&marker=${I.sum[0]},${I.sum[1]}`; }
+
+/* ---------- v16 : trace GPX + météo du sommet (fiche sommet) ---------- */
+const GPX_MAX_PTS=420, GPX_MAX_BYTES=5*1024*1024;
+function havM(a,b){ const R=6371000, rad=Math.PI/180, dLa=(b[0]-a[0])*rad, dLo=(b[1]-a[1])*rad;
+  const h=Math.sin(dLa/2)**2+Math.cos(a[0]*rad)*Math.cos(b[0]*rad)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.min(1,Math.sqrt(h))); }
+function gpxMetrics(pts){ let dist=0,dplus=0,lastEle=null;
+  for(let i=0;i<pts.length;i++){ if(i) dist+=havM(pts[i-1],pts[i]);
+    const e=pts[i][2]; if(e!=null&&isFinite(e)){ if(lastEle==null) lastEle=e; else { const d=e-lastEle; if(d>=3){ dplus+=d; lastEle=e; } else if(d<=-3) lastEle=e; } } }
+  return {dist:Math.round(dist/10)/100, dplus:Math.round(dplus)}; } // dist en km
+function sanGpx(g){ if(!g||typeof g!=='object'||!Array.isArray(g.pts)) return null;
+  let pts=g.pts.filter(x=>Array.isArray(x)&&isFinite(+x[0])&&isFinite(+x[1])&&Math.abs(+x[0])<=90&&Math.abs(+x[1])<=180).map(x=>[Math.round(+x[0]*1e5)/1e5,Math.round(+x[1]*1e5)/1e5,(x[2]!=null&&isFinite(+x[2]))?Math.round(+x[2]):null]);
+  if(pts.length<2) return null; if(pts.length>GPX_MAX_PTS){ const step=(pts.length-1)/(GPX_MAX_PTS-1), out=[]; for(let i=0;i<GPX_MAX_PTS;i++) out.push(pts[Math.round(i*step)]); pts=out; }
+  const m=gpxMetrics(pts); if(!isFinite(m.dist)||m.dist<=0) return null;
+  return {pts,dist:m.dist,dplus:m.dplus,n0:(+g.n0>0?Math.round(+g.n0):pts.length),addedAt:+g.addedAt||0}; }
+function simplifyGpx(raw){ // Ramer–Douglas–Peucker (coordonnées projetées en mètres), puis plafond de points
+  if(raw.length<=GPX_MAX_PTS) { /* on simplifie quand même légèrement ci-dessous */ }
+  const lat0=raw[0][0]*Math.PI/180, xy=raw.map(x=>[x[1]*111320*Math.cos(lat0),x[0]*110540]);
+  const rdp=(ptsIdx,eps)=>{ if(ptsIdx.length<=2) return ptsIdx; const keep=new Set([ptsIdx[0],ptsIdx[ptsIdx.length-1]]); const stack=[[0,ptsIdx.length-1]];
+    while(stack.length){ const [a,b]=stack.pop(); if(b<=a+1) continue; const A=xy[ptsIdx[a]],B=xy[ptsIdx[b]], dx=B[0]-A[0], dy=B[1]-A[1], len=Math.hypot(dx,dy)||1; let mi=-1,md=-1;
+      for(let i=a+1;i<b;i++){ const P=xy[ptsIdx[i]]; const d=len?Math.abs(dy*P[0]-dx*P[1]+B[0]*A[1]-B[1]*A[0])/len:havM(raw[ptsIdx[a]],raw[ptsIdx[i]]); if(d>md){md=d;mi=i;} }
+      if(md>eps&&mi>0){ keep.add(ptsIdx[mi]); stack.push([a,mi],[mi,b]); } }
+    return ptsIdx.filter(i=>keep.has(i)); };
+  let idx=raw.map((_,i)=>i), eps=8;
+  idx=rdp(idx,eps); while(idx.length>GPX_MAX_PTS&&eps<500){ eps*=1.8; idx=rdp(raw.map((_,i)=>i),eps); }
+  let pts=idx.map(i=>raw[i]); if(pts.length>GPX_MAX_PTS){ const step=(pts.length-1)/(GPX_MAX_PTS-1), out=[]; for(let i=0;i<GPX_MAX_PTS;i++) out.push(pts[Math.round(i*step)]); pts=out; }
+  return pts; }
+function parseGpx(text){ if(typeof text!=='string'||text.length>GPX_MAX_BYTES) throw new Error('Fichier GPX trop volumineux (5 Mo max).');
+  const doc=new DOMParser().parseFromString(text,'text/xml'); if(doc.querySelector('parsererror')) throw new Error('Fichier GPX illisible.');
+  let nodes=[...doc.querySelectorAll('trkpt')]; if(nodes.length<2) nodes=[...doc.querySelectorAll('rtept')]; if(nodes.length<2) nodes=[...doc.querySelectorAll('wpt')];
+  const raw=[]; for(const nd of nodes){ const la=+nd.getAttribute('lat'), lo=+nd.getAttribute('lon'); if(!isFinite(la)||!isFinite(lo)) continue;
+    const el=nd.querySelector('ele'); const e=el?+el.textContent:null; raw.push([la,lo,isFinite(e)?e:null]); }
+  if(raw.length<2) throw new Error('Aucune trace exploitable dans ce GPX (points « trkpt » attendus).');
+  const pts=simplifyGpx(raw).map(x=>[Math.round(x[0]*1e5)/1e5,Math.round(x[1]*1e5)/1e5,x[2]!=null?Math.round(x[2]):null]);
+  const m=gpxMetrics(pts); if(!m.dist) throw new Error('Trace GPX sans distance exploitable.');
+  return {pts,dist:m.dist,dplus:m.dplus,n0:raw.length,addedAt:Date.now()}; }
+async function handleGpxFile(n,file){ if(!file) return; if(file.size>GPX_MAX_BYTES){ alert('Fichier GPX trop volumineux (5 Mo max).'); return; }
+  try{ const g=parseGpx(await file.text()); const st=Object.assign(objState(n),{gpx:g,updatedAt:Date.now()}); DB.objectifs[n]=st; save();
+    const approx=JSON.stringify(g).length; toast('Trace GPX ajoutée : '+f(g.dist,1)+' km · '+f(g.dplus,0)+' m D+ ('+g.pts.length+' points'+(g.n0>g.pts.length?', simplifiée depuis '+g.n0:'')+', ≈ '+f(approx/1024,1)+' Ko synchronisés)'); renderSummit(n); }
+  catch(e){ alert(e.message||'Fichier GPX illisible.'); } }
+function removeGpx(n){ if(!confirm('Retirer la trace GPX de cet objectif ?')) return; const st=objState(n); delete st.gpx; st.updatedAt=Date.now(); DB.objectifs[n]=st; save(); renderSummit(n); toast('Trace GPX retirée'); }
+let leafletP=null;
+function loadLeaflet(){ if(window.L) return Promise.resolve(window.L); if(leafletP) return leafletP;
+  leafletP=new Promise((res,rej)=>{ const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+    const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'; sc.onload=()=>res(window.L); sc.onerror=()=>{ leafletP=null; rej(new Error('leaflet')); }; document.head.appendChild(sc); });
+  return leafletP; }
+async function initGpxMap(n){ const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n), g=sanGpx(st.gpx); const el=$('sumMap'); if(!o||!g||!el) return;
+  try{ const L=await loadLeaflet(); if(curSum!==o.n||!document.body.contains(el)) return;
+    const map=L.map(el,{scrollWheelZoom:false}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+    const line=L.polyline(g.pts.map(x=>[x[0],x[1]]),{color:'#fb923c',weight:4}).addTo(map); map.fitBounds(line.getBounds(),{padding:[18,18]});
+    L.marker(g.pts[0]).addTo(map).bindPopup('Départ de la trace'); L.marker(g.pts[g.pts.length-1]).addTo(map).bindPopup('Fin de la trace');
+    const I=OBJ_INFO[o.n]; if(I&&I.sum) L.circleMarker(I.sum,{radius:6,color:'#7cc8ea',fillColor:'#7cc8ea',fillOpacity:.8}).addTo(map).bindPopup('Sommet : '+esc(o.sommet));
+    el.style.display=''; const sm=$('sumStaticMap'); if(sm) sm.style.display='none'; setTimeout(()=>map.invalidateSize(),60); }
+  catch(e){ const note=$('sumMapNote'); if(note) note.textContent='Carte interactive indisponible (hors-ligne ?) : la carte classique ci-dessus et le profil ci-dessous restent utilisables.'; el.style.display='none'; } }
+function gpxProfileHTML(g){ const hasEle=g.pts.some(x=>x[2]!=null); if(!hasEle) return '<p class="small mut">Ce GPX ne contient pas d’altitudes : profil non disponible.</p>';
+  return '<div class="chart" id="sumGpxChart"></div><p class="small mut" style="margin-top:4px">Touche ou fais glisser sur le profil pour lire l’altitude à chaque distance.</p>'; }
+function drawGpxProfile(g){ const el=$('sumGpxChart'); if(!el) return; let d=0; const cum=g.pts.map((x,i)=>{ if(i) d+=havM(g.pts[i-1],x)/1000; return d; });
+  const labels=cum.map(x=>f(x,1)+' km'), details=g.pts.map((x,i)=>`<b>${f(cum[i],1)} km</b><br>Altitude : <b>${x[2]!=null?f(x[2],0)+' m':'–'}</b>`);
+  chart(el,labels,[{name:'Altitude (m)',type:'line',color:'#fb923c',values:g.pts.map(x=>x[2])}],{fitLeft:true,details}); }
+function gpxCardHTML(o,st){ const g=sanGpx(st.gpx);
+  if(!g) return `<div class="row" style="margin-top:10px"><label class="btn sec sm" for="sumGpxFile" style="cursor:pointer">🧭 Ajouter une trace GPX</label></div><p class="small mut" style="margin-top:6px">Trace GPX de l’itinéraire (export Visorando, IGNrando, montre…) : carte interactive et profil altimétrique. La trace est simplifiée (≤ ${GPX_MAX_PTS} points) avant synchronisation.</p>`;
+  const dDist=o.dist? ((g.dist-o.dist)/o.dist*100):null, dDp=o.dplus? ((g.dplus-o.dplus)/o.dplus*100):null;
+  const cmp=(lbl,a,b,unit,delta)=>`<div><b>${f(a,unit==='km'?1:0)} ${unit}</b><small>${lbl} (trace)</small><div class="small mut">objectif ≈ ${f(b,unit==='km'?1:0)} ${unit}${delta!=null?' · '+(delta>0?'+':'')+f(delta,0)+' %':''}</div></div>`;
+  return `<div id="sumMap" class="mapf leaf" style="display:none;margin-top:10px"></div><div class="small mut" id="sumMapNote" style="margin-top:6px"></div>
+  <div class="gpxstat">${cmp('Distance',g.dist,o.dist,'km',dDist)}${cmp('D+',g.dplus,o.dplus,'m',dDp)}<div><b>${g.pts.length}</b><small>points stockés</small><div class="small mut">trace d’origine : ${g.n0} points · ≈ ${f(JSON.stringify(g).length/1024,1)} Ko</div></div></div>
+  <h4 class="h4">📈 Profil altimétrique (trace GPX)</h4>${gpxProfileHTML(g)}
+  <div class="row" style="margin-top:10px"><label class="btn sec sm" for="sumGpxFile" style="cursor:pointer">Remplacer la trace GPX</label><button class="btn bad sm" type="button" data-gpx-del>Retirer la trace</button></div>`; }
+/* Météo Open-Meteo au sommet : aucun compte ni clé, cache 30 min sur l’appareil */
+const WX_CODES={0:'Ciel dégagé',1:'Plutôt dégagé',2:'Partiellement nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard givrant',51:'Bruine légère',53:'Bruine',55:'Bruine dense',56:'Bruine verglaçante',57:'Bruine verglaçante',61:'Pluie faible',63:'Pluie',65:'Pluie forte',66:'Pluie verglaçante',67:'Pluie verglaçante',71:'Neige faible',73:'Neige',75:'Neige forte',77:'Grésil',80:'Averses faibles',81:'Averses',82:'Averses violentes',85:'Averses de neige',86:'Averses de neige',95:'Orage',96:'Orage + grêle',99:'Orage + grêle'};
+function wxCache(n){ try{ const a=JSON.parse(localStorage.getItem(KEY+'.wx')||'{}'); const x=a[n]; return x&&Date.now()-x.t<30*60e3? x.data:null; }catch(e){ return null; } }
+function wxStore(n,data){ try{ const a=JSON.parse(localStorage.getItem(KEY+'.wx')||'{}'); a[n]={t:Date.now(),data}; localStorage.setItem(KEY+'.wx',JSON.stringify(a)); }catch(e){} }
+function wxDayHTML(d){ const orage=d.code>=95, neige=(d.code>=71&&d.code<=77)||d.code===85||d.code===86, nz=v=>v==null?v:(Math.round(v)===0?0:v);
+  return `<div class="wxday"><b>${dFR(d.date)}</b> · ${esc(WX_CODES[d.code]||'—')}${orage?' ⛈️':neige?' ❄️':''}<br>🌡️ ${f(nz(d.tmin),0)}° à ${f(nz(d.tmax),0)}°C${d.app!=null?' · ressenti '+f(nz(d.app),0)+'°C':''}<br>💨 vent ${f(d.wind,0)} km/h · rafales ${f(d.gust,0)} km/h<br>💧 pluie ${d.pop!=null?f(d.pop,0)+' %':'–'}${d.precip!=null?' · '+f(d.precip,1)+' mm':''}${orage?'<br><b>⚠ Risque d’orage</b>':''}</div>`; }
+function parseWx(j,o,st){ const days=[]; const D=j.daily||{}, H=j.hourly||{};
+  const appAt={}; (H.time||[]).forEach((t,i)=>{ if(/T12:00/.test(t)) appAt[t.slice(0,10)]=H.apparent_temperature?H.apparent_temperature[i]:null; });
+  (D.time||[]).forEach((date,i)=>days.push({date,code:D.weather_code?D.weather_code[i]:null,tmin:D.temperature_2m_min?D.temperature_2m_min[i]:null,tmax:D.temperature_2m_max?D.temperature_2m_max[i]:null,pop:D.precipitation_probability_max?D.precipitation_probability_max[i]:null,precip:D.precipitation_sum?D.precipitation_sum[i]:null,wind:D.wind_speed_10m_max?D.wind_speed_10m_max[i]:null,gust:D.wind_gusts_10m_max?D.wind_gusts_10m_max[i]:null,app:appAt[date]!=null?appAt[date]:null}));
+  return {days, fetchedAt:Date.now(), planned:st.datePrevue||''}; }
+function wxRender(n,data){ const el=$('sumWx'); if(!el||curSum!==+n) return; const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n);
+  const planned=data.planned&&data.days.find(d=>d.date===data.planned);
+  const list=planned?[planned]:data.days.slice(0,4);
+  el.innerHTML=`<div class="small mut">À l’altitude du sommet (${f(o.altSom,0)} m) · source Open-Meteo · mis à jour à ${hhmm(new Date(data.fetchedAt))} <button class="btn sec sm" type="button" data-wx-refresh style="margin-left:6px">↻ Actualiser</button></div>
+  ${planned?`<p class="small" style="margin:8px 0 0">📅 Prévision pour ta date prévue (${dFR(data.planned)}) :</p>`:(data.planned?`<p class="small mut" style="margin:8px 0 0">Date prévue hors des 16 jours de prévision : voici les prochains jours.</p>`:'')}
+  <div class="wxgrid">${list.map(wxDayHTML).join('')}</div><p class="small mut" style="margin-top:6px">Prévision indicative : vérifie un bulletin montagne la veille au soir.</p>`; }
+async function loadSummitWeather(n,force){ const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; const el=$('sumWx'); if(!o||!I||!I.sum||!el) return;
+  if(!force){ const c=wxCache(n); if(c&&c.planned===(objState(n).datePrevue||'')){ wxRender(n,c); return; } }
+  el.innerHTML='<p class="small mut">Chargement de la météo du sommet…</p>';
+  if(navigator.onLine===false){ el.innerHTML='<p class="small mut">📴 Hors-ligne : météo du sommet indisponible pour le moment. <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; return; }
+  try{ const [la,lo]=I.sum; const url='https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&elevation='+Math.round(o.altSom)+'&hourly=temperature_2m,apparent_temperature&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FParis&forecast_days=16';
+    const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status); const data=parseWx(await r.json(),o,objState(n)); wxStore(n,data); wxRender(n,data); }
+  catch(e){ if(curSum===+n) el.innerHTML='<p class="small mut">Météo du sommet indisponible pour le moment (connexion ?). <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; } }
+
 function uncMark(t){ return esc(t).replace(/⚠︎|⚠️?/g,'<span class="unc" title="Information incertaine : à vérifier">⚠︎</span>'); }
 function renderSummit(n){
   const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I){ return false; }
@@ -1605,9 +1709,12 @@ function renderSummit(n){
   </div>
   ${ASC.card(o)}
   ${cl.filter(c=>c.to>=today).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> du ${dFR(c.from)} au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
-  <div class="card"><h3>🗺️ Carte</h3><div class="mapf"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
+  <div class="card"><h3>🗺️ Carte</h3><div class="mapf" id="sumStaticMap"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
     <div class="links">${mapLinks(o,I).map(([t,u])=>`<a class="btn sec sm" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
-    <div class="small mut" style="margin-top:6px">Sommet : ${I.sum[0].toFixed(4)}, ${I.sum[1].toFixed(4)} · Départ : ${I.start.ll[0].toFixed(4)}, ${I.start.ll[1].toFixed(4)} (coordonnées OSM approximatives)</div></div>
+    <div class="small mut" style="margin-top:6px">Sommet : ${I.sum[0].toFixed(4)}, ${I.sum[1].toFixed(4)} · Départ : ${I.start.ll[0].toFixed(4)}, ${I.start.ll[1].toFixed(4)} (coordonnées OSM approximatives)</div>
+    <input type="file" id="sumGpxFile" accept=".gpx,application/gpx+xml,text/xml" hidden>
+    ${gpxCardHTML(o,st)}</div>
+  <div class="card"><h3>🌤️ Météo au sommet</h3><div id="sumWx"><p class="small mut">Chargement de la météo du sommet…</p></div></div>
   <div class="card"><h3>🚩 Départ, parking et accès</h3><div class="kv"><b>Départ</b><span>${esc(I.start.nm)} (${f(o.altDep,0)} m)</span><b>Parking</b><span>${uncMark(I.parking)}</span><b>Accès</b><span>${uncMark(I.access)}</span></div></div>
   <div class="card"><h3>🥾 Itinéraire</h3><ol class="steps">${I.route.map(r=>`<li>${uncMark(r)}</li>`).join('')}</ol></div>
   <div class="card"><h3>💧 Eau et refuges</h3><div class="kv"><b>Eau</b><span>${uncMark(I.water)}</span><b>Refuges</b><span>${uncMark(I.refuges)}</span></div></div>
@@ -1623,6 +1730,8 @@ function renderSummit(n){
     ${g.map(x=>`<div class="gear ${x.st}"><span class="gi">${x.st==='ok'?'✔':x.st==='buy'?'○':'＋'}</span><div class="nm"><b>${esc(x.l)}</b><div class="small mut">${x.st==='ok'?'coché dans « '+esc(x.cat.name)+' »':x.st==='buy'?'dans ta liste, pas encore acheté':'absent de ta liste d’équipement'}</div></div>${x.st==='missing'?`<button class="btn sm sec" data-gear-add="${x.k}">Ajouter</button>`:''}</div>`).join('')}</div>
   ${I.uncertain&&I.uncertain.length?`<div class="card"><h3>❓ À vérifier avant de partir</h3><ul class="steps">${I.uncertain.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
   <div class="card small"><h3>📚 Sources</h3>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}<p class="mut" style="margin:8px 0 0">Données issues de topos et sites officiels (consultés en octobre 2026) ; conditions, horaires et accès changent : vérifie toujours avant de partir.</p></div>`;
+  const _g=sanGpx(st.gpx); if(_g){ drawGpxProfile(_g); initGpxMap(o.n); }
+  loadSummitWeather(o.n,false);
   return true;
 }
 function addGear(k){ const G=GEAR[k]; if(!G) return; const now=Date.now();
@@ -2592,7 +2701,8 @@ function init(){
   // fiches sommet : cartes Objectifs, Prépa, conseil du Journal
   const sumClick=e=>{ if(e.target.closest('select,input,textarea,a,summary,label,details>div')) return; const t=e.target.closest('[data-sum]'); if(t){ openSummit(t.dataset.sum); } };
   ['objList','prepList','prepHero','jAdv'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
-  $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
+  $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
+  $('sumBody').addEventListener('change',e=>{ if(e.target.id==='sumGpxFile'){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) handleGpxFile(curSum,f); } });
   $('poidsBody').addEventListener('click',poidsClick);
   document.addEventListener('click',e=>{ if(e.target.closest('[data-w-new]')&&!e.target.closest('#poidsBody')){ IMP.manualWeigh(); } });
   $('snapList').addEventListener('click',e=>{ const b=e.target.closest('[data-snap]'); if(b) restoreSnap(+b.dataset.snap); });
