@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v12') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v14') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v13'), 'anciens caches de l’appli supprimés, v13 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v14'), 'anciens caches de l’appli supprimés, v14 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -505,6 +505,54 @@ function FIXTURE() {
     ok(r.normNum && r.normNum.v === 6000 && r.normBad === undefined, 'normalizeDB : nombre brut converti, valeur hors limites écartée', [r.normNum, r.normBad]);
     ok(r.ui.v === 6000 && r.ui.stored === 6000, 'bouton Enregistrer : 6 000 persisté dans le stockage local', r.ui);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 15. v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat ----------
+  out.push('15. Graphiques interactifs, semaines, conseils entraînement, lien matériel (v14)');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    // pesées fictives supplémentaires pour le graphique poids
+    await p.evaluate(() => { for(let i=0;i<5;i++) DB.weights.push({id:'fx-w'+i, date:'2026-0'+(8+i>9?'':'') , weight:80, updatedAt:0}); DB.weights = DB.weights.filter(w=>/^\d{4}-\d{2}-\d{2}$/.test(w.date));
+      const base=[['2026-08-10',84.0,24.0],['2026-08-24',83.2,23.5],['2026-09-07',82.4,23.0],['2026-09-21',81.6,22.5],['2026-10-05',80.8,22.2]];
+      base.forEach(([d,w,fp],i)=>DB.weights.push({id:'fx-wx'+i,date:d,weight:w,fatPct:fp,musclePct:38+i*0.2,stdKg:72,updatedAt:1})); save(); });
+    const cw = await p.evaluate(() => { const out={};
+      out.def=userChartWeeks();
+      const D={sessions:[],prefs:{chartWeeks:12}}; normalizeDB(D); out.normNum=D.prefs.chartWeeks;
+      const D2={sessions:[],prefs:{chartWeeks:{v:999,updatedAt:5}}}; normalizeDB(D2); out.normBad=D2.prefs.chartWeeks;
+      const L=JSON.parse(JSON.stringify(DB)); L.prefs.chartWeeks={v:8,updatedAt:100}; const R=JSON.parse(JSON.stringify(DB)); R.prefs.chartWeeks={v:26,updatedAt:50};
+      out.merge=mergeDB(L,R).prefs.chartWeeks.v;
+      show('data'); $('chartWeeksSel').value='8'; $('btnChartWeeks').click(); out.ui=DB.prefs.chartWeeks.v;
+      show('evo'); out.nW=$('chW1')._c.labels.length; out.selW=$('chW1')._sel;
+      DB.prefs.chartWeeks={v:4,updatedAt:Date.now()}; save(); renderEvo(); out.nW4=$('chW1')._c.labels.length;
+      return out; });
+    ok(cw.def===26 && cw.normNum && cw.normNum.v===12 && cw.normBad===undefined, 'semaines graphiques : défaut 26, nombre brut normalisé, invalide écarté', cw);
+    ok(cw.merge===8 && cw.ui===8, 'semaines graphiques : préférence synchronisée, fusion = plus récente', cw);
+    ok(cw.nW<=8 && cw.nW4<=4 && cw.nW4<cw.nW, 'semaines graphiques : appliquées aux graphiques hebdomadaires', cw);
+    const ch = await p.evaluate(() => { const out={}; DB.prefs.chartWeeks={v:26,updatedAt:Date.now()}; save(); show('poids');
+      out.defTxt=$('chWt').querySelector('.chart-detail').textContent; out.defSel=$('chWt')._sel; out.n=$('chWt')._c.n;
+      setChartIndex($('chWt'),0); out.firstTxt=$('chWt').querySelector('.chart-detail').textContent; out.range=$('chWt').querySelector('.chart-range').value;
+      // toucher le graphique (pointerdown au milieu) déplace le curseur
+      const svg=$('chWt').querySelector('svg'), r=svg.getBoundingClientRect();
+      svg.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,clientX:r.left+r.width*0.55,clientY:r.top+40,pointerId:1}));
+      out.afterTouch=$('chWt')._sel; out.touchTxt=$('chWt').querySelector('.chart-detail').textContent;
+      show('evo'); out.evoTxt=$('chW1').querySelector('.chart-detail').textContent; out.evoN=$('chW1')._c.n;
+      const A=trainingAdvice(); out.lines=A.lines.map(x=>x.t.replace(/<[^>]+>/g,'')).join(' | '); out.plan=A.plan.length;
+      show('prep'); out.prep= $('prepTrain').textContent.includes('Conseils entraînement'); show('evo'); out.evoAdv=$('evoTrain').textContent.includes('Pour la semaine qui vient');
+      return out; });
+    ok(ch.n>=4 && ch.defSel===ch.n-1 && /kg/.test(ch.defTxt), 'poids : détail par défaut = dernière pesée', ch);
+    ok(/10\/08\/2026/.test(ch.firstTxt) && ch.range==='0' && /84/.test(ch.firstTxt), 'poids : curseur sur la 1re pesée → date et valeur affichées', ch);
+    ok(ch.afterTouch!==0 && ch.touchTxt.length>10, 'poids : toucher le graphique déplace le curseur', ch);
+    ok(/séance/.test(ch.evoTxt) && /D\+/.test(ch.evoTxt), 'évolution hebdo : détail de la semaine (séances, km, D+, durée)', ch.evoTxt);
+    ok(ch.lines.length>20 && ch.plan>=3 && ch.prep && ch.evoAdv, 'conseils entraînement : analyse + plan de la semaine, dans Préparation et Évolution', ch.lines.slice(0,160));
+    const eq = await p.evaluate(() => { const out={}; out.bad=safeUrl('javascript:alert(1)'); out.noscheme=safeUrl('example.com/produit'); out.ok=safeUrl('https://example.com/a?x=1');
+      show('equip'); const card=document.querySelector('#eqList [data-cat]'); card.querySelector('[data-new=name]').value='Lien fictif'; card.querySelector('[data-new=price]').value='12,5'; card.querySelector('[data-new=url]').value='example.com/chaussures';
+      card.querySelector('[data-act=add]').click();
+      const it=[...DB.equip[0].items].pop(); out.url=it.url; const a=document.querySelector('#eqList a.eq-link'); out.href=a&&a.getAttribute('href'); out.target=a&&a.getAttribute('target');
+      const D=JSON.parse(JSON.stringify(DB)); D.equip[0].items[0].url='javascript:alert(1)'; normalizeDB(D); out.stripped=!('url' in D.equip[0].items[0]);
+      const M=mergeDB(JSON.parse(JSON.stringify(DB)), JSON.parse(JSON.stringify(DB))); out.kept=M.equip.flatMap(c=>c.items).some(i=>i.url==='https://example.com/chaussures');
+      return out; });
+    ok(eq.bad===null && eq.noscheme==='https://example.com/produit' && eq.stripped, 'lien matériel : seuls http(s) acceptés, https ajouté, lien dangereux retiré à la normalisation', eq);
+    ok(eq.url==='https://example.com/chaussures' && eq.href===eq.url && eq.target==='_blank' && eq.kept, 'lien matériel : ajouté via le formulaire, cliquable (nouvel onglet), conservé à la fusion', eq);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });

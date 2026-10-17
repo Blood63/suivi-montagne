@@ -105,6 +105,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .tbl tr:last-child td{border-bottom:0}
 .scroll{overflow-x:auto}
 .chart svg{width:100%;height:auto;display:block}
+.chart.interactive svg{touch-action:none;cursor:crosshair}
+.chart-detail{margin-top:8px;padding:10px 12px;border-radius:12px;background:rgba(124,200,234,.08);border:1px solid rgba(124,200,234,.25);font-size:13.5px;line-height:1.5;min-height:42px}
+.chart-detail b{color:var(--snow)}
+.chart-cur{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12.5px;color:var(--mut)}
+.chart-cur input[type=range]{flex:1;width:auto;padding:0;accent-color:var(--glacier);height:28px}
+.eq a.eq-link{font-size:13px;font-weight:600;text-decoration:none}
+.train-advice .kline2{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:6px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .eq{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
@@ -318,7 +325,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v13 : objectif de pas quotidien personnalisé ; v12 : ascensions (séances rattachées à un objectif) */
+/* v14 : graphiques interactifs (curseur tactile), réglage des semaines affichées, conseils entraînement, lien d'achat sur le matériel ; v13 : objectif de pas quotidien personnalisé ; v12 : ascensions */
 .tag.asc{background:rgba(52,179,138,.16);color:#a7f3d0;border-color:rgba(52,179,138,.4)}
 .asc-card h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .asc-tot{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
@@ -419,6 +426,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 <!-- PREPARATION -->
 <section class="page" id="p-prep">
   <div id="prepHero"></div>
+  <div id="prepTrain"></div>
   <div class="card small">
     <div id="prepWin" class="mut"></div>
     <details style="margin-top:8px"><summary>Comment l’indice est calculé</summary>
@@ -437,6 +445,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 <section class="page" id="p-evo">
   <div class="seg"><button id="sgW" class="on">Hebdomadaire</button><button id="sgM">Mensuel</button><button id="sgD">Quotidien</button></div>
   <div id="evoW">
+    <div id="evoTrain"></div>
     <div class="card"><h3>D+ (colonnes) et distance (ligne) par semaine</h3><div class="chart" id="chW1"></div></div>
     <div class="card"><h3>Durée (h) et BPM moyen par semaine</h3><div class="chart" id="chW2"></div></div>
     <div class="card"><h3>Totaux hebdomadaires</h3><div class="scroll" id="tblW"></div></div>
@@ -493,6 +502,9 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
     <label for="stepGoalInput">Objectif de pas quotidien (pas/jour)</label>
     <div class="row"><input id="stepGoalInput" type="number" inputmode="numeric" min="500" max="50000" step="500" style="flex:1"><button class="btn" id="btnStepGoal" type="button">Enregistrer</button></div>
     <p class="small mut" id="stepGoalState" style="margin:6px 0 0"></p>
+    <label for="chartWeeksSel" style="margin-top:14px">Semaines affichées sur les graphiques</label>
+    <div class="row"><select id="chartWeeksSel" style="flex:1"><option value="4">4 semaines</option><option value="8">8 semaines</option><option value="12">12 semaines</option><option value="26">26 semaines</option><option value="52">52 semaines</option><option value="custom">Personnalisé…</option></select><span id="chartWeeksNumWrap" style="display:none;flex:1"><input id="chartWeeksNum" type="number" inputmode="numeric" min="2" max="104" step="1" placeholder="Semaines"></span><button class="btn" id="btnChartWeeks" type="button">Enregistrer</button></div>
+    <p class="small mut" id="chartWeeksState" style="margin:6px 0 0"></p>
   </div>
   <div class="card" id="syncCard">
     <h2>Synchronisation (GitHub Gist privé)</h2>
@@ -814,6 +826,9 @@ function dedupeBivouac(db){ const mine=db.equip.find(c=>c.id!==BIV_ID&&/bivouac/
   db.equip=db.equip.filter(c=>c!==def); db.tomb.c[BIV_ID]=1; def.items.forEach(i=>db.tomb.i[i.id]=1); return true; }
 const NUM_S=['dist','dplus','dminus','dur','bpm','bpmMax','pas','sac','sauts','ress','incline','kcal','kcalTot','cadence','foulee','altMin','altMax','te','tl','recup','pauses'];
 function numify(o,keys){ for(const k of keys){ const v=o[k]; if(typeof v==='string'){ const t=v.trim().replace(/\s/g,'').replace(',','.'); if(t==='') o[k]=null; else if(isFinite(+t)) o[k]=+t; } } }
+function safeUrl(u){ if(u==null) return ''; const t=String(u).trim(); if(!t) return ''; if(/\s/.test(t)) return null;
+  const full=/^[a-z][a-z0-9+.-]*:/i.test(t)? t : 'https://'+t; let x; try{ x=new URL(full); }catch(e){ return null; }
+  if(x.protocol!=='http:'&&x.protocol!=='https:') return null; if(!x.hostname||(x.hostname.indexOf('.')<0&&x.hostname!=='localhost')) return null; return x.href; }
 function normalizeDB(db){
   if(Array.isArray(db.sessions)) db.sessions.forEach(x=>{ if(x&&typeof x==='object') numify(x,NUM_S); });
   db.tomb=Object.assign(newTomb(),db.tomb||{}); for(const k of ['s','c','i','w','d']) if(!db.tomb[k]||typeof db.tomb[k]!=='object') db.tomb[k]={};
@@ -829,6 +844,10 @@ function normalizeDB(db){
   if(db.prefs.stepGoal!=null){ const g=db.prefs.stepGoal, v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
     if(!isFinite(v)||v<500||v>50000) delete db.prefs.stepGoal;
     else if(typeof g==='number') db.prefs.stepGoal={v:Math.round(v),updatedAt:1}; else { g.v=Math.round(v); if(typeof g.updatedAt!=='number') g.updatedAt=1; } }
+  if(db.prefs.chartWeeks!=null){ const g=db.prefs.chartWeeks, v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
+    if(!isFinite(v)||v<2||v>104) delete db.prefs.chartWeeks;
+    else if(typeof g==='number') db.prefs.chartWeeks={v:Math.round(v),updatedAt:1}; else { g.v=Math.round(v); if(typeof g.updatedAt!=='number') g.updatedAt=1; } }
+  if(Array.isArray(db.equip)) db.equip.forEach(c=>(c.items||[]).forEach(i=>{ if(i&&'url' in i){ const u=safeUrl(i.url); if(u) i.url=u; else delete i.url; } }));
   return db; }
 /* Copies de sécurité locales (5 max) : une par jour à l'ouverture + avant import, restauration ou réinitialisation */
 const SNAP_KEY=KEY+'.snapshots';
@@ -955,7 +974,8 @@ function mergeDB(L,R){
   const LA=(L.prefs&&L.prefs.actMap)||{}, RA=(R.prefs&&R.prefs.actMap)||{}, actMap={};
   for(const k of new Set([...Object.keys(LA),...Object.keys(RA)])){ const v=pick(LA[k],RA[k]); if(v) actMap[k]=Object.assign({},v); }
   const sg=pick((L.prefs||{}).stepGoal,(R.prefs||{}).stepGoal);
-  const prefs=Object.assign({},R.prefs||{},L.prefs||{},{actMap}); if(sg) prefs.stepGoal=Object.assign({},sg); else delete prefs.stepGoal;
+  const cw=pick((L.prefs||{}).chartWeeks,(R.prefs||{}).chartWeeks);
+  const prefs=Object.assign({},R.prefs||{},L.prefs||{},{actMap}); if(sg) prefs.stepGoal=Object.assign({},sg); else delete prefs.stepGoal; if(cw) prefs.chartWeeks=Object.assign({},cw); else delete prefs.chartWeeks;
   return Object.assign({}, R, L, {version:Math.max(L.version||1,R.version||1,DATA_VERSION), sessions, objectifs, equip, weights, daily, prefs, tomb});
 }
 
@@ -1044,6 +1064,22 @@ function weekAgg(monISO){ const a=parseISO(monISO); const b=new Date(a); b.setDa
   return agg(DB.sessions.filter(s=>s.date>=A&&s.date<=B)); }
 
 /* ---------- SVG chart ---------- */
+function chartDetailHTML(C,i){ if(C.details&&C.details[i]!=null) return C.details[i];
+  const parts=C.series.filter(x=>x.values[i]!=null&&isFinite(x.values[i])).map(x=>esc(x.name)+' : <b>'+f(x.values[i],Math.abs(x.values[i])<10?1:0)+'</b>');
+  return '<b>'+esc(C.labels[i]||'')+'</b>'+(parts.length?' · '+parts.join(' · '):' · aucune donnée'); }
+function setChartIndex(el,i){ const C=el._c; if(!C||!C.n) return; i=Math.max(0,Math.min(C.n-1,Math.round(i)||0)); el._sel=i;
+  const panel=el.querySelector('.chart-detail'); if(panel) panel.innerHTML=chartDetailHTML(C,i);
+  const rg=el.querySelector('.chart-range'); if(rg&&+rg.value!==i) rg.value=i;
+  const svg=el.querySelector('svg'); if(!svg) return; const x=C.xs[i], line=svg.querySelector('.curl'), pts=svg.querySelectorAll('.curp');
+  if(line){ line.setAttribute('x1',x); line.setAttribute('x2',x); }
+  C.series.forEach((sr,k)=>{ const c=pts[k]; if(!c) return; const v=sr.values[i]; if(v==null||!isFinite(v)){ c.setAttribute('display','none'); return; } c.removeAttribute('display'); c.setAttribute('cx',x); c.setAttribute('cy',C.y(v,sr.axis||'left')); }); }
+function bindChart(el){ if(el._bound) return; el._bound=true;
+  const pos=e=>{ const svg=el.querySelector('svg'), C=el._c; if(!svg||!C) return; const r=svg.getBoundingClientRect(); if(!r.width) return;
+    const x=(e.clientX-r.left)/r.width*420; setChartIndex(el,(x-C.L)/C.iw*C.n-0.5); };
+  el.addEventListener('pointerdown',e=>{ if(e.target.closest('.chart-range')) return; const svg=e.target.closest('svg'); if(!svg) return; el._scrub=true; try{ svg.setPointerCapture(e.pointerId); }catch(err){} pos(e); e.preventDefault(); });
+  el.addEventListener('pointermove',e=>{ if(el._scrub) pos(e); });
+  const end=()=>{ el._scrub=false; }; el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
+  el.addEventListener('input',e=>{ if(e.target.classList&&e.target.classList.contains('chart-range')) setChartIndex(el,+e.target.value); }); }
 function chart(el, labels, series, opt={}){
   const W=420,H=240,L=38,R=38,T=12,B=48; const iw=W-L-R, ih=H-T-B; const n=labels.length||1;
   const axes={left:[],right:[]}; series.forEach(s=>axes[s.axis||'left'].push(...s.values.filter(v=>v!=null&&isFinite(v))));
@@ -1070,9 +1106,15 @@ function chart(el, labels, series, opt={}){
     s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)) return; g+=`<circle class="p" style="animation-delay:${300+i*40}ms" cx="${xc(i).toFixed(1)}" cy="${y(v,ax).toFixed(1)}" r="3.8" fill="#0a1715" stroke="${s.color}" stroke-width="2.2"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></circle>`; }); });
   const step=Math.ceil(n/12);
   labels.forEach((lb,i)=>{ if(i%step) return; g+=`<text x="${xc(i).toFixed(1)}" y="${H-B+16}" text-anchor="end" transform="rotate(-35 ${xc(i).toFixed(1)} ${H-B+16})" fill="#c9d6d3">${esc(lb)}</text>`; });
+  const yFn=(v,ax)=>y(v,ax);
+  let defI=n-1; while(defI>0&&!series.some(sr=>sr.values[defI]!=null&&isFinite(sr.values[defI]))) defI--;
+  g+=`<g class="curg" pointer-events="none"><line class="curl" x1="${xc(defI)}" x2="${xc(defI)}" y1="${T}" y2="${T+ih}" stroke="rgba(243,247,246,.55)" stroke-width="1.2" stroke-dasharray="4 4"/>${series.map(sr=>`<circle class="curp" cx="${xc(defI)}" cy="${T+ih}" r="6" fill="#0a1715" stroke="${sr.color}" stroke-width="2.6"/>`).join('')}</g>`;
   g+='</svg>';
+  g+='<div class="chart-detail" role="status" aria-live="polite"></div><div class="chart-cur"><span>👆 Curseur</span><input class="chart-range" type="range" min="0" max="'+Math.max(0,n-1)+'" step="1" value="'+defI+'" aria-label="Déplacer le curseur du graphique"></div>';
   g+='<div class="legend">'+series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}${(s.axis==='right')?' (axe droit)':''}</span>`).join('')+'</div>';
-  el.innerHTML=g;
+  el.innerHTML=g; el.classList.add('interactive');
+  el._c={labels,series,details:opt.details||null,n,L,R,T,ih,iw:iw,mn,mx,xs:labels.map((_,i)=>xc(i)),y:yFn};
+  bindChart(el); setChartIndex(el,defI);
 }
 
 /* ---------- Render: Journal ---------- */
@@ -1164,6 +1206,7 @@ function renderObj(){
 /* ---------- Préparation ---------- */
 function readinessWindow(){ const end=new Date(); const start=new Date(end.getFullYear(),end.getMonth(),end.getDate()-27); return [toISO(start),toISO(end)]; }
 function renderPrep(){
+  const ta=$('prepTrain'); if(ta) ta.innerHTML=trainingAdviceHTML();
   const [A,B]=readinessWindow(); const st=trainStats(new Date());
   $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse séance <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue <b>${fmtH(st.longest/3600)}</b>`;
   $('prepList').innerHTML=OBJECTIFS.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
@@ -1180,11 +1223,13 @@ function renderPrep(){
 /* ---------- Évolution ---------- */
 function renderEvo(){
   if($('evoD')&&$('evoD').style.display!=='none') renderDaily();
+  const et=$('evoTrain'); if(et) et.innerHTML=trainingAdviceHTML();
   const ws=weeksRange(); const wa=ws.map(weekAgg);
   const wl=ws.map(w=>{ const d=parseISO(w); return 'S'+isoWeek(d)+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); });
-  const C=26, cl=wl.slice(-C), ca=wa.slice(-C); // graphiques : 26 dernières semaines (tableau complet dessous)
-  chart($('chW1'),cl,[{name:'D+ (m)',type:'bar',color:'#7cc8ea',values:ca.map(a=>a.dplus)},{name:'Distance (km)',type:'line',axis:'right',color:'#fb923c',values:ca.map(a=>a.n?a.dist:null)}]);
-  chart($('chW2'),cl,[{name:'Durée (h)',type:'bar',color:'#34b38a',values:ca.map(a=>a.dur/3600)},{name:'BPM moyen',type:'line',axis:'right',color:'#fda4af',values:ca.map(a=>a.bpm)}],{rightMin:true});
+  const C=userChartWeeks(), cl=wl.slice(-C), ca=wa.slice(-C), cw=ws.slice(-C); // semaines affichées : préférence (Données), tableau complet dessous
+  const wDet=cw.map((mon,k)=>{ const a=ca[k], d=parseISO(mon); return `<b>Semaine du ${dFR(mon)}</b> (S${isoWeek(d)})<br>${a.n} séance${a.n>1?'s':''} · <b>${f(a.dist,1)} km</b> · <b>${f(a.dplus,0)} m D+</b> · durée ${fmtDur(a.dur)}${a.bpm?' · BPM moy. '+f(a.bpm,0):''}${a.speed?' · '+f(a.speed,2)+' km/h':''}${a.sauts?' · '+f(a.sauts,0)+' sauts':''}`; });
+  chart($('chW1'),cl,[{name:'D+ (m)',type:'bar',color:'#7cc8ea',values:ca.map(a=>a.dplus)},{name:'Distance (km)',type:'line',axis:'right',color:'#fb923c',values:ca.map(a=>a.n?a.dist:null)}],{details:wDet});
+  chart($('chW2'),cl,[{name:'Durée (h)',type:'bar',color:'#34b38a',values:ca.map(a=>a.dur/3600)},{name:'BPM moyen',type:'line',axis:'right',color:'#fda4af',values:ca.map(a=>a.bpm)}],{rightMin:true,details:wDet});
   if($('refTbl')) $('refTbl').innerHTML=refTableHTML();
   const th='<tr><th>Semaine</th><th>Séances</th><th>km</th><th>D+ m</th><th>Durée</th><th>km/h</th><th>BPM</th><th>Sauts</th></tr>';
   // tableau : les séries de semaines sans séance (ex. entre de vieilles sorties de référence et aujourd'hui) tiennent sur une seule ligne
@@ -1209,11 +1254,11 @@ function renderEquip(){
   $('eqList').innerHTML=DB.equip.map(c=>{ const st=c.items.reduce((t,i)=>t+(i.price||0),0); const done=c.items.filter(i=>i.bought).length;
     return `<div class="card" data-cat="${c.id}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(c.name)} <span class="small mut">${done}/${c.items.length}${st?' · '+f(st,2)+' €':''}</span></h3>
       <div><button class="iconbtn" data-act="rencat" aria-label="Renommer la catégorie">✏️</button><button class="iconbtn" data-act="delcat" aria-label="Supprimer la catégorie">🗑️</button></div></div>
-      ${c.items.map(i=>`<div class="eq${i.bought?' done':''}" data-item="${i.id}"><input type="checkbox" data-act="tog" ${i.bought?'checked':''} aria-label="Acheté">
-        <div class="nm"><b>${esc(i.name)}</b>${i.note?`<div class="small mut">${esc(i.note)}</div>`:''}</div>
+      ${c.items.map(i=>{ const u=i.url?safeUrl(i.url):null; return `<div class="eq${i.bought?' done':''}" data-item="${i.id}"><input type="checkbox" data-act="tog" ${i.bought?'checked':''} aria-label="Acheté">
+        <div class="nm"><b>${esc(i.name)}</b>${i.note?`<div class="small mut">${esc(i.note)}</div>`:''}${u?`<div><a class="eq-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">🔗 Voir / acheter</a></div>`:''}</div>
         <span class="pr">${i.price!=null?f(i.price,2)+' €':''}</span>
-        <button class="iconbtn" data-act="edit" aria-label="Modifier">✏️</button><button class="iconbtn" data-act="del" aria-label="Supprimer">🗑️</button></div>`).join('')}
-      <div class="row" style="margin-top:8px"><input data-new="name" placeholder="Nouvel article" style="flex:2;min-width:140px"><input data-new="price" placeholder="Prix €" inputmode="decimal" style="flex:1;min-width:80px"><button class="btn sm" data-act="add">Ajouter</button></div></div>`; }).join('') || '<div class="card mut">Aucune catégorie.</div>';
+        <button class="iconbtn" data-act="edit" aria-label="Modifier">✏️</button><button class="iconbtn" data-act="del" aria-label="Supprimer">🗑️</button></div>`; }).join('')}
+      <div class="row" style="margin-top:8px"><input data-new="name" placeholder="Nouvel article" style="flex:2;min-width:140px"><input data-new="price" placeholder="Prix €" inputmode="decimal" style="flex:1;min-width:80px"><input data-new="url" placeholder="Lien https://… (optionnel)" inputmode="url" style="flex:2;min-width:160px"><button class="btn sm" data-act="add">Ajouter</button></div></div>`; }).join('') || '<div class="card mut">Aucune catégorie.</div>';
 }
 function equipClick(e){
   const b=e.target.closest('[data-act]'); if(!b) return; const card=b.closest('[data-cat]'); if(!card) return;
@@ -1222,12 +1267,17 @@ function equipClick(e){
   if(act==='tog'){ it.bought=b.checked; it.updatedAt=now; }
   else if(act==='del'){ if(!confirm('Supprimer « '+it.name+' » ?')) return; c.items=c.items.filter(i=>i.id!==iid); DB.tomb.i[iid]=now; save(); renderEquip();
     toastUndo('« '+it.name+' » supprimé',()=>{ const cc=DB.equip.find(x=>x.id===cid); if(cc) undoDelete('i',cc.items,it); else toast('Catégorie supprimée entre-temps'); }); return; }
-  else if(act==='edit'){ const n=prompt('Nom de l’article',it.name); if(n===null) return; if(n.trim()) it.name=n.trim();
-    const no=prompt('Note (optionnelle)',it.note||''); if(no!==null) it.note=no.trim();
-    const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p!==null){ const x=num(p.replace(/€/g,'')); if(x!=null&&(isNaN(x)||x<0)) alert('Prix invalide'); else it.price=x; } it.updatedAt=now; }
+  else if(act==='edit'){ const n=prompt('Nom de l’article',it.name); if(n===null) return;
+    const no=prompt('Note (optionnelle)',it.note||''); if(no===null) return;
+    const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p===null) return;
+    const lu=prompt('Lien internet pour l’acheter (https://…, vide = aucun)',it.url||''); if(lu===null) return;
+    const x=num(p.replace(/€/g,'')); if(x!=null&&(isNaN(x)||x<0)){ alert('Prix invalide'); return; }
+    const u=safeUrl(lu); if(u===null){ alert('Lien invalide : adresse http(s) attendue, par exemple https://…'); return; }
+    if(n.trim()) it.name=n.trim(); it.note=no.trim(); it.price=x; if(u) it.url=u; else delete it.url; it.updatedAt=now; }
   else if(act==='add'){ const inp=card.querySelector('[data-new=name]'); const nm=inp.value.trim(); if(!nm){ inp.focus(); return; }
     const pr=num(card.querySelector('[data-new=price]').value.replace(/€/g,'')); if(pr!=null&&(isNaN(pr)||pr<0)){ alert('Prix invalide'); return; }
-    c.items.push({id:uid(),name:nm,note:'',price:pr,bought:false,updatedAt:now}); }
+    const lu=card.querySelector('[data-new=url]')?card.querySelector('[data-new=url]').value:''; const u=safeUrl(lu); if(u===null){ alert('Lien invalide : adresse http(s) attendue, par exemple https://…'); return; }
+    const ni={id:uid(),name:nm,note:'',price:pr,bought:false,updatedAt:now}; if(u) ni.url=u; c.items.push(ni); }
   else if(act==='rencat'){ const n=prompt('Nom de la catégorie',c.name); if(n===null||!n.trim()) return; c.name=n.trim(); c.updatedAt=now; }
   else if(act==='delcat'){ if(!confirm('Supprimer la catégorie « '+c.name+' » et ses '+c.items.length+' articles ?')) return; DB.equip=DB.equip.filter(x=>x.id!==cid); DB.tomb.c[cid]=now; c.items.forEach(i=>DB.tomb.i[i.id]=now); }
   else return;
@@ -1329,7 +1379,11 @@ function initSync(){
 
 /* ---------- Données ---------- */
 function renderPrefs(){ const i=$('stepGoalInput'); if(!i) return; const u=userStepGoal(); if(document.activeElement!==i) i.value=u==null?'':u;
-  $('stepGoalState').textContent=u!=null?('Objectif actuel : '+f(u,0)+' pas/jour (synchronisé sur tes appareils). Vide + Enregistrer pour revenir à l’objectif adapté à ta prochaine ascension.'):'Aucun objectif personnalisé : l’appli adapte l’objectif à ta prochaine ascension ('+f(stepGoal(),0)+' pas/jour en ce moment).'; }
+  $('stepGoalState').textContent=u!=null?('Objectif actuel : '+f(u,0)+' pas/jour (synchronisé sur tes appareils). Vide + Enregistrer pour revenir à l’objectif adapté à ta prochaine ascension.'):'Aucun objectif personnalisé : l’appli adapte l’objectif à ta prochaine ascension ('+f(stepGoal(),0)+' pas/jour en ce moment).';
+  const sel=$('chartWeeksSel'), num=$('chartWeeksNum'), wrap=$('chartWeeksNumWrap'); if(!sel) return; const w=userChartWeeks(), preset=[4,8,12,26,52].includes(w);
+  if(document.activeElement!==sel) sel.value=preset?String(w):'custom'; const custom=sel.value==='custom'; if(wrap) wrap.style.display=custom?'':'none';
+  if(custom&&num&&document.activeElement!==num) num.value=w;
+  const st=$('chartWeeksState'); if(st) st.textContent='Actuellement : '+w+' semaines sur les graphiques hebdomadaires et le poids (synchronisé sur tes appareils).'; }
 function download(name, text, mime){ const blob=new Blob([text],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }
 const csvN=v=>(v==null||v===''||(typeof v==='number'&&!isFinite(v)))?'':String(typeof v==='number'?Math.round(v*100)/100:v).replace('.',',');
 const csvS=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
@@ -1448,6 +1502,49 @@ function ringSVG(r,size,o={}){ const big=size>100, R=big?52:33, W=big?124:78, C=
   return `<div class="ring${big?' big':''}" role="img" aria-label="${o.label||'Préparation'} ${f(r*100,0)} ${suf}"><svg viewBox="0 0 ${W} ${W}"><circle class="trk" cx="${W/2}" cy="${W/2}" r="${R}"/><circle class="val" cx="${W/2}" cy="${W/2}" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-v)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>${suf}</small></div></div>`; }
 function barsHTML(R){ const row=(l,v,g)=>`<span>${l}</span><div class="bar pre"><i style="--v:${v.toFixed(3)};background:${g}"></i></div><b>${f(v*100,0)} %</b>`;
   return `<div class="mini">${row('A · grosse séance',R.a,'linear-gradient(90deg,#4aa8d4,#7cc8ea)')}${row('B · volume hebdo',R.b,'linear-gradient(90deg,#f97316,#fdba74)')}${row('C · endurance',R.c,'linear-gradient(90deg,#1f6f54,#34b38a)')}${row('D · régularité',R.d,'linear-gradient(90deg,#8b9a97,#c9d6d3)')}</div>`; }
+function trainingAdvice(ref){ ref=ref||new Date(); const T=toISO(ref), D=k=>addDays(T,-k);
+  const sum=(L,k)=>L.reduce((t,x)=>t+(+x[k]||0),0);
+  const inR=(a,b)=>DB.sessions.filter(x=>x.date>=a&&x.date<=b);
+  const L7=inR(D(6),T), Lprev7=inR(D(13),D(7)), L14=inR(D(13),T), Lprev14=inR(D(27),D(14)), L28=inR(D(27),T);
+  const a7={n:L7.length,dist:sum(L7,'dist'),dplus:sum(L7,'dplus'),dur:sum(L7,'dur')}, ap7={n:Lprev7.length,dist:sum(Lprev7,'dist'),dplus:sum(Lprev7,'dplus')};
+  const a14={dplus:sum(L14,'dplus'),dist:sum(L14,'dist')}, ap14={dplus:sum(Lprev14,'dplus'),dist:sum(Lprev14,'dist')};
+  const G=stepGoal(), DS=(DB.daily||[]).length?dailyStats(ref):null;
+  const last=DB.sessions.map(x=>x.date).filter(d=>d<=T).sort().pop()||null, since=last?Math.round((parseISO(T)-parseISO(last))/864e5):null;
+  const longest7=L7.length?Math.max(0,...L7.map(x=>x.dur||0)):0;
+  const wkAvg=L28.length?sum(L28,'dplus')/4:0;
+  const trend=(now,prev)=>prev>0?Math.round((now-prev)/prev*100):null;
+  const td=trend(a14.dplus,ap14.dplus), tk=trend(a14.dist,ap14.dist);
+  const lines=[];
+  if(!L28.length){ lines.push({ic:'🌱',t:"Aucune séance sur 4 semaines : recommence en douceur — <b>2 séances faciles</b> cette semaine (30–45 min de marche, un peu de dénivelé), puis ajoute une 3e la semaine suivante."}); }
+  else {
+    if(td!=null&&td>=15) lines.push({ic:'📈',t:`<b>D+ en hausse de ${td} %</b> sur 14 jours (${f(a14.dplus,0)} m contre ${f(ap14.dplus,0)} m les 14 jours d’avant)${tk!=null&&tk>=10?`, distance +${tk} %`:''} : belle progression, garde ce cap sans accélérer davantage.`});
+    else if(td!=null&&td<=-15) lines.push({ic:'📉',t:`<b>D+ en baisse de ${Math.abs(td)} %</b> sur 14 jours (${f(a14.dplus,0)} m contre ${f(ap14.dplus,0)} m) : si c’est de la fatigue, allège ; sinon remets une séance de côte cette semaine.`});
+    else if(td!=null) lines.push({ic:'➡️',t:`Charge stable sur 14 jours : ${f(a14.dplus,0)} m de D+ et ${f(a14.dist,1)} km. Pour progresser, ajoute <b>+10 % de D+</b> la semaine prochaine, pas plus.`});
+    if(wkAvg>0&&a7.dplus>1.5*wkAvg) lines.push({ic:'🛌',t:`Semaine très chargée : ${f(a7.dplus,0)} m de D+ en 7 jours, soit bien plus que ta moyenne (${f(wkAvg,0)} m/sem). Prévois <b>1 à 2 jours de repos</b> et une semaine suivante plus légère.`});
+    else if(a7.n===0&&since!=null&&since>=4) lines.push({ic:'🔁',t:`Dernière séance il y a <b>${since} jours</b> : reprends par 45–60 min faciles avant de remettre du dénivelé.`});
+    else if(a7.n>=1&&a7.n<3) lines.push({ic:'📅',t:`${a7.n} séance${a7.n>1?'s':''} cette semaine (moyenne 4 semaines : ${f(L28.length/4,1)}/sem) : vise <b>3 séances</b> — une longue, une en côte, une de renforcement.`});
+    else if(a7.n>=3) lines.push({ic:'✅',t:`Bonne régularité : <b>${a7.n} séances</b> en 7 jours. Garde un vrai jour de repos dans la semaine.`});
+    if(DS&&DS.days7>=3){ if(DS.pas7<G) lines.push({ic:'👣',t:`Pas quotidiens : <b>${f(DS.pas7,0)}/jour</b> en moyenne, sous ton objectif de <b>${f(G,0)}</b>. Ajoute ≈ ${f(Math.max(5,Math.round((G-DS.pas7)/110/5)*5),0)} min de marche par jour (trajet, pause déjeuner).`});
+      else lines.push({ic:'👣',t:`Pas quotidiens : <b>${f(DS.pas7,0)}/jour</b>, objectif de ${f(G,0)} atteint sur 7 jours — c’est l’endurance de base qui fait les sommets.`});
+      if(DS.active7<4&&DS.known7>=5) lines.push({ic:'📆',t:`Jours actifs : ${DS.active7}/7. Vise <b>5 jours actifs</b> (séance, ${ACT_MIN} min d’activité ou ${f(G,0)} pas), le reste en repos ou marche légère.`}); }
+    if(since===0||since===1) lines.push({ic:'🛌',t:`Repos : séance ${since===0?"aujourd’hui":"hier"} — demain, marche légère ou repos complet ; la progression se construit pendant la récupération.`});
+    if(L28.length&&!L28.some(x=>x.type==='Musculation')) lines.push({ic:'🏋️',t:"Renforcement absent depuis 4 semaines : 2 × 30 min (squats, fentes, step-ups, mollets, gainage) protègent genoux et chevilles en descente."});
+  }
+  const base=Math.max(a7.dplus,wkAvg), tgt=base>0?Math.round(base*1.1/10)*10:200;
+  const plan= L28.length? [
+    {t:'Objectif D+ de la semaine',d:'≈ '+f(tgt,0)+' m de D+ au total (+10 % max par rapport à ta charge récente), répartis sur 3 séances'},
+    {t:'Séance de côte',d:'tapis incliné ou répétitions de côte : 40–60 % du D+ hebdo, allure « je peux parler »'},
+    {t:'Sortie longue',d:(longest7?'allonge-la un peu ('+fmtH(Math.min(3,longest7/3600*1.15+0.25))+')':'vise 1 h 30–2 h')+' en extérieur avec dénivelé, sac léger'},
+    {t:'Repos',d:'1 à 2 jours sans séance (marche légère possible) ; sommeil et hydratation font partie de l’entraînement'}]
+    : [{t:'Cette semaine',d:'2 marches faciles de 30–45 min + 1 courte séance de renforcement (squats, mollets, gainage)'},{t:'Semaine suivante',d:'3 séances : une marche avec dénivelé, une facile, un renforcement'}];
+  return {lines,plan,a7,wkAvg,td,tk,since,G,DS}; }
+function trainingAdviceHTML(){ const A=trainingAdvice(); if(!A.lines.length&&!A.plan.length) return '';
+  return `<div class="card adv train-advice"><div class="row" style="justify-content:space-between"><div class="eyebrow2">Conseils entraînement</div><span class="tag">${A.a7.n} séance${A.a7.n>1?'s':''} · 7 j</span></div>
+  <h2 style="margin:4px 0 2px">Ta semaine d’entraînement</h2>
+  <div class="kline2"><span class="chip">${f(A.a7.dplus,0)} m D+ (7 j)</span><span class="chip">${f(A.a7.dist,1)} km (7 j)</span><span class="chip">moy. ${f(A.wkAvg,0)} m D+/sem (4 sem.)</span>${A.DS&&A.DS.days7?`<span class="chip">${f(A.DS.pas7,0)} pas/j · objectif ${f(A.G,0)}</span>`:''}</div>
+  <div class="adv-sec"><h4>💡 Ce que disent tes données</h4>${A.lines.map(t=>`<div class="tipl"><span>${t.ic}</span><div>${t.t}</div></div>`).join('')}</div>
+  <div class="adv-sec"><h4>🗓️ Pour la semaine qui vient</h4>${A.plan.map(x=>`<div class="planl"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`).join('')}</div>
+  <div class="small mut" style="margin-top:8px">Calculé sur tes séances et ton activité quotidienne enregistrées (rien n’est envoyé). Estimation indicative : écoute tes sensations.</div></div>`; }
 function adviceCard(A, opts={}){
   const {o,R,st,S,when}=A; const n=opts.compact?2:8;
   const gapsH=A.gaps.length? `<div class="adv-sec"><h4>🎒 Matériel à compléter (${A.gaps.length})</h4>${A.gaps.slice(0,opts.compact?3:12).map(g=>`<div class="gap ${g.st}"><span>${esc(g.l)}</span><em>${g.st==='buy'?'à acheter':'absent de ta liste'}</em></div>`).join('')}${opts.compact&&A.gaps.length>3?`<div class="small mut">+ ${A.gaps.length-3} autre(s)</div>`:''}</div>` : `<div class="adv-sec"><h4>🎒 Matériel</h4><div class="small green">Tout le matériel conseillé est coché dans ta liste ✔</div></div>`;
@@ -1561,7 +1658,7 @@ function renderPoids(){
   h+=`<div class="card"><h3>Composition</h3><div class="kpis">${K.filter(k=>c[k]!=null).map(k=>{ const F=WFK[k]; return `<div class="kpi"><b>${f(c[k],F[3])}<span class="u">${F[2]}</span></b><small>${F[1]}</small>${p?`<div class="dl">${deltaHTML(wDelta(c,p,k),k)}</div>`:''}</div>`; }).join('')}</div>
    ${c.visceral!=null&&c.visceral>=9?'<div class="tip">Graisse viscérale ≥ 9 (niveau « élevé » selon Mi Fitness) : l’endurance régulière (marche en côte, tapis incliné) et le renforcement la font baisser.</div>':''}</div>`;
   // Graphiques
-  h+=`<div class="card"><h3>Évolution du poids (kg)</h3><div class="chart" id="chWt"></div>${L.length<2?'<p class="small mut">Le graphique se remplira avec les prochaines pesées.</p>':''}</div>
+  h+=`<div class="card"><h3>Évolution du poids (kg) — ${userChartWeeks()} dernières semaines</h3><div class="chart" id="chWt"></div>${L.length<2?'<p class="small mut">Le graphique se remplira avec les prochaines pesées.</p>':''}<p class="small mut">Touche le graphique ou déplace le curseur pour le détail d’une pesée. Période réglable dans Données → Préférences.</p></div>
    <div class="card"><h3>Graisse et muscle (%)</h3><div class="chart" id="chWc"></div></div>`;
   // Tableau des écarts
   h+=`<div class="card"><h3>Toutes les mesures</h3><div class="scroll"><table class="tbl"><tr><th>Mesure</th><th>Actuel</th>${p?'<th>Δ préc.</th><th>Δ 30 j</th><th>Δ début</th>':''}</tr>${WF.filter(([k])=>c[k]!=null).map(([k,l,u,d])=>`<tr><td>${l}</td><td>${SIGNED_W.has(k)&&c[k]>0?'+':''}${f(c[k],d)}${u?' '+u:''}</td>${p?`<td>${deltaHTML(wDelta(c,p,k),k)}</td><td>${p30&&p30!==c?deltaHTML(wDelta(c,p30,k),k):'–'}</td><td>${first!==c?deltaHTML(wDelta(c,first,k),k):'–'}</td>`:''}</tr>`).join('')}</table></div>
@@ -1572,9 +1669,12 @@ function renderPoids(){
      <button class="iconbtn" data-w-edit="${esc(w.id)}" aria-label="Modifier">✏️</button><button class="iconbtn" data-w-del="${esc(w.id)}" aria-label="Supprimer">🗑️</button></div>`; }).join('')}
    <div class="row" style="margin-top:10px"><button class="btn sec sm" id="btnExpW">Exporter CSV (pesées)</button></div></div>`;
   box.innerHTML=h;
-  const lb=L.map(w=>dFR(w.date).slice(0,5)+(L.filter(x=>x.date===w.date).length>1&&w.heure?' '+w.heure:''));
-  chart($('chWt'),lb,[{name:'Poids (kg)',type:'line',color:'#7cc8ea',values:L.map(w=>w.weight)},{name:'Poids standard',type:'line',color:'#8b9a97',values:L.map(w=>w.stdKg)}],{fitLeft:true});
-  chart($('chWc'),lb,[{name:'Graisse (%)',type:'line',color:'#fb923c',values:L.map(w=>w.fatPct)},{name:'Taux musculaire (%)',type:'line',axis:'right',color:'#34b38a',values:L.map(w=>w.musclePct)}],{fitLeft:true,rightMin:true});
+  const Wk=userChartWeeks(), cut=addDays(L[L.length-1].date,-(Wk*7-1)); let Lw=L.filter(w=>w.date>=cut); if(!Lw.length) Lw=L.slice(-1);
+  const lb=Lw.map(w=>dFR(w.date).slice(0,5)+(L.filter(x=>x.date===w.date).length>1&&w.heure?' '+w.heure:''));
+  const wDet=Lw.map(w=>{ const i=L.indexOf(w), pv=i>0?L[i-1]:null, d=pv&&w.weight!=null&&pv.weight!=null? w.weight-pv.weight : null;
+    return `<b>${dFR(w.date)}${w.heure?' · '+esc(w.heure):''}</b><br>Poids : <b>${f(w.weight,1)} kg</b>${d!=null?' ('+(d>0?'+':'−')+f(Math.abs(d),1)+' kg depuis la pesée précédente)':''}${w.stdKg!=null?'<br>Poids standard : '+f(w.stdKg,1)+' kg':''}${w.fatPct!=null?'<br>Graisse : '+f(w.fatPct,1)+' %':''}${w.musclePct!=null?' · muscle : '+f(w.musclePct,1)+' %':''}${w.imc!=null?'<br>IMC : '+f(w.imc,1):''}`; });
+  chart($('chWt'),lb,[{name:'Poids (kg)',type:'line',color:'#7cc8ea',values:Lw.map(w=>w.weight)},{name:'Poids standard',type:'line',color:'#8b9a97',values:Lw.map(w=>w.stdKg)}],{fitLeft:true,details:wDet});
+  chart($('chWc'),lb,[{name:'Graisse (%)',type:'line',color:'#fb923c',values:Lw.map(w=>w.fatPct)},{name:'Taux musculaire (%)',type:'line',axis:'right',color:'#34b38a',values:Lw.map(w=>w.musclePct)}],{fitLeft:true,rightMin:true,details:wDet});
 }
 function weightsCSV(){ const L=weighsSorted(); const h=['Date','Heure',...WF.map(x=>x[1]+(x[2]?' ('+x[2]+')':'')),'Type de corps','Notes'];
   return '\ufeff'+h.join(';')+'\n'+L.map(w=>[dFR(w.date),w.heure||'',...WF.map(([k])=>csvN(w[k])),csvS(w.bodyType),csvS(w.notes)].join(';')).join('\n'); }
@@ -1618,6 +1718,8 @@ function dayId(d){ return 'day-'+d; }
 function addDays(iso,k){ const d=parseISO(iso); d.setDate(d.getDate()+k); return toISO(d); }
 function dayOf(iso){ return (DB.daily||[]).find(x=>x.date===iso)||null; }
 // objectif de pas personnalisé (Données → Préférences, synchronisé entre appareils) ; null si non défini
+function userChartWeeks(){ const g=DB&&DB.prefs&&DB.prefs.chartWeeks; const v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
+  return isFinite(v)&&v>=2&&v<=104? Math.round(v) : 26; }
 function userStepGoal(){ const g=DB&&DB.prefs&&DB.prefs.stepGoal; const v=(typeof g==='number')?g:(g&&typeof g==='object'?+g.v:NaN);
   return isFinite(v)&&v>=500&&v<=50000? Math.round(v) : null; }
 // objectif de pas quotidien : le choix de l'utilisateur d'abord, sinon adapté à la prochaine ascension (longue sortie / altitude / itinérance → plus de pas)
@@ -1684,7 +1786,8 @@ function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats
       ${L.slice(0,60).map((x,i)=>(i===10?'<details class="small"><summary>Journées plus anciennes ('+(Math.min(60,L.length)-10)+')</summary>':'')+`<div class="drow"><div class="nm"><b>${dayLbl(x.date)}</b> <span class="small mut">${x.date.slice(0,4)}</span><div class="small">${f(x.pas,0)} pas · ${f(x.kcal,0)} kcal · ${dayThird(x)}${S.state(x.date)==='train'?' · ⛰️ séance':''}</div></div><button class="btn sm sec" data-d-edit="${x.date}" aria-label="Modifier">✏️</button><button class="btn sm bad" data-d-del="${x.date}" aria-label="Supprimer">🗑️</button></div>`).join('')}${L.length>10?'</details>':''}
       ${L.length>60?`<div class="small mut">… ${L.length-60} journées plus anciennes (export CSV)</div>`:''}</div>`;
   chart($('chD1'),lab,[{name:'Pas',type:'bar',color:'#7cc8ea',values:days.map(d=>(dayOf(d)||{}).pas??null)},{name:'Minutes d’activité',type:'line',axis:'right',color:'#fb923c',values:days.map(d=>{ const x=dayOf(d); return x?x.actMin:null; })}]);
-  chart($('chD2'),wl,[{name:'Pas / jour',type:'bar',color:'#34b38a',values:wk.map(w=>w.pas)},{name:'kcal / jour',type:'line',axis:'right',color:'#fda4af',values:wk.map(w=>w.kcal)}]);
+  const wkS=wk.slice(-userChartWeeks());
+  chart($('chD2'),wkS.map(w=>'S'+isoWeek(parseISO(w.mon))),[{name:'Pas / jour',type:'bar',color:'#34b38a',values:wkS.map(w=>w.pas)},{name:'kcal / jour',type:'line',axis:'right',color:'#fda4af',values:wkS.map(w=>w.kcal)}],{details:wkS.map(w=>`<b>Semaine du ${dFR(w.mon)}</b><br>${w.n} jour${w.n>1?'s':''} avec données · <b>${f(w.pas,0)} pas/jour</b> · ${f(w.kcal,0)} kcal/jour${w.min!=null?' · '+f(w.min,0)+' min/jour':''}`)});
 }
 function dailyCSV(){ const L=(DB.daily||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
   return '\ufeff'+['Date','Pas','Calories (kcal)','Durée de l’activité (min)','Pauses actives','Source'].join(';')+'\n'+L.map(x=>[dFR(x.date),csvN(x.pas),csvN(x.kcal),csvN(x.actMin),csvN(x.pausesActives),csvS(x.src)].join(';')).join('\n'); }
@@ -2408,7 +2511,7 @@ function initUI(){
   // balayage horizontal entre onglets
   const main=document.querySelector('main'); let sx=0,sy=0,lock=null,pg=null,dx=0;
   main.addEventListener('touchstart',e=>{ if(document.body.classList.contains('sheet-open')||document.body.classList.contains('imp-open')||e.touches.length>1){ lock='n'; return; }
-    const t=e.target; if(t.closest('input,textarea,select,.scroll,.seg,.mapf,[contenteditable]')){ lock='n'; return; }
+    const t=e.target; if(t.closest('input,textarea,select,.scroll,.seg,.mapf,.chart,[contenteditable]')){ lock='n'; return; }
     sx=e.touches[0].clientX; sy=e.touches[0].clientY; lock=null; dx=0; pg=document.querySelector('.page.on:not(#p-add)'); },{passive:true});
   main.addEventListener('touchmove',e=>{ if(lock==='n'||!pg) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy;
     if(lock==null){ if(Math.abs(x)<10&&Math.abs(y)<10) return; lock=Math.abs(x)>Math.abs(y)*1.4?'h':'n'; if(lock==='h') pg.classList.add('dragging'); }
@@ -2495,6 +2598,10 @@ function init(){
     if(raw===''){ delete DB.prefs.stepGoal; save(); renderPrefs(); renderAll(); toast('Objectif de pas : adapté à ta prochaine ascension'); return; }
     const v=num(raw); if(v==null||isNaN(v)||v<500||v>50000){ alert('Objectif de pas : entre un nombre entre 500 et 50 000 pas.'); return; }
     DB.prefs=DB.prefs||{}; DB.prefs.stepGoal={v:Math.round(v),updatedAt:Date.now()}; save(); renderPrefs(); renderAll(); toast('Objectif quotidien : '+f(Math.round(v),0)+' pas'); });
+  $('chartWeeksSel').addEventListener('change',()=>{ $('chartWeeksNumWrap').style.display=$('chartWeeksSel').value==='custom'?'':'none'; if($('chartWeeksSel').value==='custom') $('chartWeeksNum').value=userChartWeeks(); });
+  $('btnChartWeeks').addEventListener('click',()=>{ const sel=$('chartWeeksSel').value; const raw=sel==='custom'? $('chartWeeksNum').value.trim() : sel;
+    const v=num(raw); if(v==null||isNaN(v)||v<2||v>104||Math.round(v)!==v){ alert('Semaines affichées : entre un nombre entier entre 2 et 104.'); return; }
+    DB.prefs=DB.prefs||{}; DB.prefs.chartWeeks={v:Math.round(v),updatedAt:Date.now()}; save(); renderPrefs(); renderAll(); toast('Graphiques : '+Math.round(v)+' semaines affichées'); });
   fillForm(null); renderAll(); show('journal');
   initSync(); appReady=true;
   initUI();
