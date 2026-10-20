@@ -259,6 +259,9 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
 .dwhy{margin:6px 0 0}.dtag{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:650;margin-right:4px}
 .dtag.d0{background:rgba(74,222,128,.16);color:#bbf7d0}.dtag.d1{background:rgba(124,200,234,.16);color:#cdeefc}.dtag.d2{background:rgba(251,146,60,.16);color:#fed7aa}.dtag.d3,.dtag.d4{background:rgba(248,113,113,.16);color:#fecaca}
 .diffexp summary{cursor:pointer}
+.sphoto{margin:-4px -4px 12px;position:relative;overflow:hidden;border-radius:14px;background:rgba(255,255,255,.05)}.sphoto img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.sphoto figcaption{position:absolute;right:0;bottom:0;max-width:100%;padding:2px 8px;font-size:10px;line-height:1.4;color:rgba(255,255,255,.85);background:rgba(0,0,0,.45);border-top-left-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sphoto figcaption a{color:inherit}
+.sp-hero{margin:0 0 12px}
 .sumlink h3 .go{color:var(--glacier);font-weight:500;font-size:13px;margin-left:6px}
 /* fiche sommet */
 .sumhero{position:relative;padding-top:52px}
@@ -329,7 +332,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -877,6 +880,24 @@ function objOrder(){ return OBJ_BY_DIFF.slice(); } // v18 : numéro affiché = r
 function diffWhy(o){ const D=diffScore(o), M=o.multi;
   return `${f(M?M.dpJ:o.dplus,0)} m D+${M?'/jour':''} · ${f(M?o.dist/M.jours:o.dist,1)} km${M?'/jour':''} · sommet ${f(o.altSom,0)} m · ${TECH_TXT[D.t]||'—'}${M?' · '+M.jours+' jours d’affilée':''} → score ${f(D.s,1)}`; }
 
+// v19 : photos des sommets (Wikimedia Commons, licences libres ; crédit affiché sous chaque photo). Fichiers locaux, précachés par le service worker.
+const PHOTO_FILES={
+ 'barrhorn':{w:800,h:600,a:"Whgler",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:%C3%9Cssers_Barrhorn_2019.jpg",t:"Üssers Barrhorn"},
+ 'cabaliros':{w:800,h:597,a:"Sotos",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Pic_du_Cabaliros_1.jpg",t:"Pic du Cabaliros"},
+ 'chaine-des-puys':{w:800,h:600,a:"Anthony Baratier",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Panorama_de_la_cha%C3%AEne_des_Puys.jpg",t:"Panorama de la chaîne des Puys depuis le belvédère de l'aire des volcans d'Auvergne"},
+ 'grande-sassiere':{w:800,h:600,a:"Tiia Monto",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Aiguille_de_la_Grande_Sassi%C3%A8re_5.jpg",t:"Aiguille de la Grande Sassière and Glacier de Sassière"},
+ 'pic-du-midi-artigues':{w:800,h:532,a:"Celeda",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Couchant_sur_le_Pic_du_Midi_de_Bigorre_03.jpg",t:"Sunset on the Pic du midi de Bigorre"},
+ 'pic-du-midi-tourmalet':{w:800,h:600,a:"Serge Ottaviani",l:"CC BY-SA 3.0",lu:"https://creativecommons.org/licenses/by-sa/3.0",p:"https://commons.wikimedia.org/wiki/File:Col_du_Tourmalet_-_Vue_sur_l%27observatoire_du_Pic_du_midi_de_Bigorre.JPG",t:"Col du Tourmalet - vue sur l'observatoire du Pic du midi de Bigorre"},
+ 'puy-de-dome':{w:800,h:522,a:"Clément Bardot",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Puy_de_D%C3%B4me_during_autumn.jpg",t:"Puy de Dôme during autumn (Auvergne, France)."},
+ 'rhune':{w:800,h:600,a:"Basotxerri",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Larrun_-BT-_01.jpg",t:"Summit of Larrun (La Rhune) as seen from Col d'Ibardin. Basque Country, France"},
+ 'sancy':{w:800,h:534,a:"Marie-Lan Nguyen",l:"CC BY 4.0",lu:"https://creativecommons.org/licenses/by/4.0",p:"https://commons.wikimedia.org/wiki/File:Puy_de_Sancy_2016-08-23_n18.jpg",t:"Le sommet du Puy de Sancy et les Aiguilles du Diable à gauche."},
+ 'sancy-cretes':{w:800,h:600,a:"PIERRE ANDRE LECLERCQ",l:"CC BY-SA 3.0",lu:"https://creativecommons.org/licenses/by-sa/3.0",p:"https://commons.wikimedia.org/wiki/File:Le_Puy_de_Sancy_(2014).jpg",t:"Randonnée sur les Hauts Plateaux du Puy de Sancy (GR4 )"},
+ 'taillon':{w:800,h:600,a:"Tigerente",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Pic_du_Taillon_Pyrenees_20060820a.jpg",t:"Pic du Taillon, Pyrenees, France"},
+};
+const PHOTOS={1:'puy-de-dome',2:'puy-de-dome',3:'sancy',4:'rhune',5:'sancy-cretes',6:'pic-du-midi-tourmalet',7:'pic-du-midi-artigues',8:'barrhorn',9:'grande-sassiere',10:'chaine-des-puys',11:'cabaliros',12:'taillon'};
+function photoHTML(o,cls){ const k=PHOTOS[o.n], P=k&&PHOTO_FILES[k]; if(!P) return '';
+  return `<figure class="sphoto ${cls||''}"><img src="img/sommets/${k}.webp" alt="${esc(o.sommet)} — ${esc(P.t)}" width="${P.w}" height="${P.h}" loading="lazy" decoding="async" onerror="this.closest('figure').remove()"><figcaption>📷 <a href="${P.p}" target="_blank" rel="noopener">${esc(P.a)}</a> · <a href="${P.lu}" target="_blank" rel="noopener">${esc(P.l)}</a> · Wikimedia Commons</figcaption></figure>`; }
+
 // Catégorie « Bivouac » (v4) : identifiants stables, identiques sur tous les appareils (évite les doublons à la synchro)
 const BIV_ID='eqc-bivouac';
 function bivouacCat(){ const it=[['Tente légère 1–2 places','ou nuits en gîte/refuge selon l’itinéraire'],['Sac de couchage','température confort ≤ 5 °C (nuits fraîches en moyenne montagne)'],['Matelas isolant','indice R ≥ 2 au printemps et en automne'],
@@ -1279,7 +1300,7 @@ function renderObjSort(){ const m=objSortMode(), N=OBJECTIFS.length;
   $('objSort').innerHTML=`${true?`<details class="card small diffexp"><summary><b>Objectifs numérotés du plus facile (1) au plus difficile (${N})</b> : suis cet ordre</summary><p class="mut" style="margin:8px 0 4px">Suis cet ordre : chaque sommet prépare le suivant. Le niveau est calculé à partir de :</p><ul class="steps"><li><b>D+</b> (1 point par 100 m)</li><li><b>Distance</b> (1 point par 2 km)</li><li><b>Altitude</b> du sommet au-dessus de 1 500 m (1 point par 200 m)</li><li><b>Technicité</b> d’après les topos (0 à 7,5 points : raide, éboulis, névés, crampons…)</li><li><b>Itinérance</b> : D+ et distance pris par étape, + 4 points par jour supplémentaire</li></ul><p class="mut" style="margin:4px 0 0">« Prochaine ascension » et les conseils suivent aussi cet ordre (sauf si tu as mis une date prévue). Le numéro de chaque sommet est son rang de difficulté.</p></details>`:''}`; }
 function renderObj(){ renderObjSort(); const N=OBJECTIFS.length;
   $('objList').innerHTML=objOrder().map(o=>{ const st=objState(o.n), R=diffRank(o.n), D=diffScore(o);
-    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><span class="dlv" title="Objectif ${R} sur ${N} (rang de difficulté)">${R}</span><h3 style="margin:0;flex:1;min-width:0">${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
+    return `<div class="card">${photoHTML(o,"sp-card")}<div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><span class="dlv" title="Objectif ${R} sur ${N} (rang de difficulté)">${R}</span><h3 style="margin:0;flex:1;min-width:0">${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
     <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
     <div class="small dwhy"><span class="dtag d${Math.min(4,Math.floor(D.s/10))}">Niveau ${R}/${N} · ${diffLabel(D.s)}</span> <span class="mut">${esc(diffWhy(o))}</span></div>
     <div class="kpis" style="margin:8px 0">
@@ -1776,7 +1797,7 @@ function renderSummit(n){
   const kp=[[f(o.altSom,0)+' m','sommet'],[f(o.altDep,0)+' m','départ'],['≈ '+f(o.dplus,0)+' m','D+ total'],['≈ '+f(o.dist,o.dist<20?1:0)+' km','distance'],[fmtH(o.h),M?'par étape':'temps total'],[I.type,'type']];
   const g=A.gear;
   $('sumBody').innerHTML=`
-  <div class="card hero-card sumhero"><button class="xbtn back" data-sum-back aria-label="Retour">‹</button>
+  <div class="card hero-card sumhero"><button class="xbtn back" data-sum-back aria-label="Retour">‹</button>${photoHTML(o,"sp-hero")}
     <div class="eyebrow2">Objectif ${diffRank(o.n)} sur ${OBJECTIFS.length} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
     <div class="row" style="margin-top:8px"><span class="tag">${esc(st.statut)}</span>${st.datePrevue?`<span class="tag">📅 prévu le ${dFR(st.datePrevue)}</span>`:''}${st.dateRealisee?`<span class="tag">✔ fait le ${dFR(st.dateRealisee)}</span>`:''}${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
     <div class="kpis" style="margin-top:12px">${kp.map(([v,l])=>`<div class="kpi"><b style="font-size:${String(v).length>9?14:19}px">${esc(v)}</b><small>${l}</small></div>`).join('')}</div>

@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v18') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v19') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v18'), 'anciens caches de l’appli supprimés, v18 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v19'), 'anciens caches de l’appli supprimés, v19 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -711,6 +711,24 @@ function FIXTURE() {
     const t12 = await p.evaluate(() => { renderSummit(12); return $('sumBody').innerText; });
     ok(/Sarradets/.test(t12) && /Brèche de Roland/.test(t12) && /crampons/i.test(t12) && /1748 OT/.test(t12), 'Taillon : refuge des Sarradets, Brèche, crampons, carte IGN');
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+  // ---------- 18. v19 : photos des sommets ----------
+  out.push('18. v19 : photos des sommets');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    await p.evaluate(() => show('obj')); await W(300);
+    const r = await p.evaluate(async () => { const figs=[...document.querySelectorAll('#objList > .card > figure.sphoto')];
+      for (const f of figs) { f.scrollIntoView(); await new Promise(r=>setTimeout(r,60)); }
+      const imgs=figs.map(f=>f.querySelector('img')); imgs.forEach(i=>i.loading='eager'); await Promise.all(imgs.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r; setTimeout(r,5000);})));
+      const st=await Promise.all([...new Set(imgs.map(i=>i.getAttribute('src')))].map(async u=>(await fetch(u)).status));
+      return {n:figs.length, ok:imgs.filter(i=>i.naturalWidth>=600).length, cred:figs.every(f=>/Wikimedia Commons/.test(f.textContent)&&/CC|domaine/i.test(f.textContent)), st, ow:document.documentElement.scrollWidth>innerWidth+1,
+        cover:OBJECTIFS.every(o=>PHOTOS[o.n]&&PHOTO_FILES[PHOTOS[o.n]])}; });
+    ok(r.n === 12 && r.ok === 12 && r.st.every(x=>x===200) && r.cover, '12 cartes Objectifs avec photo chargée (locale, HTTP 200)', r);
+    ok(r.cred && !r.ow, 'crédit auteur/licence sur chaque photo, sans débordement', r);
+    const h = await p.evaluate(async () => { const res=[]; for (const o of OBJECTIFS) { renderSummit(o.n); const i=document.querySelector('#sumBody .sumhero img'); i.loading='eager'; await new Promise(r=>{ if(i.complete) r(); else { i.onload=i.onerror=r; setTimeout(r,5000); } }); res.push(i.naturalWidth>0); } return res; });
+    ok(h.every(Boolean), 'photo en tête des 12 fiches sommet', h);
+    const fb = await p.evaluate(async () => { const k=PHOTOS[1]; PHOTO_FILES.__x={w:800,h:600,a:'x',l:'x',lu:'#',p:'#',t:'x'}; PHOTOS[1]='__x'; renderSummit(1); const i=document.querySelector('#sumBody .sumhero img'); i.loading='eager'; await new Promise(r=>{ i.addEventListener('error',()=>setTimeout(r,20)); setTimeout(r,2000); }); await new Promise(r=>setTimeout(r,50)); const gone=!document.querySelector('#sumBody .sumhero figure'); PHOTOS[1]=k; delete PHOTO_FILES.__x; return gone; });
+    ok(fb, 'photo manquante : retirée proprement (pas d’image cassée)');
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
   // ancienne version (v16) face à des données des objectifs 11/12
   if (process.env.OLD16) { const [ctx, p] = await fresh(BASE + '/' + process.env.OLD16);
     await p.evaluate(() => { const D=JSON.parse(JSON.stringify(DB)); D.objectifs[11]={statut:'Prêt',datePrevue:'2027-06-20',dateRealisee:'',updatedAt:5}; D.objectifs[12]={statut:'Fait',datePrevue:'',dateRealisee:'2027-07-10',updatedAt:6,gpx:{pts:[[42.71,-0.05,2208],[42.70,-0.05,2600],[42.6936,-0.0513,3144]],dist:3,dplus:936,name:'fictif'}};
