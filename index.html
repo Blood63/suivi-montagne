@@ -255,6 +255,10 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
 .gap:first-of-type{border-top:0}.gap em{font-style:normal;font-size:12px;color:var(--warn);white-space:nowrap}.gap.buy em{color:var(--glacier)}
 .adv[data-sum]{cursor:pointer}
 .sumlink{cursor:pointer;border-radius:14px;transition:background .2s}.sumlink:active{background:rgba(255,255,255,.04)}
+.dlv{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:700 14px var(--font);background:linear-gradient(135deg,var(--glacier),var(--glacier2));color:#04202d}
+.dwhy{margin:6px 0 0}.dtag{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:650;margin-right:4px}
+.dtag.d0{background:rgba(74,222,128,.16);color:#bbf7d0}.dtag.d1{background:rgba(124,200,234,.16);color:#cdeefc}.dtag.d2{background:rgba(251,146,60,.16);color:#fed7aa}.dtag.d3,.dtag.d4{background:rgba(248,113,113,.16);color:#fecaca}
+.diffexp summary{cursor:pointer}
 .sumlink h3 .go{color:var(--glacier);font-weight:500;font-size:13px;margin-left:6px}
 /* fiche sommet */
 .sumhero{position:relative;padding-top:52px}
@@ -325,7 +329,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -432,6 +436,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 <!-- OBJECTIFS -->
 <section class="page" id="p-obj">
   <div class="card small mut">Valeurs <b>approximatives</b> issues de topos en ligne (sources sous chaque sommet). D+, distance et durée = sortie complète (aller-retour ou boucle) sauf mention. <b style="color:var(--glacier)">Touche un sommet pour ouvrir sa fiche détaillée.</b></div>
+  <div id="objSort"></div>
   <div id="objList"></div>
 </section>
 
@@ -640,13 +645,21 @@ const OBJECTIFS = [
  // GR 441 ajouté en dernière position (n° 10) : itinérance de 6 jours, de nature différente des ascensions à la journée ; les numéros 1–9 restent inchangés (l'état « fait / prévu » est stocké par numéro).
  {n:10,sommet:'GR 441 – Tour de la Chaîne des Puys',iti:'Boucle en 6 étapes au départ de Volvic',depart:'Volvic (573 m)',altDep:573,altSom:1465,dplus:2900,dist:114,duree:'6 jours (étapes de 15 à 23 km, 4 h–5 h 40)',h:5.7,multi:{jours:6,dpJ:520,distJ:23,hJ:5.7},diff:'Moyenne (itinérance, étapes longues)',conf:'Moyenne-élevée',
   note:'114–115 km, ≈ 2 750–3 050 m D+ cumulé selon les tracés ; point culminant le puy de Dôme (1 465 m) si le tracé passe au sommet (certains topos donnent 1 415 m). D+ moyen ≈ 460–510 m par jour (estimation : total ÷ 6).',
-  src:[['Topo de Rando – GR 441','https://topo-de-rando.com/gr-441/'],['GR-Go – GR 441','https://gr-go.fr/grande-randonnee/gr441-tour-de-la-chaine-des-puys/'],['Randonnées.info – étapes du GR 441','https://randonnees.info/gr-441/'],['Randozone – GR 441','https://www.randozone.com/fiche/13935/sentier-de-grande-randonnee-gr-441-tour-de-la-chaine-des-puys.html'],['Cadre de pratique du bivouac (Chaîne des Puys)','https://www.puydedome-tourisme.com/uploads/2026/01/cadre-de-pratique-bivouac-randonnee-mars25.pdf']]}
+  src:[['Topo de Rando – GR 441','https://topo-de-rando.com/gr-441/'],['GR-Go – GR 441','https://gr-go.fr/grande-randonnee/gr441-tour-de-la-chaine-des-puys/'],['Randonnées.info – étapes du GR 441','https://randonnees.info/gr-441/'],['Randozone – GR 441','https://www.randozone.com/fiche/13935/sentier-de-grande-randonnee-gr-441-tour-de-la-chaine-des-puys.html'],['Cadre de pratique du bivouac (Chaîne des Puys)','https://www.puydedome-tourisme.com/uploads/2026/01/cadre-de-pratique-bivouac-randonnee-mars25.pdf']]},
+ // v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12) ajoutés à la suite — numéros 1–10 inchangés (état, dates, séances objN et GPX sont stockés par numéro).
+ {n:11,sommet:'Pic du Cabaliros',iti:'Depuis Sireix (piste de la Curadère, cabane d’Aurios)',depart:'Terminus de la piste de Sireix (parc à bétail)',altDep:1660,altSom:2334,dplus:740,dist:11,duree:'≈ 2 h–2 h 30 montée · 4 h 30–5 h 30 A/R',h:5,diff:'Moyenne (sentes pastorales, pente finale herbeuse ≈ 30 %)',conf:'Élevée',
+  note:'Topo officiel (Vallées de Gavarnie) : 10,7 km, +721 m, 5 h ; Visorando : 11,8 km, +767 m, 5 h 35 ; Randozone : ≈ 700 m, 3 h 30 (temps de marche). Sommet 2 334 m (table d’orientation) ; parking donné à 1 590–1 660 m selon les sources.',
+  src:[['Rando Vallées de Gavarnie – Le pic du Cabaliros depuis Sireix','https://rando.valleesdegavarnie.com/trek/29148-Le-pic-du-Cabaliros%2C-depuis-Sireix'],['Visorando – Pic du Cabaliros depuis Sireix','https://www.visorando.com/randonnee-pic-du-cabaliros-depuis-sireix/'],['Randozone – Randonnée au pic de Cabaliros','https://www.randozone.com/topos/randonnee/57/randonnee-au-pic-de-cabaliros'],['Iris-Pyrénées – Cabaliros depuis Estaing','https://iris-py.fr/randonnee-pyrenees/le-pic-du-cabaliros-depuis-estaing/'],['Rando Vallées de Gavarnie – Cabaliros depuis Cauterets','https://rando.valleesdegavarnie.com/trek/29275-Le-pic-du-Cabaliros%2C-depuis-Cauterets'],['Topos Pyrénées (Mariano) – Cabaliros par Cauterets','https://www.topopyrenees.com/randonnee-cabaliros-2334m-par-cauterets/']]},
+ {n:12,sommet:'Pic du Taillon',iti:'Voie normale par le port de Boucharo et la Brèche de Roland',depart:'Col des Tentes (Gavarnie)',altDep:2208,altSom:3144,dplus:1000,dist:15,duree:'≈ 3 h 30–4 h montée · 6 h 30–7 h A/R',h:6.5,diff:'Moyenne à difficile (T3, haute montagne, névés en début de saison)',conf:'Élevée',
+  note:'Camptocamp : +950 m, 16 km, T3, crampons en début de saison, passages à 35° ; Toporandosmontagne : +1 000 m, 14,5 km, 3 h 30 montée + 3 h descente ; Randozone : 4 h + 3 h. D+ réel ≈ 950–1 050 m (contre-pentes).',
+  src:[['Camptocamp – Taillon, voie normale depuis le col des Tentes','https://www.camptocamp.org/routes/56592/fr/taillon-voie-normale-depuis-le-col-des-tentes'],['Toporandosmontagne – Le Taillon par la Brèche de Roland','https://www.toporandosmontagne.com/65/vallees-gaves/le-taillon/le-taillon.php'],['Randozone – Pic du Taillon depuis le col des Tentes','https://www.randozone.com/topos/randonnee/76/pic-du-taillon-depuis-le-col-de-tentes'],['Imag’In Pyrénées – Taillon (voies et conseils)','https://www.imag-in-pyrenees.com/taillon.htm'],['Refuge de la Brèche de Roland (FFCAM) – réservation et infos 2026','https://refugebrechederoland.ffcam.fr/reservation.html'],['Parc national des Pyrénées – refuges de Luz-Gavarnie','https://www.pyrenees-parcnational.fr/fr/des-decouvertes/sejourner-dans-le-parc-national/ou-dormir-en-montagne/refuges/vallee-de-luz-gavarnie'],['Hautes-Pyrénées Tourisme – col des Tentes (route, réseau)','https://cdt65.media.tourinsoft.eu/upload/CL-00357-CDHP-FicheRando-Col-des-tentes-OK.pdf'],['InfoRoute65 – état des routes','https://inforoute.ha-py.fr/']]}
 ];
 // Saison : 0 = déconseillé, 1 = possible selon conditions, 2 = idéal (janv. → déc.) — indicatif, d'après les sources ci-dessus.
 const SEASON = {
  1:[1,1,1,2,2,2,2,2,2,2,1,1], 2:[1,1,1,2,2,2,2,2,2,2,1,1], 3:[0,0,0,0,1,2,2,2,2,2,1,0], 4:[1,1,2,2,2,1,1,1,2,2,2,1],
  5:[0,0,0,0,1,2,2,2,2,2,1,0], 6:[0,0,0,0,0,1,2,2,2,1,0,0], 7:[0,0,0,0,0,1,2,2,2,1,0,0], 8:[0,0,0,0,0,0,2,2,2,0,0,0],
- 9:[0,0,0,0,0,0,2,2,2,0,0,0], 10:[0,0,0,1,2,2,2,2,2,2,1,0]
+ 9:[0,0,0,0,0,0,2,2,2,0,0,0], 10:[0,0,0,1,2,2,2,2,2,2,1,0],
+ 11:[0,0,0,0,1,2,2,2,2,2,1,0], 12:[0,0,0,0,0,1,2,2,2,1,0,0]
 };
 // Fermetures connues (dates incluses)
 const CLOSURES = {
@@ -666,7 +679,9 @@ const OBJ_GEAR = {
  7:['chauss','veste','polaire','doudoune','eau','batons','lunettes','creme','bonnet','frontale','trousse','couverture','carte','sac'],
  8:['chauss','veste','polaire','doudoune','eau','batons','glacier','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','assurance','cabane','casque','crampons'],
  9:['chaussRig','veste','polaire','doudoune','eau','batons','glacier','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','crampons','piolet','casque'],
- 10:['chauss','veste','polaire','eau','batons','frontale','trousse','couverture','carte','creme','sac45','tente','duvet','matelas','rechaud','filtre']
+ 10:['chauss','veste','polaire','eau','batons','frontale','trousse','couverture','carte','creme','sac45','tente','duvet','matelas','rechaud','filtre'],
+ 11:['chauss','veste','polaire','eau','batons','lunettes','creme','bonnet','frontale','trousse','couverture','carte','sac'],
+ 12:['chauss','veste','polaire','doudoune','eau','batons','lunettes','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','crampons','piolet','casque','assurance']
 };
 const GEAR = {
  chauss:{l:'Chaussures de randonnée tige haute',re:/chaussures de randonn/i,cat:/chaussures/i},
@@ -801,6 +816,66 @@ const OBJ_INFO = {
   seasonTxt:'Mai à octobre (idéal mai–juin et septembre–octobre).',
   uncertain:['Stationnement longue durée à Volvic','Points d’eau précis par étape','Ouverture des hébergements hors saison']}
 };
+
+// v17 : fiches 11 (Cabaliros) et 12 (Taillon)
+OBJ_INFO[11]={type:'Aller-retour (boucle possible par la crête)',sum:[42.9300,-0.1259],start:{nm:'Terminus de la piste de Sireix (Pouy Droumidé, parc à bétail)',ll:[42.9502,-0.1413],q:'Sireix, Arras-en-Lavedan'},
+  parking:'Stationnement au bout de la piste, à l’épingle du parc à bétail (≈ 1 660 m), gratuit, quelques dizaines de places ⚠︎. Info du 10/08/2026 (topo officiel) : ravinement au début de la piste, passage délicat pour une voiture non surélevée.',
+  access:'D’Argelès-Gazost, direction Val d’Azun ; à Arras-en-Lavedan, D13 puis D613 vers Sireix, puis route forestière de la Curadère (≈ 12 km) : goudronnée sur un peu plus de la moitié, puis piste caillouteuse, dernier kilomètre en mauvais état. Rouler doucement et par temps sec. ≈ 25 min depuis Argelès ⚠︎.',
+  route:['Au terminus de la piste (1 660 m), monter derrière le parc à bestiaux par une sente dans les pâturages vers la crête (≈ 20 min).','Suivre la piste à droite en laissant le dôme de la Tucoy à gauche, jusqu’à un col avec un second parc à bestiaux (1 796 m).','Prendre le sentier le plus haut, en traversée soutenue, sous le pic Arraillé, jusqu’à la cabane d’Aurios (≈ 1 970 m, abri).','Derrière la cabane (panneau « Cabaliros »), rejoindre une petite crête, traverser le ruisseau du Bacherou puis suivre le sentier en balcon jusqu’à la croupe herbeuse.','Monter la pente herbeuse (≈ 1,25 km à 30 % de moyenne) jusqu’au sommet (2 334 m) : table d’orientation et antennes. Retour par le même chemin.'],
+  variants:['Retour par la crête (randonneurs expérimentés) : col 2 249 m, Soum de Lat Dessus, croix du Malinat (1942), puis cabane d’Aurios (topo officiel).','Depuis Estaing : boucle de 9,7 km, +714 m, ≈ 4 h 30, départ ≈ 1 616 m (Iris-Pyrénées).','Depuis Cauterets (ferme Igau, ≈ 1 090 m) par le col de Contente : 17–18 km, +1 290 à +1 365 m, ≈ 7 h 30 (Vallées de Gavarnie, Topos Pyrénées) — très bon entraînement « gros D+ ».','Traversée Pierrefitte → Cauterets (parcours du Grand Raid des Pyrénées) : ≈ 25 km, +1 836 m / −1 391 m.'],
+  tech:'Aucun passage technique : sentes pastorales parfois multiples, puis pente herbeuse raide et soutenue. Cotation « Moyen » (topo officiel), « Moyenne » (Visorando).',
+  ign:'IGN TOP 25 1647 OT Vignemale – Ossau – Arrens – Cauterets',
+  water:'Aucun point d’eau fiable : le ruisseau du Bacherou est souvent à sec. Prévoir 1,5–2 L (plus l’été, aucune ombre).',
+  refuges:'Pas de refuge gardé. Cabane pastorale d’Aurios (≈ 1 970 m) : abri possible en cas de mauvais temps.',
+  dangers:['Pente finale herbeuse raide : très glissante mouillée ; dangereuse en cas de névés tardifs (Topos Pyrénées) — renoncer si neige dure.','Brouillard : sentes multiples dans les pâturages, bien suivre la trace (GPS hors-ligne conseillé).','Orages l’été sur un sommet isolé et exposé ; aucune ombre.','Troupeaux (vaches, brebis) et chiens de protection : les contourner calmement.','Piste d’accès dégradée : ne pas s’y engager par forte pluie avec une voiture basse.'],
+  winter:'Enneigé de décembre à avril environ : réservé au ski de randonnée / raquettes, piste d’accès non garantie ⚠︎.',
+  seasonTxt:'Juin à octobre hors neige (Randozone conseille juin) ; partir le matin en été.',
+  tips:['L’un des plus beaux belvédères des Hautes-Pyrénées : Vignemale, Balaïtous, Pic du Midi, Néouvielle (table d’orientation).','Bon premier « 2 300 m » pyrénéen, à placer avant le Pic du Midi et le Taillon.','Pour un vrai test d’endurance, monte depuis Cauterets (≈ 1 300 m D+).'],
+  secours:'112 (secours en montagne : PGHM des Hautes-Pyrénées). Réseau mobile non garanti ⚠︎.',
+  uncertain:['État de la piste de la Curadère (ravinement signalé le 10/08/2026)','Altitude exacte du parking (1 590–1 660 m selon les sources)']};
+OBJ_INFO[12]={type:'Aller-retour (1 jour, ou 2 avec nuit au refuge)',sum:[42.6936,-0.0513],start:{nm:'Parking du col des Tentes (terminus de la D923)',ll:[42.7134,-0.0508],q:'Col des Tentes, Gavarnie'},
+  parking:'Grand parking au terminus de la D923, au col des Tentes (≈ 2 208 m) ; plein tôt en juillet–août : arriver très tôt. ⚠︎ Gratuit ou payant à vérifier.',
+  access:'Lourdes → Argelès-Gazost → Luz-Saint-Sauveur (D921) → Gavarnie, puis D128 et D923 par la station des Espécières jusqu’au col des Tentes. Route non déneigée au-delà de la station : fermée en général de fin novembre à fin avril selon la neige (vérifier InfoRoute65). Pas de réseau mobile au col des Tentes.',
+  route:['Du col des Tentes (2 208 m), suivre à pied l’ancienne route goudronnée fermée jusqu’au port de Boucharo (2 270 m), ≈ 30 min.','Partir à l’est sous la face nord du Taillon jusqu’au ruisseau du Taillon (cascade : rochers glissants, chaînes), puis monter au col des Sarradets (≈ 2 529 m).','Rejoindre le refuge de la Brèche de Roland – Les Sarradets (2 587 m), ≈ 2 h depuis le départ.','Monter à la Brèche de Roland (2 807 m) par le pierrier raide ou le névé du glacier de la Brèche selon la saison.','Côté espagnol, partir à l’ouest au pied des falaises du pic Bazillac jusqu’à la Fausse Brèche ; contourner le Doigt (2 893 m) par la droite — jamais par la gauche (très raide).','Revenir sur la crête frontière puis monter en lacets dans les éboulis jusqu’au sommet du Taillon (3 144 m), ≈ 1 h depuis la Brèche. Retour par le même chemin.'],
+  variants:['En 2 jours : nuit au refuge des Sarradets, ou bivouac autour du refuge (≈ 40 emplacements, sans réservation ; repas à réserver par téléphone), pour partir au lever du jour.','Arête nord-ouest depuis Boucharo : ≈ 880 m D+, escalade PD sup. — alpinisme, hors randonnée (Imag’In Pyrénées).','Par le glacier du Taillon (crête NE) : escalade PD, matériel de glacier — alpinisme, hors randonnée.','Depuis Ordesa (Espagne) par le cirque de Carriata : ≈ 1 800 m D+, ≈ 12 h, passages aériens — beaucoup plus difficile.'],
+  tech:'T3 (Camptocamp, Toporandosmontagne) ; F en alpinisme. Sans neige et par beau temps, aucun passage aérien. Pentes jusqu’à ≈ 35° sur le névé de la Brèche en début de saison : crampons et piolet, et savoir s’en servir.',
+  ign:'IGN TOP 25 1748 OT Gavarnie – Luz-Saint-Sauveur',
+  water:'Ruisseau du Taillon avant le col des Sarradets (eau à traiter ⚠︎). Eau et boissons au refuge seulement quand il est gardé ; rien au-dessus : 2 L minimum.',
+  refuges:'Refuge de la Brèche de Roland – Les Sarradets (FFCAM, 2 587 m), tél. 06 83 38 13 24 : gardiennage annoncé du 6 juin au 10 octobre 2026, mais refuge non gardé depuis le 18/09/2026 (pénurie d’eau). 38 couchages gardé (57 places selon le Parc national), 14 hors gardiennage ; paiement chèque ou espèces uniquement ; chiens interdits.',
+  dangers:['Névé du glacier de la Brèche, souvent jusqu’à fin juillet ou début août : crampons et piolet nécessaires (gardien du refuge, Camptocamp).','Contournement du Doigt délicat sur neige gelée ; chute de stalactites de glace au pied du Bazillac en début de saison : s’écarter vers le versant sud.','Pierrier raide entre le refuge et la Brèche ; rochers glissants au ruisseau du Taillon.','Altitude 3 144 m : froid, vent, orages fréquents l’après-midi ; très forte fréquentation (pierres déclenchées par d’autres randonneurs).','Après la Brèche : Parque Nacional de Ordesa (bivouac interdit côté espagnol). Chiens interdits dans tout le Parc national des Pyrénées.'],
+  winter:'D’octobre/novembre à juin : haute montagne enneigée (ski de randonnée, alpinisme) ; route du col des Tentes fermée de fin novembre à fin avril environ.',
+  seasonTxt:'Mi-juillet à septembre sans neige ; juin et début juillet avec névés (crampons/piolet). Départ à l’aube (affluence, orages).',
+  tips:['« Le plus facile des 3 000 » de Gavarnie : un excellent premier 3 000, à faire après le Pic du Midi.','Départ 6 h–7 h : parking plein tôt et foule au retour entre la Brèche et le torrent.','Pique-nique du refuge à réserver au plus tard la veille par téléphone.','Vue sur le cirque de Gavarnie, le Mont Perdu et le canyon d’Ordesa ; isards et marmottes fréquents.'],
+  secours:'112 (PGHM des Hautes-Pyrénées ; 112 aussi côté espagnol). Pas de réseau au col des Tentes.',
+  uncertain:['Gardiennage du refuge en 2027 (pénurie d’eau en 2026)','Taille du névé de la Brèche selon l’année','Stationnement au col des Tentes (gratuit ou payant)']};
+// v17 : compléments pour les fiches 1–10 (technique, carte IGN, variantes, conseils, secours). ⚠︎ = à vérifier.
+[[1,{tech:'Sentier large, raide et régulier, sans passage technique.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',variants:['Chemin des Chèvres depuis la Maison de site (objectif 2), plus long et plus doux.','Descente en train à crémaillère (payant).'],tips:['Bon test d’allure : la montée se fait en ≈ 50 min.','Partir avant 9 h le week-end : parking du col de Ceyssat vite saturé.','Vérifier l’état des chemins (Puy-de-Dôme Tourisme) avant de partir.']}],
+ [2,{tech:'Sentier forestier puis escaliers et route de service, sans passage technique.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',variants:['Montée par le chemin des Muletiers (objectif 1), plus court et plus raide.','Descente en train à crémaillère (payant).'],tips:['Seule montée à pied quand les Muletiers sont fermés pour travaux.']}],
+ [3,{tech:'Val d’Enfer : pente forte et terrain instable (éboulis) ; escaliers en bois au sommet.',ign:'IGN TOP 25 2432 ET Massif du Sancy ⚠︎',variants:['Montée et descente par le Val de Courre (plus douce).','Grande boucle des crêtes (objectif 5).'],tips:['Monter par le Val d’Enfer et descendre par le Val de Courre (genoux).','Sans téléphérique (fermé du 31/08 au 18/12/2026), pas de descente en cabine.']}],
+ [4,{tech:'Sentier rocailleux et raide, sans passage technique.',ign:'IGN TOP 25 1245 OT Hendaye – Saint-Jean-de-Luz ⚠︎',variants:['Descente en petit train (du 28/03 au 01/11/2026, selon places).'],tips:['Partir tôt en été (aucune ombre).','Ne jamais marcher sur les rails du train.']}],
+ [5,{tech:'Sentier de crête balisé (GR 4 / GR 30), sans passage technique ; la difficulté est la longueur.',ign:'IGN TOP 25 2432 ET Massif du Sancy ⚠︎',variants:['Boucle plus courte du Val d’Enfer / Val de Courre (objectif 3).'],tips:['Prévoir 2–3 L d’eau : rien sur les crêtes.','Renoncer par brouillard ou orage : crêtes très exposées.']}],
+ [6,{tech:'Piste puis sentier en lacets, éboulis sur les 100 derniers mètres ; aucun passage d’escalade.',ign:'IGN TOP 25 1748 ET Néouvielle – Vallée d’Aure ⚠︎',variants:['Départ de la cabane de Toue (1 940 m, au-dessus de Barèges).','Voie d’Artigues par le chemin des Muletiers (objectif 7), bien plus longue.'],tips:['Bon test d’altitude (2 877 m) avant le Taillon et les 3 000 alpins.','Vérifier l’accès piéton Sencours → sommet (travaux) avant de partir.']}],
+ [7,{tech:'T3 : sentier historique, sans passage technique ; difficulté = longueur et ≈ 1 700 m de D+.',ign:'IGN TOP 25 1748 ET Néouvielle – Vallée d’Aure ⚠︎',variants:['Départ au virage des Arizes (≈ 1 280 m) pour gagner ≈ 100 m.','Voie du Tourmalet (objectif 6), deux fois moins de D+.'],tips:['Le meilleur entraînement « gros D+ » des Pyrénées avant le Barrhorn.','Bâtons indispensables pour la longue descente.']}],
+ [8,{tech:'T3 : vires du Gässi équipées de mains courantes, éboulis et moraine, pente finale > 40 %.',ign:'Carte nationale suisse 1:25 000 (map.geo.admin.ch)',variants:['En 2 jours avec nuit à la Turtmannhütte (2 519 m), conseillé pour l’acclimatation.','Retour par le Schöllijoch puis même chemin.'],tips:['Réserver la cabane tôt (gardiennée de juin à septembre).','Assurance secours indispensable : interventions héliportées payantes en Suisse.'],secours:'144 (urgences, Suisse) ou 112 ; REGA 1414.'}],
+ [9,{tech:'Pente finale raide (éboulis, parfois neige ou glace) puis courte arête ; piolet et crampons si enneigé ou gelé.',variants:['Bivouac sur l’aire dédiée au barrage du Saut (juin–août, 19 h – 7 h) pour partir à l’aube.'],tips:['Le plus haut des objectifs (3 747 m) : à faire après le Taillon, une fois l’altitude et les névés apprivoisés.','Être redescendu en début d’après-midi (orages).']}],
+ [10,{tech:'Aucune difficulté technique ; la difficulté est la répétition de 6 étapes de 15 à 23 km.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',tips:['Faire au préalable 2 jours de randonnée d’affilée avec le sac chargé.','Réserver les hébergements en saison ; feux interdits, réchaud à gaz seulement.']}]
+].forEach(([n,x])=>Object.assign(OBJ_INFO[n],x));
+
+/* v17 : classement par difficulté (calculé, n’affecte pas les numéros ni les données synchronisées).
+   Score = D+ ÷ 100 + distance ÷ 2 + (altitude du sommet − 1 500 m) ÷ 200 + 3 × technicité + 4 par jour d’itinérance supplémentaire.
+   Itinérance : D+ et distance pris par étape (moyenne). Technicité 0–2,5 d’après les topos (TECH_TXT). */
+const TECH={1:0,2:0,3:1,4:.5,5:.5,6:1,7:1,8:2,9:2.5,10:0,11:.5,12:2};
+const TECH_TXT={0:'aucun passage technique',0.5:'sentier raide ou rocailleux',1:'éboulis / terrain instable',2:'haute montagne : névés ou passages équipés, T3',2.5:'pente finale raide, crampons et piolet si neige'};
+function diffScore(o){ const M=o.multi, dp=M?M.dpJ:o.dplus, km=M?o.dist/M.jours:o.dist, t=TECH[o.n]||0;
+  const p={dp:dp/100, km:km/2, alt:Math.max(0,o.altSom-1500)/200, tech:3*t, multi:M?4*(M.jours-1):0};
+  return {s:p.dp+p.km+p.alt+p.tech+p.multi, p, t}; }
+function diffLabel(s){ return s<12?'Facile':s<20?'Modéré':s<30?'Soutenu':s<38?'Difficile':'Très difficile'; }
+const OBJ_BY_DIFF=OBJECTIFS.slice().sort((a,b)=>diffScore(a).s-diffScore(b).s||a.n-b.n);
+const diffRank=n=>OBJ_BY_DIFF.findIndex(o=>o.n===+n)+1;
+function objSortMode(){ try{ return localStorage.getItem('sm-objsort')==='num'?'num':'diff'; }catch(e){ return 'diff'; } }
+function objOrder(){ return objSortMode()==='num'? OBJECTIFS.slice() : OBJ_BY_DIFF.slice(); }
+function diffWhy(o){ const D=diffScore(o), M=o.multi;
+  return `${f(M?M.dpJ:o.dplus,0)} m D+${M?'/jour':''} · ${f(M?o.dist/M.jours:o.dist,1)} km${M?'/jour':''} · sommet ${f(o.altSom,0)} m · ${TECH_TXT[D.t]||'—'}${M?' · '+M.jours+' jours d’affilée':''} → score ${f(D.s,1)}`; }
 
 // Catégorie « Bivouac » (v4) : identifiants stables, identiques sur tous les appareils (évite les doublons à la synchro)
 const BIV_ID='eqc-bivouac';
@@ -1200,10 +1275,14 @@ function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s), pc=sp?3
   $('f_auto').textContent='Vitesse : '+(sp!=null?f(sp,2)+' km/h':'–')+(pc?' · allure '+Math.floor(pc/60)+'\''+String(Math.round(pc%60)).padStart(2,'0')+'"/km':'')+' · Vitesse ascensionnelle : '+(va!=null?f(va,0)+' m/h':'–'); }
 
 /* ---------- Objectifs ---------- */
-function renderObj(){
-  $('objList').innerHTML=OBJECTIFS.map(o=>{ const st=objState(o.n);
-    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
+function renderObjSort(){ const m=objSortMode(), N=OBJECTIFS.length;
+  $('objSort').innerHTML=`<div class="seg" role="group" aria-label="Ordre des objectifs"><button type="button" data-osort="diff" class="${m==='diff'?'on':''}" aria-pressed="${m==='diff'}">Par difficulté</button><button type="button" data-osort="num" class="${m==='num'?'on':''}" aria-pressed="${m==='num'}">Par numéro</button></div>
+  ${m==='diff'?`<details class="card small diffexp"><summary><b>Ordre conseillé : du plus facile au plus difficile</b> (niveau 1 → ${N})</summary><p class="mut" style="margin:8px 0 4px">Suis cet ordre : chaque sommet prépare le suivant. Le niveau est calculé à partir de :</p><ul class="steps"><li><b>D+</b> (1 point par 100 m)</li><li><b>Distance</b> (1 point par 2 km)</li><li><b>Altitude</b> du sommet au-dessus de 1 500 m (1 point par 200 m)</li><li><b>Technicité</b> d’après les topos (0 à 7,5 points : raide, éboulis, névés, crampons…)</li><li><b>Itinérance</b> : D+ et distance pris par étape, + 4 points par jour supplémentaire</li></ul><p class="mut" style="margin:4px 0 0">« Prochaine ascension » et les conseils suivent aussi cet ordre (sauf si tu as mis une date prévue). Les numéros des objectifs ne changent pas.</p></details>`:''}`; }
+function renderObj(){ renderObjSort(); const N=OBJECTIFS.length;
+  $('objList').innerHTML=objOrder().map(o=>{ const st=objState(o.n), R=diffRank(o.n), D=diffScore(o);
+    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><span class="dlv" title="Niveau de difficulté ${R} sur ${N}">${R}</span><h3 style="margin:0;flex:1;min-width:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
     <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
+    <div class="small dwhy"><span class="dtag d${Math.min(4,Math.floor(D.s/10))}">Niveau ${R}/${N} · ${diffLabel(D.s)}</span> <span class="mut">${esc(diffWhy(o))}</span></div>
     <div class="kpis" style="margin:8px 0">
       <div class="kpi"><b>${f(o.altDep,0)} m</b><small>alt. départ</small></div><div class="kpi"><b>${f(o.altSom,0)} m</b><small>alt. sommet</small></div><div class="kpi"><b>≈ ${f(o.dplus,0)} m</b><small>D+ estimé</small></div>
       <div class="kpi"><b>≈ ${f(o.dist,1)} km</b><small>distance</small></div><div class="kpi" style="grid-column:span 2"><b style="font-size:13.5px">${esc(o.duree)}</b><small>durée estimée</small></div></div></div>
@@ -1223,9 +1302,9 @@ function renderPrep(){
   const ta=$('prepTrain'); if(ta) ta.innerHTML=trainingAdviceHTML();
   const [A,B]=readinessWindow(); const st=trainStats(new Date());
   $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse séance <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue <b>${fmtH(st.longest/3600)}</b>`;
-  $('prepList').innerHTML=OBJECTIFS.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
+  $('prepList').innerHTML=OBJ_BY_DIFF.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
     return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0"><div class="prep">${ringSVG(R.r,78)}
-    <div style="flex:1;min-width:0"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
+    <div style="flex:1;min-width:0"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
     ${barsHTML(R)}
     <div class="small mut" style="margin-top:4px">${f(st.maxD,0)} / ${f(0.65*R.T,0)} m · ${f(st.wk,0)} / ${f(o.multi?1.5*R.T:R.T,0)} m/sem · ${fmtH(st.longest/3600)} / ${fmtH(0.6*R.H)} · ${st.n28} / 12 séances</div>
     <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st2.statut)}</span>${st2.datePrevue?'<span class="chip">prévu '+dFR(st2.datePrevue)+'</span>':''}</div></div></div>`; }).join('');
@@ -1454,8 +1533,8 @@ function gearStatus(n){
     for(const c of DB.equip) for(const i of c.items) if(g.re.test(i.name)){ if(!it||(!it.bought&&i.bought)){ it=i; cat=c; } }
     return {k, l:g.l, st: it? (it.bought?'ok':'buy') : 'missing', it, cat}; });
 }
-// prochaine ascension : celle dont la date prévue (à venir) est la plus proche ; sinon la première non faite de la liste
-function nextObjective(){ const today=todayISO(), open=OBJECTIFS.filter(o=>objState(o.n).statut!=='Fait');
+// prochaine ascension : celle dont la date prévue (à venir) est la plus proche ; sinon la plus facile non faite (ordre de difficulté, v17)
+function nextObjective(){ const today=todayISO(), open=OBJ_BY_DIFF.filter(o=>objState(o.n).statut!=='Fait');
   const planned=open.filter(o=>objState(o.n).datePrevue>=today).sort((a,b)=>objState(a.n).datePrevue.localeCompare(objState(b.n).datePrevue));
   return planned[0]||open[0]||null; }
 function closuresFor(o, fromISO, toISO_){ return (CLOSURES[o.n]||[]).filter(c=>c.to>=fromISO && c.from<=toISO_); }
@@ -1495,7 +1574,7 @@ function advise(o, ref){
   if(DS&&DS.trainRun>=6) tips.push({ic:'🛌',t:`${DS.trainRun} jours de séance d’affilée : place un jour de repos (marche légère) pour bien récupérer.`});
   if(st.muscu28===0 && R.r<0.8) tips.push({ic:'🏋️',t:'Renforcement : aucune séance de musculation en 4 semaines. 2 × 30 min/sem (squats, fentes, step-ups, gainage, mollets) protègent genoux et chevilles.'});
   if(R.r>=0.8){ tips.unshift({ic:'✅',t:`Tu as le niveau pour cet objectif : entretiens (2–3 séances/sem) et allège la semaine précédente${when?' (dernière grosse séance 4–5 jours avant le '+dFR(when)+')':''}.`});
-    const nx2=OBJECTIFS.find(x=>x.n!==o.n&&OBJECTIFS.indexOf(x)>OBJECTIFS.indexOf(o)&&objState(x.n).statut!=='Fait');
+    const nx2=OBJ_BY_DIFF.find(x=>x.n!==o.n&&OBJ_BY_DIFF.indexOf(x)>OBJ_BY_DIFF.indexOf(o)&&objState(x.n).statut!=='Fait');
     if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)}&nbsp;%. ${R2.a<1?'Monte progressivement ta grosse séance vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
   // Saison, météo, fermetures, jour
   const m=whenD.getMonth(), sea=(SEASON[o.n]||[])[m];
@@ -1699,10 +1778,11 @@ function renderSummit(n){
   const g=A.gear;
   $('sumBody').innerHTML=`
   <div class="card hero-card sumhero"><button class="xbtn back" data-sum-back aria-label="Retour">‹</button>
-    <div class="eyebrow2">Objectif ${o.n} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
+    <div class="eyebrow2">Objectif ${o.n} · niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
     <div class="row" style="margin-top:8px"><span class="tag">${esc(st.statut)}</span>${st.datePrevue?`<span class="tag">📅 prévu le ${dFR(st.datePrevue)}</span>`:''}${st.dateRealisee?`<span class="tag">✔ fait le ${dFR(st.dateRealisee)}</span>`:''}${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
     <div class="kpis" style="margin-top:12px">${kp.map(([v,l])=>`<div class="kpi"><b style="font-size:${String(v).length>9?14:19}px">${esc(v)}</b><small>${l}</small></div>`).join('')}</div>
     ${M?`<div class="small" style="margin-top:8px">Itinérance : <b>${M.jours} jours</b>, ≈ ${f(o.dist/M.jours,0)} km par jour en moyenne (étapes jusqu’à ${f(M.distJ,0)} km) et ≈ ${f(M.dpJ,0)} m de D+ par jour (cible de préparation).</div>`:''}
+    <div class="small" style="margin-top:8px"><span class="dtag d${Math.min(4,Math.floor(diffScore(o).s/10))}">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${diffLabel(diffScore(o).s)}</span> <span class="mut">${esc(diffWhy(o))}</span></div>
     <div class="small" style="margin-top:8px"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Durée :</span> ${esc(o.duree)} · <span class="mut">Fiabilité des données :</span> ${esc(o.conf)}</div>
     ${o.note?`<div class="small mut" style="margin-top:4px">${uncMark(o.note)}</div>`:''}
     <div class="small mut" style="margin-top:6px"><span class="unc">⚠︎</span> = information incertaine ou variable, à vérifier avant de partir.</div>
@@ -1717,10 +1797,13 @@ function renderSummit(n){
   <div class="card"><h3>🌤️ Météo au sommet</h3><div id="sumWx"><p class="small mut">Chargement de la météo du sommet…</p></div></div>
   <div class="card"><h3>🚩 Départ, parking et accès</h3><div class="kv"><b>Départ</b><span>${esc(I.start.nm)} (${f(o.altDep,0)} m)</span><b>Parking</b><span>${uncMark(I.parking)}</span><b>Accès</b><span>${uncMark(I.access)}</span></div></div>
   <div class="card"><h3>🥾 Itinéraire</h3><ol class="steps">${I.route.map(r=>`<li>${uncMark(r)}</li>`).join('')}</ol></div>
+  ${I.variants&&I.variants.length?`<div class="card"><h3>🔀 Variantes</h3><ul class="steps">${I.variants.map(r=>`<li>${uncMark(r)}</li>`).join('')}</ul></div>`:''}
+  <div class="card"><h3>🧗 Technique, carte et secours</h3><div class="kv">${I.tech?`<b>Technique</b><span>${uncMark(I.tech)}</span>`:''}${I.ign?`<b>Carte</b><span>${uncMark(I.ign)}</span>`:''}<b>Secours</b><span>${uncMark(I.secours||'112 (numéro d’urgence européen, gratuit, fonctionne avec tout réseau disponible).')}</span></div></div>
   <div class="card"><h3>💧 Eau et refuges</h3><div class="kv"><b>Eau</b><span>${uncMark(I.water)}</span><b>Refuges</b><span>${uncMark(I.refuges)}</span></div></div>
   <div class="card"><h3>📆 Meilleure saison</h3><div class="season">${sea}</div><div class="legend"><span><i style="background:#34b38a"></i>idéal</span><span><i style="background:#fb923c"></i>selon conditions</span><span><i style="background:rgba(255,255,255,.12)"></i>déconseillé</span></div>
     <p class="small" style="margin:8px 0 0">${uncMark(I.seasonTxt)}</p>${I.winter?`<p class="small mut" style="margin:4px 0 0">❄️ ${uncMark(I.winter)}</p>`:''}</div>
   <div class="card"><h3>⚠️ Dangers et précautions</h3><ul class="steps">${I.dangers.map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul></div>
+  ${I.tips&&I.tips.length?`<div class="card"><h3>👍 Bons plans</h3><ul class="steps">${I.tips.map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul></div>`:''}
   <div class="card"><h3>🎯 Ta préparation</h3><div class="prep">${ringSVG(A.R.r,78)}<div style="flex:1"><b>${rLabel(A.R.r)}</b><div class="small mut">${f(A.st.maxD,0)} m de D+ max · ${f(A.st.wk,0)} m/sem · sortie la plus longue ${fmtH(A.st.longest/3600)} (28 j)</div></div></div>${barsHTML(A.R)}
     ${cmpHTML(o,A.cmp,false).replace('adv-sec','adv-sec sumcmp')}
     <h4 class="h4">💡 Conseils</h4>${A.tips.map(t=>`<div class="tipl"><span>${t.ic}</span><div>${t.t}</div></div>`).join('')}
@@ -2701,6 +2784,7 @@ function init(){
   // fiches sommet : cartes Objectifs, Prépa, conseil du Journal
   const sumClick=e=>{ if(e.target.closest('select,input,textarea,a,summary,label,details>div')) return; const t=e.target.closest('[data-sum]'); if(t){ openSummit(t.dataset.sum); } };
   ['objList','prepList','prepHero','jAdv'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
+  $('objSort').addEventListener('click',e=>{ const b=e.target.closest('[data-osort]'); if(!b) return; try{ localStorage.setItem('sm-objsort',b.dataset.osort); }catch(_){} renderObj(); });
   $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
   $('sumBody').addEventListener('change',e=>{ if(e.target.id==='sumGpxFile'){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) handleGpxFile(curSum,f); } });
   $('poidsBody').addEventListener('click',poidsClick);

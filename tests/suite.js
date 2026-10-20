@@ -40,7 +40,7 @@ function FIXTURE() {
     const r = await p.evaluate(() => ({v:DB.version, n:DB.sessions.length, w:DB.weights.map(x=>x.id), biv:DB.equip.filter(c=>/bivouac/i.test(c.name)).length, tomb:Object.keys(DB.tomb), types:TYPES.length, obj:OBJECTIFS.map(o=>o.n), snaps:snapshots().length}));
     ok(r.v === 4, 'version des données = 4', r.v); ok(r.n === 0 && r.w.length === 0, 'aucune séance ni pesée embarquée dans le code (elles viennent du stockage local / de la synchro)', r);
     ok(r.biv === 1, 'une catégorie Bivouac'); ok(['s','c','i','w'].every(k => r.tomb.includes(k)), 'pierres tombales s/c/i/w');
-    ok(r.obj.join() === '1,2,3,4,5,6,7,8,9,10', 'objectifs 1→10 (GR 441 en n° 10)', r.obj); ok(r.snaps === 1, 'copie de sécurité du jour créée', r.snaps);
+    ok(r.obj.join() === '1,2,3,4,5,6,7,8,9,10,11,12', 'objectifs 1→12 (GR 441 en n° 10, Cabaliros 11, Taillon 12 : numéros inchangés)', r.obj); ok(r.snaps === 1, 'copie de sécurité du jour créée', r.snaps);
     for (const t of ['journal','obj','prep','evo','poids','equip','data']) await p.evaluate(t => show(t), t);
     ok(p.errs.length === 0, 'aucune erreur JS sur les 7 onglets', p.errs); await ctx.close(); }
 
@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v16') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v17') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v16'), 'anciens caches de l’appli supprimés, v16 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v17'), 'anciens caches de l’appli supprimés, v17 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -143,7 +143,7 @@ function FIXTURE() {
     ok(/hors saison/.test(r.w8) && /3 000 m/.test(r.w8), 'Barrhorn en octobre : hors saison + altitude', r.w8); ok(r.r8 < 0.8, 'Barrhorn : pas encore prêt', r.r8);
     ok(['tente','duvet','matelas','rechaud'].every(k => r.g10.includes(k)), 'GR 441 : matériel de bivouac demandé');
     ok(r.Er === 0 && /Grosse séance/.test(r.E) && /Régularité/.test(r.E), 'sans séance : indice 0 et conseils de base', r.E.slice(0, 200));
-    ok(r.all, 'conseils cohérents pour les 10 objectifs'); ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+    ok(r.all, 'conseils cohérents pour tous les objectifs'); ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 7. Fiches sommet ----------
   out.push('7. Fiches sommet');
@@ -154,7 +154,7 @@ function FIXTURE() {
     for (const k of ['Carte','Départ, parking et accès','Itinéraire','Eau et refuges','Meilleure saison','Dangers','Ta préparation','Matériel conseillé','Sources']) ok(r.txt.includes(k), 'section « ' + k + ' »');
     await p.goBack(); await W(300); ok(await p.evaluate(() => curPage) === 'obj', 'retour (bouton précédent) → Objectifs');
     const all = await p.evaluate(() => OBJECTIFS.map(o => { renderSummit(o.n); const t = $('sumBody').innerText; return t.length > 1500 && /Sources/.test(t) && $('sumBody').querySelectorAll('.links a').length === 5; }));
-    ok(all.every(Boolean), 'les 10 fiches sont complètes (≥ 1 500 caractères, 5 liens carte/météo)', all);
+    ok(all.every(Boolean), 'toutes les fiches sont complètes (≥ 1 500 caractères, 5 liens carte/météo)', all);
     const g = await p.evaluate(() => { const before = gearStatus(10).find(x => x.k === 'filtre'); DB.equip = DB.equip.filter(c => c.id !== BIV_ID); const miss = gearStatus(10).find(x => x.k === 'filtre').st; addGear('filtre'); const after = gearStatus(10).find(x => x.k === 'filtre').st; return [before.st, miss, after]; });
     ok(g[1] === 'missing' && g[2] === 'buy', 'bouton « Ajouter » : l’article rejoint la liste d’équipement', g);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
@@ -673,6 +673,51 @@ function FIXTURE() {
     ok(/20\/10\/2026/.test(wx.txt) && /Orage/.test(wx.txt) && /ressenti -4/.test(wx.txt.replace('\u2212','-')) && /rafales 95/.test(wx.txt) && wx.cached, 'météo fictive : date prévue, orage, ressenti, vent/rafales, cache 30 min', wx.txt.slice(0,220));
     ok(/indisponible/.test(wx.errTxt), 'météo : échec réseau affiché proprement, sans blocage', wx.errTxt);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 14. v17 : nouveaux sommets, classement par difficulté, compatibilité ----------
+  out.push('17. v17 : Cabaliros, Taillon, ordre de difficulté');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await p.evaluate(() => localStorage.removeItem('sm-objsort'));
+    const r = await p.evaluate(() => { const o11=OBJECTIFS.find(o=>o.n===11), o12=OBJECTIFS.find(o=>o.n===12);
+      const req=['type','sum','start','parking','access','route','water','refuges','dangers','winter','seasonTxt','tech','ign','variants','tips','secours'];
+      return {o11:o11&&o11.altSom, o12:o12&&o12.altSom, f11:req.filter(k=>!OBJ_INFO[11][k]), f12:req.filter(k=>!OBJ_INFO[12][k]), s11:(SEASON[11]||[]).length, s12:(SEASON[12]||[]).length,
+        g12:OBJ_GEAR[12], order:OBJ_BY_DIFF.map(o=>o.n), mono:OBJ_BY_DIFF.every((o,i,a)=>!i||diffScore(a[i-1]).s<=diffScore(o).s),
+        allTech:OBJECTIFS.every(o=>o.n in TECH&&OBJ_INFO[o.n].tech), num:OBJECTIFS.map(o=>o.n).join() }; });
+    ok(r.o11 === 2334 && r.o12 === 3144, 'Cabaliros 2 334 m (n° 11) et Taillon 3 144 m (n° 12)', r);
+    ok(!r.f11.length && !r.f12.length && r.s11 === 12 && r.s12 === 12, 'fiches 11 et 12 complètes (tous les champs, saison)', [r.f11, r.f12]);
+    ok(['crampons','piolet','casque'].every(k => r.g12.includes(k)), 'Taillon : crampons, piolet, casque conseillés');
+    ok(r.mono && r.order[0] === 1 && r.order[r.order.length-1] === 8 && r.order.indexOf(11) < r.order.indexOf(12) && r.order.indexOf(6) < r.order.indexOf(12), 'classement par difficulté croissant et cohérent', r.order);
+    ok(r.allTech && r.num === '1,2,3,4,5,6,7,8,9,10,11,12', 'technicité renseignée partout, numéros non modifiés');
+    await p.evaluate(() => show('obj')); await W(300);
+    const L = await p.evaluate(() => ({first:[...document.querySelectorAll('#objList > .card')].map(c=>c.querySelector('[data-sum]').dataset.sum), badge:document.querySelector('#objList .dlv').textContent, exp:!!document.querySelector('.diffexp'), tag:document.querySelector('#objList .dtag').textContent}));
+    ok(L.first.join() === r.order.join() && L.badge === '1' && L.exp && /Niveau 1\/12/.test(L.tag), 'Objectifs triés par difficulté par défaut, badge de niveau et explication', L);
+    await p.click('[data-osort="num"]'); await W(200);
+    const L2 = await p.evaluate(() => [...document.querySelectorAll('#objList > .card')].map(c=>c.querySelector('[data-sum]').dataset.sum).join());
+    ok(L2 === '1,2,3,4,5,6,7,8,9,10,11,12' && await p.evaluate(() => localStorage.getItem('sm-objsort')) === 'num', 'bouton « Par numéro » : ordre d’origine, choix mémorisé', L2);
+    await p.reload({waitUntil:'networkidle0'}); await p.evaluate(() => show('obj'));
+    ok(await p.evaluate(() => document.querySelector('[data-osort="num"]').classList.contains('on')), 'choix de tri conservé après rechargement');
+    await p.click('[data-osort="diff"]'); await W(200);
+    // statut par numéro : modifier le n° 12 depuis la liste triée ne touche que le Taillon
+    await p.select('select[data-obj="12"][data-k="statut"]', 'Prêt'); await W(300);
+    ok(await p.evaluate(() => objState(12).statut === 'Prêt' && objState(8).statut === 'À préparer' && objState(4).statut === 'À préparer'), 'statut modifié dans la liste triée : enregistré sur le bon numéro');
+    const nx = await p.evaluate(() => { DB.objectifs[1]={statut:'Fait',dateRealisee:'2026-10-01',datePrevue:'',updatedAt:1}; DB.objectifs[2]={statut:'Fait',dateRealisee:'2026-10-02',datePrevue:'',updatedAt:1};
+      const a=nextObjective().n; DB.objectifs[4]={statut:'Fait',dateRealisee:'2026-10-03',datePrevue:'',updatedAt:1}; const b=nextObjective().n;
+      const f=new Date(); f.setDate(f.getDate()+10); DB.objectifs[12]={statut:'Prêt',datePrevue:toISO(f),dateRealisee:'',updatedAt:1}; const c=nextObjective().n; return [a,b,c]; });
+    ok(nx.join() === '4,3,12', 'Prochaine ascension : la plus facile non faite, sauf date prévue', nx);
+    for (const n of [11, 12]) { const t = await p.evaluate(n => { renderSummit(n); return $('sumBody').innerText; }, n);
+      ok(/Variantes/.test(t) && /Technique, carte et secours/.test(t) && /Bons plans/.test(t) && /niveau \d+\/12/.test(t) && /112/.test(t), 'fiche ' + n + ' : variantes, technique, secours, bons plans, niveau'); }
+    const t12 = await p.evaluate(() => { renderSummit(12); return $('sumBody').innerText; });
+    ok(/Sarradets/.test(t12) && /Brèche de Roland/.test(t12) && /crampons/i.test(t12) && /1748 OT/.test(t12), 'Taillon : refuge des Sarradets, Brèche, crampons, carte IGN');
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+  // ancienne version (v16) face à des données des objectifs 11/12
+  if (process.env.OLD16) { const [ctx, p] = await fresh(BASE + '/' + process.env.OLD16);
+    await p.evaluate(() => { const D=JSON.parse(JSON.stringify(DB)); D.objectifs[11]={statut:'Prêt',datePrevue:'2027-06-20',dateRealisee:'',updatedAt:5}; D.objectifs[12]={statut:'Fait',datePrevue:'',dateRealisee:'2027-07-10',updatedAt:6,gpx:{pts:[[42.71,-0.05,2208],[42.70,-0.05,2600],[42.6936,-0.0513,3144]],dist:3,dplus:936,name:'fictif'}};
+      D.sessions.push({id:'old16-asc',date:'2027-07-10',type:'Randonnée',dist:15,dplus:1000,dur:23400,objN:12,notes:'fictif',updatedAt:7}); localStorage.setItem(KEY, JSON.stringify(D)); });
+    await p.reload({waitUntil:'networkidle0'});
+    for (const t of ['journal','obj','prep','evo','poids','equip','data']) { await p.evaluate(t => show(t), t); await W(150); }
+    const r = await p.evaluate(() => { const L = JSON.parse(localStorage.getItem(KEY)); const other = JSON.parse(JSON.stringify(L)); other.objectifs[11].statut='Fait'; other.objectifs[11].updatedAt=9;
+      const m = mergeDB(L, other); return {k:Object.keys(L.objectifs).join(), s:L.sessions.some(s=>s.id==='old16-asc'&&s.objN===12), g:!!L.objectifs[12].gpx, m11:m.objectifs[11].statut, m12:m.objectifs[12].statut}; });
+    ok(/11/.test(r.k) && /12/.test(r.k) && r.s && r.g && r.m11 === 'Fait' && r.m12 === 'Fait', 'ancienne version v16 : garde et fusionne les données des objectifs 11/12 sans les perdre', r);
+    ok(p.errs.length === 0, 'ancienne version v16 : aucune erreur JS avec les objectifs 11/12', p.errs); await ctx.close(); }
 
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
