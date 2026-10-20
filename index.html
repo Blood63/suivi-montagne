@@ -329,7 +329,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -873,7 +873,7 @@ function diffLabel(s){ return s<12?'Facile':s<20?'Modéré':s<30?'Soutenu':s<38?
 const OBJ_BY_DIFF=OBJECTIFS.slice().sort((a,b)=>diffScore(a).s-diffScore(b).s||a.n-b.n);
 const diffRank=n=>OBJ_BY_DIFF.findIndex(o=>o.n===+n)+1;
 function objSortMode(){ try{ return localStorage.getItem('sm-objsort')==='num'?'num':'diff'; }catch(e){ return 'diff'; } }
-function objOrder(){ return objSortMode()==='num'? OBJECTIFS.slice() : OBJ_BY_DIFF.slice(); }
+function objOrder(){ return OBJ_BY_DIFF.slice(); } // v18 : numéro affiché = rang de difficulté (clés internes inchangées)
 function diffWhy(o){ const D=diffScore(o), M=o.multi;
   return `${f(M?M.dpJ:o.dplus,0)} m D+${M?'/jour':''} · ${f(M?o.dist/M.jours:o.dist,1)} km${M?'/jour':''} · sommet ${f(o.altSom,0)} m · ${TECH_TXT[D.t]||'—'}${M?' · '+M.jours+' jours d’affilée':''} → score ${f(D.s,1)}`; }
 
@@ -1276,11 +1276,10 @@ function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s), pc=sp?3
 
 /* ---------- Objectifs ---------- */
 function renderObjSort(){ const m=objSortMode(), N=OBJECTIFS.length;
-  $('objSort').innerHTML=`<div class="seg" role="group" aria-label="Ordre des objectifs"><button type="button" data-osort="diff" class="${m==='diff'?'on':''}" aria-pressed="${m==='diff'}">Par difficulté</button><button type="button" data-osort="num" class="${m==='num'?'on':''}" aria-pressed="${m==='num'}">Par numéro</button></div>
-  ${m==='diff'?`<details class="card small diffexp"><summary><b>Ordre conseillé : du plus facile au plus difficile</b> (niveau 1 → ${N})</summary><p class="mut" style="margin:8px 0 4px">Suis cet ordre : chaque sommet prépare le suivant. Le niveau est calculé à partir de :</p><ul class="steps"><li><b>D+</b> (1 point par 100 m)</li><li><b>Distance</b> (1 point par 2 km)</li><li><b>Altitude</b> du sommet au-dessus de 1 500 m (1 point par 200 m)</li><li><b>Technicité</b> d’après les topos (0 à 7,5 points : raide, éboulis, névés, crampons…)</li><li><b>Itinérance</b> : D+ et distance pris par étape, + 4 points par jour supplémentaire</li></ul><p class="mut" style="margin:4px 0 0">« Prochaine ascension » et les conseils suivent aussi cet ordre (sauf si tu as mis une date prévue). Les numéros des objectifs ne changent pas.</p></details>`:''}`; }
+  $('objSort').innerHTML=`${true?`<details class="card small diffexp"><summary><b>Objectifs numérotés du plus facile (1) au plus difficile (${N})</b> : suis cet ordre</summary><p class="mut" style="margin:8px 0 4px">Suis cet ordre : chaque sommet prépare le suivant. Le niveau est calculé à partir de :</p><ul class="steps"><li><b>D+</b> (1 point par 100 m)</li><li><b>Distance</b> (1 point par 2 km)</li><li><b>Altitude</b> du sommet au-dessus de 1 500 m (1 point par 200 m)</li><li><b>Technicité</b> d’après les topos (0 à 7,5 points : raide, éboulis, névés, crampons…)</li><li><b>Itinérance</b> : D+ et distance pris par étape, + 4 points par jour supplémentaire</li></ul><p class="mut" style="margin:4px 0 0">« Prochaine ascension » et les conseils suivent aussi cet ordre (sauf si tu as mis une date prévue). Le numéro de chaque sommet est son rang de difficulté.</p></details>`:''}`; }
 function renderObj(){ renderObjSort(); const N=OBJECTIFS.length;
   $('objList').innerHTML=objOrder().map(o=>{ const st=objState(o.n), R=diffRank(o.n), D=diffScore(o);
-    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><span class="dlv" title="Niveau de difficulté ${R} sur ${N}">${R}</span><h3 style="margin:0;flex:1;min-width:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
+    return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><span class="dlv" title="Objectif ${R} sur ${N} (rang de difficulté)">${R}</span><h3 style="margin:0;flex:1;min-width:0">${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
     <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
     <div class="small dwhy"><span class="dtag d${Math.min(4,Math.floor(D.s/10))}">Niveau ${R}/${N} · ${diffLabel(D.s)}</span> <span class="mut">${esc(diffWhy(o))}</span></div>
     <div class="kpis" style="margin:8px 0">
@@ -1304,7 +1303,7 @@ function renderPrep(){
   $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse séance <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue <b>${fmtH(st.longest/3600)}</b>`;
   $('prepList').innerHTML=OBJ_BY_DIFF.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
     return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0"><div class="prep">${ringSVG(R.r,78)}
-    <div style="flex:1;min-width:0"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
+    <div style="flex:1;min-width:0"><h3 style="margin:0">${diffRank(o.n)}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
     ${barsHTML(R)}
     <div class="small mut" style="margin-top:4px">${f(st.maxD,0)} / ${f(0.65*R.T,0)} m · ${f(st.wk,0)} / ${f(o.multi?1.5*R.T:R.T,0)} m/sem · ${fmtH(st.longest/3600)} / ${fmtH(0.6*R.H)} · ${st.n28} / 12 séances</div>
     <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st2.statut)}</span>${st2.datePrevue?'<span class="chip">prévu '+dFR(st2.datePrevue)+'</span>':''}</div></div></div>`; }).join('');
@@ -1778,7 +1777,7 @@ function renderSummit(n){
   const g=A.gear;
   $('sumBody').innerHTML=`
   <div class="card hero-card sumhero"><button class="xbtn back" data-sum-back aria-label="Retour">‹</button>
-    <div class="eyebrow2">Objectif ${o.n} · niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
+    <div class="eyebrow2">Objectif ${diffRank(o.n)} sur ${OBJECTIFS.length} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
     <div class="row" style="margin-top:8px"><span class="tag">${esc(st.statut)}</span>${st.datePrevue?`<span class="tag">📅 prévu le ${dFR(st.datePrevue)}</span>`:''}${st.dateRealisee?`<span class="tag">✔ fait le ${dFR(st.dateRealisee)}</span>`:''}${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
     <div class="kpis" style="margin-top:12px">${kp.map(([v,l])=>`<div class="kpi"><b style="font-size:${String(v).length>9?14:19}px">${esc(v)}</b><small>${l}</small></div>`).join('')}</div>
     ${M?`<div class="small" style="margin-top:8px">Itinérance : <b>${M.jours} jours</b>, ≈ ${f(o.dist/M.jours,0)} km par jour en moyenne (étapes jusqu’à ${f(M.distJ,0)} km) et ≈ ${f(M.dpJ,0)} m de D+ par jour (cible de préparation).</div>`:''}
@@ -2413,7 +2412,7 @@ const cfBadge=(c,edited,calc)=>edited?'<i class="cf ed">modifié</i>':calc?'<i c
    Les anciennes versions gardent le champ tel quel (synchro par objet entier, modification par Object.assign). */
 let FORM_BACK=null;
 function ascObj(s){ return s&&s.objN?OBJECTIFS.find(o=>o.n===+s.objN)||null:null; }
-function objOpts(sel){ return '<option value="">— Aucun (entraînement)</option>'+OBJECTIFS.map(o=>`<option value="${o.n}"${+sel===o.n?' selected':''}>${o.n}. ${esc(o.sommet)}</option>`).join(''); }
+function objOpts(sel){ return '<option value="">— Aucun (entraînement)</option>'+OBJ_BY_DIFF.map(o=>`<option value="${o.n}"${+sel===o.n?' selected':''}>${diffRank(o.n)}. ${esc(o.sommet)}</option>`).join(''); }
 function fillObjSel(el,sel){ if(el) el.innerHTML=objOpts(sel); }
 function ascSessions(n){ return DB.sessions.filter(s=>+s.objN===+n).sort((a,b)=>(a.date+(a.heure||'')).localeCompare(b.date+(b.heure||''))); }
 function ascTotals(n){ const L=ascSessions(n), a=agg(L), sum=k=>{ let t=0,c=0; for(const s of L) if(s[k]!=null&&isFinite(s[k])){ t+=+s[k]; c++; } return c?t:null; };

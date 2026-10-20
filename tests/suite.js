@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v17') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v18') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v17'), 'anciens caches de l’appli supprimés, v17 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v18'), 'anciens caches de l’appli supprimés, v18 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -690,12 +690,15 @@ function FIXTURE() {
     await p.evaluate(() => show('obj')); await W(300);
     const L = await p.evaluate(() => ({first:[...document.querySelectorAll('#objList > .card')].map(c=>c.querySelector('[data-sum]').dataset.sum), badge:document.querySelector('#objList .dlv').textContent, exp:!!document.querySelector('.diffexp'), tag:document.querySelector('#objList .dtag').textContent}));
     ok(L.first.join() === r.order.join() && L.badge === '1' && L.exp && /Niveau 1\/12/.test(L.tag), 'Objectifs triés par difficulté par défaut, badge de niveau et explication', L);
-    await p.click('[data-osort="num"]'); await W(200);
-    const L2 = await p.evaluate(() => [...document.querySelectorAll('#objList > .card')].map(c=>c.querySelector('[data-sum]').dataset.sum).join());
-    ok(L2 === '1,2,3,4,5,6,7,8,9,10,11,12' && await p.evaluate(() => localStorage.getItem('sm-objsort')) === 'num', 'bouton « Par numéro » : ordre d’origine, choix mémorisé', L2);
-    await p.reload({waitUntil:'networkidle0'}); await p.evaluate(() => show('obj'));
-    ok(await p.evaluate(() => document.querySelector('[data-osort="num"]').classList.contains('on')), 'choix de tri conservé après rechargement');
-    await p.click('[data-osort="diff"]'); await W(200);
+    // v18 : numéro affiché = rang de difficulté ; plus de bouton de tri ; clés internes inchangées
+    const V = await p.evaluate(() => { localStorage.setItem('sm-objsort','num'); renderObj(); const cards=[...document.querySelectorAll('#objList > .card')];
+      const h=cards.map(c=>c.querySelector('.dlv').textContent+':'+c.querySelector('[data-sum]').dataset.sum);
+      renderSummit(8); const eb=document.querySelector('#sumBody .eyebrow2').textContent; renderPrep(); const ph=document.querySelector('#prepList h3').textContent;
+      const opt=[...new DOMParser().parseFromString('<select>'+objOpts(12)+'</select>','text/html').querySelectorAll('option')].map(o=>o.value+'='+o.textContent);
+      return {h, eb, ph, opt, seg:!!document.querySelector('[data-osort]')}; });
+    ok(V.h[0] === '1:1' && V.h[4] === '5:11' && V.h[7] === '8:12' && V.h[11] === '12:8' && !V.seg, 'numéros affichés = rang de difficulté (Muletiers 1 … Barrhorn 12), tri unique', V.h);
+    ok(/Objectif 12 sur 12/.test(V.eb) && /^1\. Puy de Dôme/.test(V.ph), 'fiche sommet et Prépa : numéro de difficulté', [V.eb, V.ph]);
+    ok(V.opt[1] === '1=1. Puy de Dôme' && V.opt.includes('12=8. Pic du Taillon') && V.opt.includes('8=12. Barrhorn (Üssers Barrhorn)'), 'sélecteur d’ascension : numéro affiché = difficulté, valeur stockée = clé interne', V.opt);
     // statut par numéro : modifier le n° 12 depuis la liste triée ne touche que le Taillon
     await p.select('select[data-obj="12"][data-k="statut"]', 'Prêt'); await W(300);
     ok(await p.evaluate(() => objState(12).statut === 'Prêt' && objState(8).statut === 'À préparer' && objState(4).statut === 'À préparer'), 'statut modifié dans la liste triée : enregistré sur le bon numéro');
@@ -704,7 +707,7 @@ function FIXTURE() {
       const f=new Date(); f.setDate(f.getDate()+10); DB.objectifs[12]={statut:'Prêt',datePrevue:toISO(f),dateRealisee:'',updatedAt:1}; const c=nextObjective().n; return [a,b,c]; });
     ok(nx.join() === '4,3,12', 'Prochaine ascension : la plus facile non faite, sauf date prévue', nx);
     for (const n of [11, 12]) { const t = await p.evaluate(n => { renderSummit(n); return $('sumBody').innerText; }, n);
-      ok(/Variantes/.test(t) && /Technique, carte et secours/.test(t) && /Bons plans/.test(t) && /niveau \d+\/12/.test(t) && /112/.test(t), 'fiche ' + n + ' : variantes, technique, secours, bons plans, niveau'); }
+      ok(/Variantes/.test(t) && /Technique, carte et secours/.test(t) && /Bons plans/.test(t) && /niveau \d+\/12/i.test(t) && /112/.test(t), 'fiche ' + n + ' : variantes, technique, secours, bons plans, niveau'); }
     const t12 = await p.evaluate(() => { renderSummit(12); return $('sumBody').innerText; });
     ok(/Sarradets/.test(t12) && /Brèche de Roland/.test(t12) && /crampons/i.test(t12) && /1748 OT/.test(t12), 'Taillon : refuge des Sarradets, Brèche, crampons, carte IGN');
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
