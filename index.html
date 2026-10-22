@@ -332,7 +332,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -2526,7 +2526,8 @@ const IMP={ items:[], running:false, target:null,
       if(!it.edited.dminus) it.v.dminus=null; }
     else { it.calc={}; if(!it.edited.dplus&&it.res.fields.dplus) it.v.dplus=it.res.fields.dplus.v; if(!it.edited.dminus&&it.res.fields.dminus) it.v.dminus=it.res.fields.dminus.v; }
   },
-  findDup(it){ const v=it.v; it.dup=null; it.dupExact=false; it.dupWhy=[]; it.dupDiffType=false; it.mode='new'; if(!v.date) return;
+  findDup(it){ const v=it.v; it.dup=null; it.dupExact=false; it.dupWhy=[]; it.dupDiffType=false; it.dupFar=false; it.mode='new'; if(!v.date) return;
+    const hm=h=>{ const m=/^(\d{1,2}):(\d{2})/.exec(h||''); return m? +m[1]*60+ +m[2] : null; };
     const fam=typeFamily(it.type), cand=[];
     for(const s of DB.sessions.filter(x=>x.date===v.date)){ const why=[]; let score=0, strong=0;
       if(v.heure&&s.heure&&v.heure===s.heure){ why.push('même heure ('+s.heure+')'); score+=3; strong++; }
@@ -2536,11 +2537,15 @@ const IMP={ items:[], running:false, target:null,
       if(v.kcal&&s.kcal&&Math.abs(s.kcal-v.kcal)<=5){ why.push('calories quasi identiques ('+f(s.kcal,0)+' contre '+f(v.kcal,0)+' kcal)'); score+=2; strong++; }
       if(!why.length) continue;
       const sameFam=typeFamily(s.type)===fam;
-      cand.push({s,why,score:score+(sameFam?3:0),strong,sameFam}); }
+      // v21 : heures de départ éloignées (ex. 10:05 et 16:31) = deux séances distinctes, même si la durée est proche
+      const a=hm(v.heure), b=hm(s.heure), gap=a!=null&&b!=null? Math.abs(a-b) : null;
+      const far=gap!=null && gap*60 > Math.max(3600, Math.max(s.dur||0, v.dur||0)+1800);
+      if(far) why.push('mais heures de départ différentes ('+s.heure+' et '+v.heure+')');
+      cand.push({s,why,score:score+(sameFam?3:0)-(far?6:0),strong:far?0:strong,sameFam,far}); }
     cand.sort((a,b)=>b.score-a.score); const c=cand[0]; if(!c) return;
-    it.dup=c.s; it.dupWhy=c.why; it.dupDiffType=!c.sameFam; it.dupExact=c.sameFam&&c.strong>=2;
-    // types différents = sans doute deux vraies séances (rando le matin, corde le soir) : jamais de fusion par défaut
-    it.mode=it.dupDiffType?'new':'merge'; },
+    it.dup=c.s; it.dupWhy=c.why; it.dupDiffType=!c.sameFam; it.dupFar=!!c.far; it.dupExact=c.sameFam&&!c.far&&c.strong>=2;
+    // types différents ou heures éloignées = sans doute deux vraies séances (rando le matin, tapis le soir) : jamais de fusion par défaut
+    it.mode=(it.dupDiffType||it.dupFar)?'new':'merge'; },
   fieldHTML(it,k){ const K=SF[k]; let [lab,kind,unit]=K; if(k==='cadence'){ [lab,unit]=cadLabel(it.type); }
     const val=fmtIn(k,it.v[k]), b=cfBadge(it.cf[k],it.edited[k],it.calc&&it.calc[k]&&!it.edited[k]);
     const id='i_'+it.id+'_'+k, L=`<label for="${id}">${lab}${unit?' ('+unit+')':''} ${b}</label>`;
@@ -2564,11 +2569,12 @@ const IMP={ items:[], running:false, target:null,
         <div class="grid" style="margin-top:10px">${['date','heure'].map(k=>this.fieldHTML(it,k)).join('')}${keys.map(k=>this.fieldHTML(it,k)).join('')}</div>
         ${warns.length?`<div class="tip">⚠️ Valeurs incohérentes entre elles, à vérifier : ${warns.join(', ')}</div>`:''}
         ${this.derivedHTML(it)}
-        ${it.dup?`<div class="dup${it.dupExact?' exact':it.dupDiffType?' diff':''}"><b>${it.dupExact?'⚠️ Capture probablement déjà importée':it.dupDiffType?'Deux séances différentes le même jour ?':'Séance existante le '+dFR(it.dup.date)}</b><br>
+        ${it.dup?`<div class="dup${it.dupExact?' exact':(it.dupDiffType||it.dupFar)?' diff':''}"><b>${it.dupExact?'⚠️ Capture probablement déjà importée':(it.dupDiffType||it.dupFar)?'Deux séances différentes le même jour ?':'Séance existante le '+dFR(it.dup.date)}</b><br>
           <span>Séance déjà enregistrée : <b>${esc(it.dup.type)}</b>${it.dup.heure?' à '+esc(it.dup.heure):''}${it.dup.dist!=null?' · '+f(it.dup.dist,2)+' km':''}${it.dup.dur?' · '+fmtDur(it.dup.dur):''}${it.dup.sauts?' · '+f(it.dup.sauts,0)+' sauts':''}${it.dup.kcal?' · '+f(it.dup.kcal,0)+' kcal':''}</span>
           ${it.dupWhy&&it.dupWhy.length?`<div class="why small">Points communs : ${esc(it.dupWhy.join(' · '))}.</div>`:''}
           ${it.dupExact?`<div class="why small">Les valeurs sont quasi identiques : importer la même capture deux fois créerait un doublon. « Compléter » est le choix sûr.</div>`:''}
           ${it.dupDiffType?`<div class="why small">Les types sont différents (<b>${esc(it.dup.type)}</b> contre <b>${esc(it.type)}</b>) : ce sont sans doute deux vraies séances (par exemple une randonnée le matin et de la corde le soir). La fusion écraserait l’une des deux — « Ajouter quand même » est sélectionné par défaut.</div>`:''}
+          ${it.dupFar&&!it.dupDiffType?`<div class="why small">Les heures de départ sont éloignées (<b>${esc(it.dup.heure)}</b> et <b>${esc(it.v.heure)}</b>) : ce sont sans doute deux séances distinctes. « Ajouter quand même » est sélectionné par défaut.</div>`:''}
           <label class="rad"><input type="radio" name="m_${it.id}" value="merge" data-mode ${it.mode==='merge'?'checked':''}> Compléter cette séance (tes valeurs existantes sont gardées, les champs vides sont remplis)</label>
           <label class="rad"><input type="radio" name="m_${it.id}" value="replace" data-mode ${it.mode==='replace'?'checked':''}> Mettre à jour cette séance avec les valeurs ci-dessus</label>
           <label class="rad"><input type="radio" name="m_${it.id}" value="new" data-mode ${it.mode==='new'?'checked':''}> Ajouter quand même comme nouvelle séance (deuxième séance du même jour)</label></div>`:''}

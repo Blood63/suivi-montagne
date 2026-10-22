@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v20') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v21') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v20'), 'anciens caches de l’appli supprimés, v20 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v21'), 'anciens caches de l’appli supprimés, v21 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -737,6 +737,18 @@ function FIXTURE() {
       c.lastSync=Date.now()-5e3; saveSyncCfg(c); dispatchEvent(new Event('focus')); const b=calls.length;
       window.scheduleSync=orig; return {a,b,stale:SYNC_STALE_MS,poll:SYNC_POLL_MS}; });
     ok(r.a === 1 && r.b === 1 && r.stale === 30000 && r.poll === 120000, 'retour dans l’appli après 30 s : synchro déclenchée ; pas de rafale sous 30 s', r);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 20. v21 : même type, heures éloignées ----------
+  out.push('20. v21 : deux tapis le même jour à des heures éloignées');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => { DB.sessions.push({id:'fx-am',date:'2026-10-22',heure:'10:05',type:'Tapis 6%',dist:3,dur:2700,kcal:299,pas:2893,updatedAt:1});
+      const mk=(h,dur,dist,kcal)=>({type:'Tapis',v:{date:'2026-10-22',heure:h,dur,dist,kcal}});
+      const a=mk('16:31',2701,3.25,344); IMP.findDup(a); const b=mk('10:05',2700,3,299); IMP.findDup(b); const c=mk('10:40',2705,3.25,344); IMP.findDup(c); const d=mk(null,2701,3.25,344); IMP.findDup(d);
+      return {a:[a.dup&&a.dup.id,a.mode,a.dupFar,a.dupExact,a.dupWhy.join('|')], b:[b.mode,b.dupExact], c:c.mode, d:d.mode}; });
+    ok(r.a[0] === 'fx-am' && r.a[1] === 'new' && r.a[2] === true && r.a[3] === false && /heures de départ différentes/.test(r.a[4]), '10:05 et 16:31, même durée : signalé mais ajouté comme nouvelle séance par défaut', r.a);
+    ok(r.b[0] === 'merge' && r.b[1] === true, 'même capture réimportée (même heure) : toujours « compléter »', r.b);
+    ok(r.c === 'merge' && r.d === 'merge', 'heures proches ou heure inconnue : comportement inchangé', [r.c, r.d]);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ancienne version (v16) face à des données des objectifs 11/12
