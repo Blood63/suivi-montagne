@@ -332,7 +332,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -1438,6 +1438,7 @@ async function readGistFile(gist){ const f=gist.files&&gist.files[GIST_FILE]; if
   return f.content; }
 let syncing=false, syncSaving=false, syncPending=false, syncTimer=null, appReady=false;
 // Synchro automatique (si activée) quelques secondes après une modification, au retour du réseau et au retour dans l'appli
+const SYNC_STALE_MS=30e3, SYNC_POLL_MS=120e3;
 function scheduleSync(delay){ if(!appReady) return; const c=syncCfg(); if(!c.token||!c.auto) return; clearTimeout(syncTimer);
   syncTimer=setTimeout(()=>{ if(navigator.onLine===false) return; syncNow({silent:true}).then(()=>{ if(curPage==='data') renderSync(); }); }, delay==null?4000:delay); }
 function ssave(){ syncSaving=true; try{ save(); } finally{ syncSaving=false; } }
@@ -1495,7 +1496,11 @@ function initSync(){
   const net=()=>{ const off=navigator.onLine===false; $('offPill').classList.toggle('on',off); };
   addEventListener('offline',()=>{ net(); toast('Hors ligne : tout reste enregistré sur l’appareil'); });
   addEventListener('online',()=>{ net(); scheduleSync(1500); }); net();
-  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&Date.now()-(syncCfg().lastSync||0)>10*60e3) scheduleSync(800); });
+  // v20 : une séance ajoutée sur un autre appareil apparaît vite — synchro au retour dans l'appli dès 30 s d'écart (avant : 10 min),
+  // et vérification toutes les 2 min tant que l'appli est ouverte et visible.
+  const pullIfStale=(ms)=>{ if(document.visibilityState==='visible'&&navigator.onLine!==false&&Date.now()-(syncCfg().lastSync||0)>ms) scheduleSync(800); };
+  document.addEventListener('visibilitychange',()=>pullIfStale(SYNC_STALE_MS)); addEventListener('focus',()=>pullIfStale(SYNC_STALE_MS)); addEventListener('pageshow',()=>pullIfStale(SYNC_STALE_MS));
+  setInterval(()=>pullIfStale(SYNC_POLL_MS-5e3),SYNC_POLL_MS);
 }
 
 /* ---------- Données ---------- */

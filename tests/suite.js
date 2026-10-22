@@ -126,9 +126,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v19') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v20') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v19'), 'anciens caches de l’appli supprimés, v19 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v20'), 'anciens caches de l’appli supprimés, v20 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -394,7 +394,7 @@ function FIXTURE() {
       const t = await p.evaluate(() => { const it = IMP.items[0], c = document.querySelector('[data-it="'+it.id+'"]'); return {incl:c.querySelector('[data-k="incline"]').value, dp:c.querySelector('[data-k="dplus"]').value, keys:[...c.querySelectorAll('[data-k]')].map(e=>e.dataset.k), badge:c.querySelector('label[for$="_dplus"] .cf').textContent}; });
       ok(t.incl === '6' && t.dp === String(Math.round(M.dist * 60)) && t.badge === 'calculé', 'Marche → Tapis : inclinaison 6 %, D+ calculé = distance × 6 %', t);
       ok(!t.keys.includes('dminus') && !t.keys.includes('altMin'), 'Tapis : D-, altitudes masqués');
-      await p.click('[data-it] input[data-k="incline"]', {clickCount:3}); await p.type('[data-it] input[data-k="incline"]', '8'); await W(100);
+      await p.click('[data-it] input[data-k="incline"]'); await p.evaluate(s => document.querySelector(s).select(), '[data-it] input[data-k="incline"]'); await p.type('[data-it] input[data-k="incline"]', '8'); await W(100);
       ok(await p.evaluate(() => document.querySelector('[data-it] [data-k="dplus"]').value) === String(Math.round(M.dist * 80)), 'inclinaison 8 % → D+ = distance × 8 %');
       await p.evaluate(() => { const r = document.querySelector('[data-it] input[value="new"][data-mode]'); r.click(); });
       await p.evaluate(() => document.querySelector('[data-it] [data-imp-save]').click()); await W(200);
@@ -727,6 +727,16 @@ function FIXTURE() {
     ok(h.every(Boolean), 'photo en tête des 12 fiches sommet', h);
     const fb = await p.evaluate(async () => { const k=PHOTOS[1]; PHOTO_FILES.__x={w:800,h:600,a:'x',l:'x',lu:'#',p:'#',t:'x'}; PHOTOS[1]='__x'; renderSummit(1); const i=document.querySelector('#sumBody .sumhero img'); i.loading='eager'; await new Promise(r=>{ i.addEventListener('error',()=>setTimeout(r,20)); setTimeout(r,2000); }); await new Promise(r=>setTimeout(r,50)); const gone=!document.querySelector('#sumBody .sumhero figure'); PHOTOS[1]=k; delete PHOTO_FILES.__x; return gone; });
     ok(fb, 'photo manquante : retirée proprement (pas d’image cassée)');
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 19. v20 : synchro au retour dans l'appli ----------
+  out.push('19. v20 : synchro réactive entre appareils');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => { const calls=[]; const orig=window.scheduleSync; window.scheduleSync=d=>calls.push(d);
+      const c=syncCfg(); c.lastSync=Date.now()-60e3; saveSyncCfg(c); document.dispatchEvent(new Event('visibilitychange')); const a=calls.length;
+      c.lastSync=Date.now()-5e3; saveSyncCfg(c); dispatchEvent(new Event('focus')); const b=calls.length;
+      window.scheduleSync=orig; return {a,b,stale:SYNC_STALE_MS,poll:SYNC_POLL_MS}; });
+    ok(r.a === 1 && r.b === 1 && r.stale === 30000 && r.poll === 120000, 'retour dans l’appli après 30 s : synchro déclenchée ; pas de rafale sous 30 s', r);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ancienne version (v16) face à des données des objectifs 11/12
