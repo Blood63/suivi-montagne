@@ -2,14 +2,19 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v21';            // fichiers de l'appli (renouvelé à chaque version)
-const EXT = PREFIX + 'ext-v1';          // polices + moteur OCR Tesseract (stables, conservés entre versions)
+const CACHE = PREFIX + 'v22';            // fichiers de l'appli (renouvelé à chaque version)
+const EXT = PREFIX + 'ext-v2';          // polices + moteur OCR Tesseract + Leaflet (stables ; v2 : réponses CORS pour la vérification d'intégrité)
 const KEEP = [CACHE, EXT];
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './img/sommets/barrhorn.webp', './img/sommets/cabaliros.webp', './img/sommets/chaine-des-puys.webp', './img/sommets/grande-sassiere.webp', './img/sommets/pic-du-midi-artigues.webp', './img/sommets/pic-du-midi-tourmalet.webp', './img/sommets/puy-de-dome.webp', './img/sommets/rhune.webp', './img/sommets/sancy.webp', './img/sommets/sancy-cretes.webp', './img/sommets/taillon.webp'];
 const EXT_HOSTS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+});
+// v22 : si une autre appli du site a vidé les caches, on recrée le nôtre (message envoyé par la page au démarrage)
+self.addEventListener('message', e => {
+  if (e.data !== 'ensure-cache') return;
+  e.waitUntil(caches.has(CACHE).then(ok => ok ? null : caches.open(CACHE).then(c => c.addAll(ASSETS))).catch(() => {}));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
@@ -23,7 +28,7 @@ self.addEventListener('fetch', e => {
   if (EXT_HOSTS.includes(origin)) {
     if (origin === 'https://cdn.jsdelivr.net' && !/(tesseract|leaflet@1\.9\.4)/i.test(url.pathname)) return; // OCR + Leaflet figés : mis en cache ; le reste passe sans interception
     e.respondWith(caches.open(EXT).then(c => c.match(e.request).then(hit => hit || fetch(e.request).then(r => {
-      if (r.ok || r.type === 'opaque') c.put(e.request, r.clone()).catch(() => {});
+      if (r.ok || (r.type === 'opaque' && origin !== 'https://cdn.jsdelivr.net')) c.put(e.request, r.clone()).catch(() => {});
       return r; }))));
     return;
   }

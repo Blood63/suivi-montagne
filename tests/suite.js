@@ -1,6 +1,7 @@
 /* Suite de tests de « Suivi montagne » (Chrome sans interface, puppeteer-core).
    Usage : BASE=http://localhost:8767 SAMPLES=1 CHROME=/usr/bin/google-chrome node tests/suite.js
-   Le dossier servi doit contenir index.html (nouvelle version), old.html (version v4 précédente, commit d5589b1),
+   Le dossier servi (SERVE_DIR, par défaut le dossier courant) doit contenir index.html (nouvelle version) ;
+   old.html (v4, commit d5589b1) et old16.html (v16, commit 2f57c2c) y sont recréés automatiquement depuis git s'ils manquent (v22),
    sw.js, et — pour les tests OCR — les captures Mi Fitness marche.jpg, rando.jpg, corde.jpg, poids.png
    + truth.json (valeurs attendues). Captures et valeurs personnelles : jamais commitées. */
 const puppeteer = require(process.env.PUPPETEER || 'puppeteer-core');
@@ -10,6 +11,12 @@ let pass = 0, fail = 0; const out = [];
 function ok(c, name, extra) { if (c) { pass++; out.push('  ✔ ' + name); } else { fail++; out.push('  ✘ ' + name + (extra !== undefined ? ' → ' + JSON.stringify(extra).slice(0, 400) : '')); } }
 // Valeurs attendues de l'OCR : fichier local non commité (${SAMPLE_DIR}/truth.json), comme les captures.
 const SDIR = process.env.SAMPLE_DIR || require('path').resolve('.');
+// v22 : versions anciennes recréées depuis l'historique git (plus de fichier old.html non commité requis)
+{ const fs = require('fs'), path = require('path'), cp = require('child_process'); const SERVE = process.env.SERVE_DIR || process.cwd(), REPO = path.resolve(__dirname, '..');
+  for (const [f, c] of [['old.html', 'd5589b1'], ['old16.html', '2f57c2c']]) { const fp = path.join(SERVE, f); if (fs.existsSync(fp)) continue;
+    try { fs.writeFileSync(fp, cp.execSync('git show ' + c + ':index.html', {cwd: REPO, maxBuffer: 64e6})); console.log('(' + f + ' recréé depuis git ' + c + ')'); }
+    catch (e) { console.error('Impossible de recréer ' + f + ' depuis git (' + c + ') : ' + e.message); process.exit(2); } }
+  if (!process.env.OLD16) process.env.OLD16 = 'old16.html'; }
 const TRUTH = process.env.SAMPLES ? JSON.parse(require('fs').readFileSync(SDIR + '/truth.json', 'utf8')) : {};
 // Données fictives (aucune donnée réelle dans le dépôt).
 function FIXTURE() {
@@ -126,9 +133,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v21') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v22') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v21'), 'anciens caches de l’appli supprimés, v21 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v22'), 'anciens caches de l’appli supprimés, v22 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -259,7 +266,7 @@ function FIXTURE() {
     const g2 = await p.evaluate(() => ({pill: $('offPill').classList.contains('on'), has: JSON.parse(FAKE.content).sessions.some(s => s.id === 'off1')}));
     ok(!g2.pill && g2.has, 'retour du réseau : synchronisé automatiquement', g2);
     // annuler une suppression (séance, pesée, article) — la version restaurée gagne sur la pierre tombale
-    const u = await p.evaluate(() => { const id = DB.sessions[0].id; show('journal'); document.querySelector(`[data-del="${id}"]`).click(); const gone = !DB.sessions.some(s => s.id === id);
+    const u = await p.evaluate(() => { const id = DB.sessions[0].id; show('journal'); jExpandAll(); document.querySelector(`[data-del="${id}"]`).click(); const gone = !DB.sessions.some(s => s.id === id);
       document.querySelector('#toast .tbtn').click(); const back = DB.sessions.find(s => s.id === id); const M = mergeDB({sessions: [], tomb: {s: {[id]: back.updatedAt - 5}}}, DB);
       const wid = DB.weights[0].id; show('poids'); document.querySelector(`[data-w-del="${wid}"]`).click(); document.querySelector('#toast .tbtn').click();
       show('equip'); const row = document.querySelector('#eqList [data-item]'), iid = row.dataset.item; row.querySelector('[data-act=del]').click(); document.querySelector('#toast .tbtn').click();
@@ -281,7 +288,7 @@ function FIXTURE() {
       return {d: s.dist, p: s.dplus, w: w.weight, sum: typeof a.dist === 'number', kl: $('kpiMonth').innerText.replace(/\s+/g, ' ')}; });
     ok(r.d === 5.5 && r.p === 120 && r.w === 79.5 && r.sum, 'nombres enregistrés en texte convertis (totaux justes)', r);
     ok(/\/ [\d\s  ]+ m D\+/.test(r.kl) && /D\+ hebdo visé/.test(r.kl), 'Journal : D+ de la semaine comparé à l’objectif de la prochaine ascension', r.kl);
-    const d = await p.evaluate(() => { const n0 = DB.sessions.length; show('journal'); document.querySelector('[data-dup="fx-2"]').click();
+    const d = await p.evaluate(() => { const n0 = DB.sessions.length; show('journal'); jExpandAll(); document.querySelector('[data-dup="fx-2"]').click();
       const st = {open: document.body.classList.contains('sheet-open'), date: $('f_date').value, type: $('f_type').value, dist: $('f_dist').value, id: $('f_id').value, n1: DB.sessions.length};
       $('fSess').requestSubmit(); return Object.assign(st, {n2: DB.sessions.length, n0, orig: DB.sessions.filter(s => s.id === 'fx-2').length}); });
     ok(d.open && d.date === await p.evaluate(() => todayISO()) && d.type === 'Tapis 6%' && d.dist === '6' && d.id === '' && d.n1 === d.n0 && d.n2 === d.n0 + 1 && d.orig === 1, '« Refaire » : copie pré-remplie à la date du jour, l’originale intacte', d);
@@ -356,7 +363,7 @@ function FIXTURE() {
       const ch = dedupeRef(D); return {ch, n: D.sessions.length, u: D.sessions[0], t: D.tomb.s['ref-2025-03-03-0900'] > 1}; });
     ok(dd.ch && dd.n === 1 && dd.u.id === 'u1' && dd.u.ref && dd.u.lieu === 'Lieu fictif' && dd.u.bpmMax === 150 && dd.u.type === 'Marche' && dd.t, 'sortie de référence déjà présente sur l’appareil : pas de doublon, séance locale enrichie', dd);
     const fm = await p.evaluate(() => { show('journal'); fillForm(DB.sessions.find(s => s.id === 'ref-2025-02-05-1000')); const a = {l: $('f_lieu').value, r: $('f_ref').checked}; $('f_lieu').value = 'Lieu modifié'; $('fSess').requestSubmit();
-      const s = DB.sessions.find(x => x.id === 'ref-2025-02-05-1000'); return Object.assign(a, {l2: s.lieu, r2: s.ref, chip: /📍 Lieu modifié/.test($('sessList').innerText)}); });
+      const s = DB.sessions.find(x => x.id === 'ref-2025-02-05-1000'); return Object.assign(a, {l2: s.lieu, r2: s.ref, chip: (jExpandAll(), /📍 Lieu modifié/.test($('sessList').innerText))}); });
     ok(fm.l === 'Autre lieu' && fm.r && fm.l2 === 'Lieu modifié' && fm.r2 && fm.chip, 'formulaire : lieu et repère « référence » modifiables, affichés dans le Journal', fm);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
@@ -449,10 +456,10 @@ function FIXTURE() {
       IMP.prepare(it, {kind:'workout', activity:{v:'Randonnée'}, fields:{date:{v:'2026-10-13',conf:99}, dist:{v:4.2,conf:99}, dplus:{v:310,conf:99}, dur:{v:5400,conf:99}}});
       IMP.open(); const html = $('impList').innerHTML; it.mode = 'new'; IMP.saveOne(it, true); IMP.close(); return {html:/Ascension d’un objectif/.test(html), n:ascTotals(1).n, s:DB.sessions.find(s => s.date === '2026-10-13' && s.dist === 4.2)}; });
     ok(im.html && im.n === 3 && im.s && im.s.objN === 1 && im.s.src === 'mifit', 'import Mi Fitness : choix de l’objectif dans la revue, séance cumulée', im);
-    ok(await p.evaluate(() => { renderJournal(); return document.querySelectorAll('#sessList .tag.asc').length === 3; }), 'Journal : séances d’objectif signalées 🏁 (comptées une seule fois)');
+    ok(await p.evaluate(() => { renderJournal(); jExpandAll(); return document.querySelectorAll('#sessList .tag.asc').length === 3; }), 'Journal : séances d’objectif signalées 🏁 (comptées une seule fois)');
     ok(await p.evaluate(() => { renderObj(); return /3 séances/.test(document.querySelector('#objList .asc-mini').textContent); }), 'liste des objectifs : résumé de l’ascension');
     // « Refaire » une séance d’objectif ne copie pas le lien
-    ok(await p.evaluate(id => { renderJournal(); document.querySelector(`[data-dup="${id}"]`).click(); return $('f_obj').value === ''; }, mid), '« Refaire » ne recopie pas l’objectif');
+    ok(await p.evaluate(id => { renderJournal(); jExpandAll(); document.querySelector(`[data-dup="${id}"]`).click(); return $('f_obj').value === ''; }, mid), '« Refaire » ne recopie pas l’objectif');
     await p.evaluate(() => { fillForm(null); show('journal'); });
     // synchro : champ conservé par la fusion, y compris face à une copie distante plus ancienne sans le champ
     ok(await p.evaluate(id => { const L = JSON.parse(JSON.stringify(DB)), R = JSON.parse(JSON.stringify(DB)); const r = R.sessions.find(s => s.id === id); delete r.objN; r.updatedAt = 1;
@@ -749,6 +756,61 @@ function FIXTURE() {
     ok(r.a[0] === 'fx-am' && r.a[1] === 'new' && r.a[2] === true && r.a[3] === false && /heures de départ différentes/.test(r.a[4]), '10:05 et 16:31, même durée : signalé mais ajouté comme nouvelle séance par défaut', r.a);
     ok(r.b[0] === 'merge' && r.b[1] === true, 'même capture réimportée (même heure) : toujours « compléter »', r.b);
     ok(r.c === 'merge' && r.d === 'merge', 'heures proches ou heure inconnue : comportement inchangé', [r.c, r.d]);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 21. v22 : revue (import, synchro, journal, onglets, copies, code mort) ----------
+  out.push('21. v22 : import JSON, résumé de synchro, journal, 5 onglets, copies sans GPX');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const nav = await p.evaluate(() => { const t = [...document.querySelectorAll('nav .tab')].map(b => b.dataset.p + ':' + b.innerText.trim());
+      show('poids'); const a = document.querySelector('nav .tab.on').dataset.p; show('equip'); const b = document.querySelector('nav .tab.on').dataset.p;
+      document.querySelector('#p-equip [data-sub=prep]').click(); const c = curPage; document.querySelector('#p-evo [data-sub=poids]').click(); const d = curPage;
+      return {t, a, b, c, d, sub: document.querySelectorAll('.subnav').length}; });
+    ok(nav.t.length === 5 && nav.t.join() === 'journal:Journal,obj:Objectifs,prep:Prépa,evo:Évolution,data:Données', '5 onglets aux libellés lisibles', nav.t);
+    ok(nav.a === 'evo' && nav.b === 'prep' && nav.c === 'prep' && nav.d === 'poids' && nav.sub === 4, 'Poids dans Évolution, Équipement dans Prépa (sous-onglets), toujours accessibles', nav);
+    const jr = await p.evaluate(() => { const T = todayISO(), ym = T.slice(0, 7);
+      DB.sessions = [{id:'j1',date:T,type:'Marche',dist:5,lieu:'Col de Ceyssat',updatedAt:1},{id:'j2',date:'2025-01-10',type:'Randonnée',dist:9,notes:'Neige fraîche, très beau',updatedAt:1},{id:'j3',date:'2025-01-12',type:'Vélo',dist:20,updatedAt:1},{id:'j4',date:'2024-06-02',type:'Marche',dist:3,lieu:'Sancy',updatedAt:1}];
+      J.open = null; show('journal'); renderJournal(); const g = [...document.querySelectorAll('#sessList details.mgrp')].map(d => d.dataset.ym + (d.open ? '+' : '-') + d.querySelectorAll('.sess').length);
+      const det = document.querySelector('#sessList details[data-ym="2025-01"]'); det.open = true; det.dispatchEvent(new Event('toggle')); const lazy = det.querySelectorAll('.sess').length;
+      $('jSearch').value = 'neige fraiche'; renderJList(); const q1 = [...document.querySelectorAll('#sessList .sess')].map(x => x.dataset.id).join(), cnt = $('jCount').textContent;
+      $('jSearch').value = 'sancy'; renderJList(); const q2 = [...document.querySelectorAll('#sessList .sess')].map(x => x.dataset.id).join();
+      $('jSearch').value = ''; $('fltPer').value = '30'; renderJList(); const q3 = [...document.querySelectorAll('#sessList .sess')].map(x => x.dataset.id).join();
+      $('fltPer').value = ''; $('jSearch').value = 'zzz'; renderJList(); const none = /Aucune séance ne correspond/.test($('sessList').innerText); $('jSearch').value = ''; renderJList();
+      return {g, ym, lazy, q1, q2, q3, cnt, none}; });
+    ok(jr.g[0] === jr.ym + '+1' && jr.g.slice(1).every(x => /-0$/.test(x)), 'journal : mois en cours ouvert, mois passés repliés (lignes non rendues)', jr.g);
+    ok(jr.lazy === 2, 'ouverture d’un mois : ses séances sont rendues à la demande', jr.lazy);
+    ok(jr.q1 === 'j2' && /1 séance trouvée/.test(jr.cnt) && jr.q2 === 'j4' && jr.q3 === 'j1' && jr.none, 'recherche (notes, lieu, sans accents) et filtre de période', jr);
+    const sn = await p.evaluate(() => { localStorage.removeItem(SNAP_KEY); DB.objectifs[3] = {statut:'Prêt',updatedAt:5,gpx:{pts:[[45,3,1000],[45.01,3.01,1100]],name:'t'}}; save();
+      snapshot('test', true); const a = snapshots()[0], d = JSON.parse(a.data); delete DB.objectifs[3].gpx; DB.objectifs[3].gpx = {pts:[[45,3,1000],[45.02,3.02,1200]],name:'cur'}; save();
+      restoreSnap(0); return {noGpx: a.noGpx, has: !!(d.objectifs[3] && d.objectifs[3].gpx), st: d.objectifs[3].statut, kept: DB.objectifs[3].gpx && DB.objectifs[3].gpx.pts[1][0]}; });
+    ok(sn.noGpx && !sn.has && sn.st === 'Prêt' && sn.kept === 45.02, 'copies locales sans traces GPX ; la restauration garde les traces actuelles', sn);
+    const q = await p.evaluate(() => { const big = JSON.stringify({x:'y'}); const a = []; for (let i = 0; i < 5; i++) a.push({t:Date.now() - i * 1e5, day:'2026-01-0' + (i + 1), reason:'r' + i, n:1, data:big}); localStorage.setItem(SNAP_KEY, JSON.stringify(a));
+      const orig = Storage.prototype.setItem; let msg = ''; const ot = window.toast; window.toast = m => { msg = m; };
+      Storage.prototype.setItem = function (k, v) { if (k === KEY && JSON.parse(orig.call ? (localStorage.getItem(SNAP_KEY) || '[]') : '[]').length > 2) throw new DOMException('full', 'QuotaExceededError'); return orig.call(this, k, v); };
+      DB.prefs.zz = 1; let err = null; try { save(); } catch (e) { err = e.message; } Storage.prototype.setItem = orig; window.toast = ot;
+      const s = snapshots(); return {n: s.length, first: s[0].reason, saved: JSON.parse(localStorage.getItem(KEY)).prefs.zz, msg, err}; });
+    ok(q.n === 2 && q.first === 'r0' && q.saved === 1 && /la plus récente est gardée/.test(q.msg) && !q.err, 'stockage plein : copies anciennes supprimées une à une, la plus récente gardée, avertissement', q);
+    const im = await p.evaluate(async () => { const base = {version:4, sessions:[{id:'a',date:'2026-01-01',type:'Marche',dist:1,updatedAt:5},{id:'b',date:'2026-01-02',type:'Marche',dist:2,updatedAt:5}], weights:[{id:'w1',date:'2026-01-01',kg:80,updatedAt:5}], daily:[], objectifs:{1:{statut:'Prêt',updatedAt:5}}, equip:defaultEquip(), prefs:{actMap:{}}, tomb:newTomb()};
+      DB = normalizeDB(JSON.parse(JSON.stringify(base))); save(); const file = JSON.parse(JSON.stringify(base)); file.sessions = [file.sessions[0], {id:'c',date:'2026-01-03',type:'Vélo',dist:3,updatedAt:4}]; file.weights = [];
+      openImpChoice(file); const shown = !$('impDlg').hidden, paused = syncPaused; const t0 = Date.now(); scheduleSync(0);
+      $('impMerge').click(); const m = {ids: DB.sessions.map(s => s.id).sort().join(), w: DB.weights.length, closed: $('impDlg').hidden, resumed: !syncPaused};
+      const remoteOld = JSON.parse(JSON.stringify(DB)); const dl = []; const od = window.download; window.download = (n, t) => dl.push([n, JSON.parse(t).sessions.length]); const op = window.prompt;
+      window.prompt = () => 'non'; const no = await importReplace(file); const idsNo = DB.sessions.map(s => s.id).sort().join();
+      window.prompt = () => 'REMPLACER'; openImpChoice(file); $('impReplace').click(); await new Promise(r => setTimeout(r, 300)); window.prompt = op; window.download = od;
+      const r = {ids: DB.sessions.map(s => s.id).sort().join(), w: DB.weights.length, tb: !!DB.tomb.s.b, tw: !!DB.tomb.w.w1, ob: DB.objectifs[1].statut, dl, closed: $('impDlg').hidden, snap: snapshots()[0].reason};
+      const old = mergeDB(remoteOld, DB), back = mergeDB(DB, remoteOld); // le gist (ou un ancien appareil) avec l'état précédent
+      return {shown, paused, m, no, idsNo, r, old: old.sessions.map(s => s.id).sort().join() + '|' + old.weights.length, back: back.sessions.map(s => s.id).sort().join()}; });
+    ok(im.shown && im.paused, 'import JSON : choix explicite affiché, synchro auto en pause', im);
+    ok(im.m.ids === 'a,b,c' && im.m.w === 1 && im.m.closed && im.m.resumed, '« Fusionner » : ajoute sans rien supprimer, synchro relancée', im.m);
+    ok(im.no === false && im.idsNo === 'a,b,c', '« Remplacer » sans taper REMPLACER : rien ne change', im.idsNo);
+    ok(im.r.ids === 'a,c' && im.r.w === 0 && im.r.tb && im.r.tw && im.r.ob === 'Prêt' && im.r.dl.length === 1 && im.r.dl[0][1] === 3 && im.r.closed && /remplacement/.test(im.r.snap), '« Remplacer partout » : pierres tombales, copie téléchargée de l’état précédent, copie locale', im.r);
+    ok(im.old === 'a,c|0' && im.back === 'a,c', 'remplacement propagé : la fusion avec l’ancien état (gist / autre appareil) ne fait pas revenir les éléments', [im.old, im.back]);
+    const sd = await p.evaluate(() => { const A = {sessions:[{id:'x',updatedAt:1}], weights:[], daily:[], equip:[], objectifs:{}}, B = {sessions:[{id:'x',updatedAt:2},{id:'y',updatedAt:1},{id:'z',updatedAt:1}], weights:[{id:'w',updatedAt:1}], daily:[{id:'2026-01-01',updatedAt:1}], equip:[], objectifs:{}};
+      return [diffText(syncDiff(A, B)), diffText(syncDiff(B, B)), diffText(syncDiff(B, A))]; });
+    ok(sd[0] === '2 séances nouvelles, 1 séance modifiée, 1 pesée nouvelle, 1 jour d’activité nouveau' && sd[1] === '' && /2 séances supprimées/.test(sd[2]), 'résumé de synchro lisible', sd);
+    const dead = await p.evaluate(() => [typeof objSortMode, typeof septSessions, typeof octSessions, Array.isArray(SEED_SESSIONS), DATA_VERSION]);
+    ok(dead.join() === 'undefined,undefined,undefined,true,4', 'code mort retiré (objSortMode, septSessions/octSessions) ; DATA_VERSION inchangé (4)', dead);
+    const sri = await p.evaluate(async () => { try { await loadLeaflet(); } catch (e) { return 'err ' + e.message; } const s = [...document.scripts].find(x => /leaflet/.test(x.src)); return !!window.L && /^sha384-/.test(s.integrity) && s.crossOrigin === 'anonymous'; });
+    ok(sri === true, 'Leaflet chargé avec vérification d’intégrité (SRI)', sri);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ancienne version (v16) face à des données des objectifs 11/12
