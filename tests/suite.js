@@ -1,21 +1,23 @@
 /* Suite de tests de « Suivi montagne » (Chrome sans interface, puppeteer-core).
    Usage : BASE=http://localhost:8767 SAMPLES=1 CHROME=/usr/bin/google-chrome node tests/suite.js
    Le dossier servi (SERVE_DIR, par défaut le dossier courant) doit contenir index.html (nouvelle version) ;
-   old.html (v4, commit d5589b1) et old16.html (v16, commit 2f57c2c) y sont recréés automatiquement depuis git s'ils manquent (v22),
+   old.html (v4) et old16.html (v16) y sont copiés depuis tests/fixtures s'ils manquent (v24),
    sw.js, et — pour les tests OCR — les captures Mi Fitness marche.jpg, rando.jpg, corde.jpg, poids.png
    + truth.json (valeurs attendues). Captures et valeurs personnelles : jamais commitées. */
 const puppeteer = require(process.env.PUPPETEER || 'puppeteer-core');
 const BASE = process.env.BASE || 'http://localhost:8767';
+const SWC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(v\d+)'/) || [])[1]; // cache de l'appli attendu (lu dans sw.js)
 const W = ms => new Promise(r => setTimeout(r, ms));
 let pass = 0, fail = 0; const out = [];
 function ok(c, name, extra) { if (c) { pass++; out.push('  ✔ ' + name); } else { fail++; out.push('  ✘ ' + name + (extra !== undefined ? ' → ' + JSON.stringify(extra).slice(0, 400) : '')); } }
 // Valeurs attendues de l'OCR : fichier local non commité (${SAMPLE_DIR}/truth.json), comme les captures.
 const SDIR = process.env.SAMPLE_DIR || require('path').resolve('.');
-// v22 : versions anciennes recréées depuis l'historique git (plus de fichier old.html non commité requis)
-{ const fs = require('fs'), path = require('path'), cp = require('child_process'); const SERVE = process.env.SERVE_DIR || process.cwd(), REPO = path.resolve(__dirname, '..');
-  for (const [f, c] of [['old.html', 'd5589b1'], ['old16.html', '2f57c2c']]) { const fp = path.join(SERVE, f); if (fs.existsSync(fp)) continue;
-    try { fs.writeFileSync(fp, cp.execSync('git show ' + c + ':index.html', {cwd: REPO, maxBuffer: 64e6})); console.log('(' + f + ' recréé depuis git ' + c + ')'); }
-    catch (e) { console.error('Impossible de recréer ' + f + ' depuis git (' + c + ') : ' + e.message); process.exit(2); } }
+// v24 : versions anciennes commitées dans tests/fixtures (old.html = v4 sans données, commit fab7403 ; old16.html = v16, commit 2f57c2c),
+// copiées dans le dossier servi si elles manquent : plus besoin de l'historique git (clone neuf ou superficiel).
+{ const fs = require('fs'), path = require('path'); const SERVE = process.env.SERVE_DIR || process.cwd();
+  for (const f of ['old.html', 'old16.html']) { const fp = path.join(SERVE, f), src = path.join(__dirname, 'fixtures', f); if (fs.existsSync(fp)) continue;
+    try { fs.copyFileSync(src, fp); console.log('(' + f + ' copié depuis tests/fixtures)'); }
+    catch (e) { console.error('Impossible de copier ' + src + ' : ' + e.message); process.exit(2); } }
   if (!process.env.OLD16) process.env.OLD16 = 'old16.html'; }
 const TRUTH = process.env.SAMPLES ? JSON.parse(require('fs').readFileSync(SDIR + '/truth.json', 'utf8')) : {};
 // Données fictives (aucune donnée réelle dans le dépôt).
@@ -54,12 +56,13 @@ function FIXTURE() {
   // ---------- 2. Migration v3 → v4 depuis l'ancienne version ----------
   out.push('2. Migration depuis la version précédente (v3), sans perte');
   { const [ctx, p] = await fresh(BASE + '/old.html'); let DEL;
-    const before = await p.evaluate(() => { // modifications « utilisateur » dans l'ancienne appli
+    const before = await p.evaluate((F) => { // modifications « utilisateur » dans l'ancienne appli
+      if (DB.sessions.length < 3) DB.sessions.push(...F.sessions.slice(0, 6)); // v24 : la v4 commitée n'a plus de séances de départ (données retirées) → séances fictives
       DB.sessions.push({id:'u1',date:'2026-10-12',type:'Tapis 6%',dist:5,dplus:300,dminus:null,dur:3600,bpm:120,bpmMax:null,pas:null,sac:4,sauts:null,ress:7,exos:'',notes:'à moi',updatedAt:1760000000000});
       DB.equip[0].items[0].bought = true; DB.equip[0].items[0].price = 149; DB.equip[0].items[0].updatedAt = 1760000000001;
       DB.objectifs[1] = {statut:'Prêt', datePrevue:'2026-10-25', dateRealisee:'', updatedAt:1760000000002};
       const del = DB.sessions[1].id; DB.tomb.s[del] = 1760000000003; DB.sessions = DB.sessions.filter(s => s.id !== del);
-      save(); return JSON.stringify({j:localStorage.getItem(KEY), del}); }).then(x => (DEL = JSON.parse(x).del, JSON.parse(x).j));
+      save(); return JSON.stringify({j:localStorage.getItem(KEY), del}); }, FIXTURE()).then(x => (DEL = JSON.parse(x).del, JSON.parse(x).j));
     await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
     const r = await p.evaluate(() => ({bk: localStorage.getItem(KEY + '.backup.v3'), db: DB}));
     const B = JSON.parse(before), D = r.db;
@@ -68,7 +71,7 @@ function FIXTURE() {
     ok(D.sessions.length === B.sessions.length, 'aucune séance ajoutée/retirée', [B.sessions.length, D.sessions.length]);
     ok(D.equip[0].items[0].bought === true && D.equip[0].items[0].price === 149, 'achat + prix conservés');
     ok(D.objectifs[1].statut === 'Prêt' && D.objectifs[1].datePrevue === '2026-10-25', 'état d’objectif conservé');
-    ok(B.sessions.length > 5 && B.sessions.some(s => /^seed-/.test(s.id)), 'l’ancienne version avait ses séances locales', B.sessions.length);
+    ok(B.sessions.length >= 5, 'l’ancienne version avait ses séances locales', B.sessions.length);
     ok(D.tomb.s[DEL] === 1760000000003, 'suppression conservée (pierre tombale)');
     ok(D.version === 4 && Array.isArray(D.weights) && D.weights.length === 0 && D.equip.some(c => c.id === 'eqc-bivouac'), 'v4 : Bivouac ajouté, aucune pesée inventée');
     ok(B.equip.every(c => D.equip.some(x => x.id === c.id && x.items.length === c.items.length)), 'catégories existantes intactes');
@@ -133,9 +136,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v23') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes(SWC) && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v23'), 'anciens caches de l’appli supprimés, v23 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes(SWC), 'anciens caches de l’appli supprimés, '+SWC+' créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -835,8 +838,43 @@ function FIXTURE() {
       await caches.delete(TILE_CACHE); await prepOffline(3); window.fetch = of; const c = await caches.open(TILE_CACHE), k = await c.keys(), m = offMeta(3);
       return {tiles, wx, keys: k.length, m, t: $('sumDayJ').innerText, map: !!$('sumMap')._map}; });
     ok(pr.wx === 1 && pr.tiles === pr.keys && pr.keys > 0 && pr.keys <= 180 && pr.m.tiles === pr.keys && /préparé le/.test(pr.t) && pr.map, '« Préparer hors-ligne » : météo + tuiles en cache, horodatage affiché, carte interactive sans GPX', pr);
-    const keys = await p.evaluate(async () => { await navigator.serviceWorker.ready; for (let i = 0; i < 20 && !(await caches.keys()).includes('suivi-montagne-v23'); i++) await new Promise(r => setTimeout(r, 250)); return caches.keys(); });
-    ok(keys.includes('suivi-montagne-tiles-v1') && keys.includes('suivi-montagne-v23'), 'cache des tuiles conservé par le service worker', keys);
+    const keys = await p.evaluate(async (SWC) => { await navigator.serviceWorker.ready; for (let i = 0; i < 20 && !(await caches.keys()).includes(SWC); i++) await new Promise(r => setTimeout(r, 250)); return caches.keys(); }, SWC);
+    ok(keys.includes('suivi-montagne-tiles-v1') && keys.includes(SWC), 'cache des tuiles conservé par le service worker', keys);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 23. v24 : fuseau, balayage, zoom hors-ligne, restauration + GPX ----------
+  out.push('23. v24 : soleil à l’heure de Paris, balayage 5 onglets, zoom de carte hors-ligne, restauration sans perte de trace');
+  for (const tz of ['UTC', 'America/New_York', 'Asia/Tokyo']) { const [ctx, p] = await fresh(); await p.emulateTimezone(tz); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
+    const r = await p.evaluate(() => { const s = sunTimes(new Date(2026, 9, 13), 45.7639, 2.9559); return {set:hhmm(s.set), rise:hhmm(s.rise)}; });
+    ok(r.set === '19h07' && r.rise === '08h00', 'appareil en ' + tz + ' : coucher au col de Ceyssat affiché 19h07 (heure de Paris)', r); await ctx.close(); }
+  { const [ctx, p] = await fresh(); await p.setViewport({width:390, height:844, hasTouch:true, isMobile:true}); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
+    const swipe = async (from, dir) => { await p.evaluate(t => { show(t); window.scrollTo(0, 0); }, from); await W(450);
+      const y = 420, x0 = dir < 0 ? 300 : 90, x1 = x0 + dir * 220; await p.touchscreen.touchStart(x0, y); for (let i = 1; i <= 8; i++) { await p.touchscreen.touchMove(x0 + dir * 220 * i / 8, y + i); await W(16); } await p.touchscreen.touchEnd(); await W(600);
+      return p.evaluate(() => curPage + '|' + (document.querySelector('nav .tab.on') || {dataset:{}}).dataset.p); };
+    const sw = {prepL: await swipe('prep', -1), equipL: await swipe('equip', -1), prepR: await swipe('prep', 1), poidsL: await swipe('poids', -1), evoR: await swipe('evo', 1), dataL: await swipe('data', -1), journalR: await swipe('journal', 1)};
+    const T = await p.evaluate(() => TABS.join());
+    ok(T === 'journal,obj,prep,evo,data' && sw.prepL === 'evo|evo' && sw.equipL === 'evo|evo' && sw.prepR === 'obj|obj' && sw.poidsL === 'data|data' && sw.evoR === 'prep|prep' && sw.dataL === 'data|data' && sw.journalR === 'journal|journal', 'balayage : 5 onglets dans l’ordre de la barre du bas (sous-onglets rattachés à leur onglet)', {T, sw});
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const prep = await p.evaluate(async () => { const of = window.fetch; window.fetch = async (u, o) => { u = String(u);
+        if (/tile\.openstreetmap\.org/.test(u)) return new Response(new Blob([new Uint8Array([137, 80, 78, 71])], {type:'image/png'}), {status:200});
+        if (/open-meteo/.test(u)) return new Response(JSON.stringify({daily:{time:[todayISO()], weather_code:[1]}, hourly:{time:[todayISO() + 'T14:00'], temperature_2m:[9], weather_code:[1], precipitation_probability:[0], wind_gusts_10m:[10]}}), {status:200});
+        return of(u, o); };
+      DB.objectifs[1] = Object.assign(objState(1), {gpx:{pts:[[45.7639,2.9559,1080],[45.7645,2.9590,1200],[45.7720,2.9640,1465]],dist:1.2,dplus:385,n0:3,name:'courte'}, updatedAt:Date.now()}); save();
+      await prepOffline(1); window.fetch = of; const on = $('sumMap') && $('sumMap')._map; return {z: offMeta(1).zmax, onMax: on ? on.getMaxZoom() : null}; });
+    await p.setOfflineMode(true);
+    const m = await p.evaluate(async () => { closeSummit(); await new Promise(r => setTimeout(r, 200)); openSummit(1); for (let i = 0; i < 30 && !($('sumMap') && $('sumMap')._map); i++) await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 300)); const map = $('sumMap')._map; let tl = null; map.eachLayer(l => { if (l._url) tl = l; });
+      map.setZoom(18); await new Promise(r => setTimeout(r, 300)); const req = []; tl.on('tileloadstart', e => req.push(e.coords.z)); map.panBy([40, 40]); await new Promise(r => setTimeout(r, 400));
+      return {fit: map.getZoom(), max: map.getMaxZoom(), native: tl.options.maxNativeZoom, req: [...new Set(req)]}; });
+    ok(m.max <= prep.z + 2 && m.native === prep.z && m.req.every(z => z <= prep.z && z >= 11), 'hors-ligne : zoom limité, tuiles demandées seulement aux zooms préparés (11–' + prep.z + '), agrandies au-delà', {prep, m});
+    await p.setOfflineMode(false);
+    const r = await p.evaluate(() => { localStorage.removeItem(SNAP_KEY); DB.objectifs[4] = {statut:'À préparer', updatedAt:Date.now() - 864e5}; save(); snapshot('test', true);
+      DB.objectifs[4] = Object.assign({}, DB.objectifs[4], {gpx:{pts:[[45,3,1000],[45.03,3.03,1300]],dist:4,dplus:300,n0:2,name:'non synchronisée'}, updatedAt:Date.now() - 3600e3}); save();
+      const remote = JSON.parse(JSON.stringify(DB)); delete remote.objectifs[4].gpx; remote.objectifs[4].statut = 'Prêt'; remote.objectifs[4].updatedAt = Date.now() - 60e3; // gist plus récent, sans la trace
+      restoreSnap(0); const m1 = mergeDB(JSON.parse(JSON.stringify(DB)), remote), m2 = mergeDB(remote, JSON.parse(JSON.stringify(DB)));
+      return {kept: !!DB.objectifs[4].gpx, newer: DB.objectifs[4].updatedAt > remote.objectifs[4].updatedAt, g1: !!(m1.objectifs[4] && m1.objectifs[4].gpx), g2: !!(m2.objectifs[4] && m2.objectifs[4].gpx)}; });
+    ok(r.kept && r.newer && r.g1 && r.g2, 'restauration : trace actuelle recollée et objectif daté de la restauration → la trace survit à la synchro avec un gist plus récent', r);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ancienne version (v16) face à des données des objectifs 11/12

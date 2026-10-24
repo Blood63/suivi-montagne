@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e211e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Suivi Montagne">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Suivi Montagne</title>
+<style>
+:root{
+  --pine:#16443a;--pine2:#1f6f54;--pine3:#34b38a;--glacier:#7cc8ea;--glacier2:#4aa8d4;--rock:#8b9a97;--snow:#f3f7f6;--sun:#fb923c;--sun2:#f97316;
+  --bg:#0a1715;--card:rgba(20,38,35,.78);--card2:rgba(34,58,54,.85);--line:rgba(190,225,220,.12);--txt:#f3f7f6;--mut:#a9b8b5;
+  --acc:var(--glacier);--acc2:var(--pine3);--warn:#fb923c;--bad:#f87171;--good:#4ade80;
+  --r:20px;--shadow:0 10px 30px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.04) inset;
+  --font:"Outfit",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;color:var(--txt);font:15.5px/1.45 var(--font);background:var(--bg)}
+body{min-height:100vh;background:
+  radial-gradient(120% 60% at 85% -10%,rgba(251,146,60,.20),transparent 55%),
+  radial-gradient(90% 50% at 0% 0%,rgba(124,200,234,.14),transparent 60%),
+  linear-gradient(180deg,#0e211e 0%,#0a1715 45%,#08120f 100%);background-attachment:fixed}
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:42vh;z-index:-1;pointer-events:none;opacity:.5;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 160' preserveAspectRatio='none'><path d='M0 160V95l40-30 30 18 45-55 40 40 30-22 55 50 35-28 50 38 35-24 40 30v48z' fill='%23132f2a'/><path d='M0 160v-35l55-25 40 20 50-35 45 30 40-18 60 35 45-22 65 30v20z' fill='%230f2622'/></svg>") bottom/100% 100% no-repeat}
+header{position:sticky;top:0;z-index:5;overflow:hidden;padding:calc(env(safe-area-inset-top) + 14px) 18px 14px;
+  background:linear-gradient(180deg,rgba(14,33,30,.92),rgba(10,23,21,.82));backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--line)}
+header .ridge{position:absolute;inset:auto 0 0 0;height:100%;width:100%;pointer-events:none}
+header .brand{position:relative;display:flex;align-items:center;gap:12px}
+header .logo{width:40px;height:40px;flex:none;border-radius:13px;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
+header small{color:var(--mut);font-size:12.5px}
+main{padding:16px 14px calc(104px + env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:2px;padding:6px;border-radius:24px;
+  background:rgba(14,30,27,.82);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.45);max-width:720px;margin:0 auto}
+nav button{flex:1;min-width:0;background:none;border:0;color:var(--mut);padding:7px 1px 6px;font:500 10.5px/1.1 var(--font);display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:18px;transition:color .2s,background .25s,transform .15s}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--snow);background:linear-gradient(180deg,rgba(124,200,234,.22),rgba(124,200,234,.08))}
+nav button.on svg{stroke:var(--glacier)}
+nav button:active{transform:scale(.94)}
+.page{display:none}.page.on{display:block;animation:rise .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.page.on{animation:none}*{transition:none!important}}
+.card{background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+h2{font-size:18px;font-weight:650;margin:2px 0 12px}h3{font-size:16px;font-weight:600;margin:0 0 6px}
+.mut{color:var(--mut)}.small{font-size:13px}
+label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:4px;font-weight:500}
+input,select,textarea{width:100%;background:rgba(8,20,18,.6);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:12px;font-size:16px;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--glacier);box-shadow:0 0 0 3px rgba(124,200,234,.22)}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%23a9b8b5' stroke-width='2' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid .full{grid-column:1/-1}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr)}}
+.btn{background:linear-gradient(135deg,#fdba74,var(--sun) 45%,var(--sun2));color:#2a1204;border:0;border-radius:14px;padding:12px 16px;font:650 15px var(--font);box-shadow:0 6px 18px rgba(249,115,22,.28);transition:transform .15s,filter .2s}
+.btn:active{transform:scale(.97)}.btn:disabled{filter:grayscale(.6) opacity(.6)}
+.btn.sec{background:rgba(124,200,234,.10);color:var(--snow);border:1px solid rgba(124,200,234,.28);box-shadow:none}
+.btn.bad{background:rgba(248,113,113,.12);color:#fecaca;border:1px solid rgba(248,113,113,.4);box-shadow:none}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.auto{background:rgba(124,200,234,.08);border:1px dashed rgba(124,200,234,.35);border-radius:14px;padding:10px 12px;font-size:14px}
+.sess{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.sess:first-child{border-top:0}
+.sess .d{min-width:54px;height:58px;text-align:center;background:linear-gradient(160deg,rgba(52,179,138,.28),rgba(22,68,58,.5));border:1px solid rgba(52,179,138,.3);border-radius:16px;padding:7px 2px;font-weight:700;font-size:19px;line-height:1.1}
+.sess .d small{display:block;color:var(--mut);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.sess .b{flex:1;min-width:0}
+.sess .acts{display:flex;flex-direction:column;gap:6px}
+.chip{display:inline-block;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:12.5px;margin:4px 4px 0 0}
+.tag{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:rgba(124,200,234,.16);color:#cdeefc;border:1px solid rgba(124,200,234,.3)}
+.month{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 2px;padding-bottom:4px}
+.month b{font-size:15px;text-transform:capitalize}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center}
+.kpi b{display:block;font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.15}.kpi small{color:var(--mut);font-size:12px}
+.kpis .hero{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}
+.kpis .hero h2{margin:0}
+.kpi.k-dplus b{color:var(--glacier)}.kpi.k-dist b{color:var(--sun)}
+.bar{height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.pct{font-weight:750;font-size:20px}
+.red{color:var(--bad)}.orange{color:var(--warn)}.green{color:var(--good)}
+.bg-red{background:var(--bad)}.bg-orange{background:var(--warn)}.bg-green{background:var(--good)}
+.alt{display:inline-block;background:rgba(251,146,60,.14);color:#fed7aa;border:1px solid rgba(251,146,60,.45);border-radius:999px;padding:2px 9px;font-size:12px}
+.prep{display:flex;gap:14px;align-items:center}
+.ring{position:relative;width:78px;height:78px;flex:none}
+.ring svg{width:78px;height:78px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8}
+.ring .trk{stroke:rgba(255,255,255,.08)}
+.ring .val{stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1)}
+.ring .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.ring .lbl small{font-size:11px;font-weight:600;margin-left:1px}
+.mini{display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:center;font-size:12.5px;margin-top:8px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{color:var(--mut);font-weight:600;position:sticky;top:0;background:rgba(20,38,35,.98)}
+.tbl tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.eq{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.eq:first-of-type{border-top:0}
+.eq input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--pine3);padding:0}
+.eq .nm{flex:1;min-width:0}.eq.done .nm b{text-decoration:line-through;color:var(--mut)}
+.eq .pr{white-space:nowrap;font-size:13px;color:var(--mut)}
+.iconbtn{background:none;border:0;color:var(--mut);font-size:16px;padding:4px;border-radius:10px}
+.toast{pointer-events:none;max-width:92vw;text-align:center;position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(16,40,36,.95);backdrop-filter:blur(10px);border:1px solid rgba(124,200,234,.45);color:var(--txt);padding:10px 16px;border-radius:14px;z-index:9;display:none;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.seg{display:flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:4px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);padding:9px;border-radius:12px;font:500 14px var(--font);transition:background .25s,color .2s}
+.seg button.on{background:linear-gradient(135deg,var(--glacier),var(--glacier2));color:#04202d;font-weight:650}
+details summary{cursor:pointer;color:var(--glacier)}
+a{color:var(--glacier)}
+code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:6px}
+/* ===== v4 : couche « app native » ===== */
+html,body{overscroll-behavior-x:none}
+main{touch-action:pan-y}
+.scroll{touch-action:pan-x pan-y}
+body{background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;transform:translateZ(0);background:
+  radial-gradient(120% 60% at 85% -10%,rgba(251,146,60,.20),transparent 55%),
+  radial-gradient(90% 50% at 0% 0%,rgba(124,200,234,.14),transparent 60%),
+  linear-gradient(180deg,#0e211e 0%,#0a1715 45%,#08120f 100%)}
+body::after{transform:translateZ(0)}
+.card{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(165deg,rgba(26,48,44,.92),rgba(16,32,29,.92))}
+header{transition:box-shadow .3s,background .3s}
+header.scrolled{box-shadow:0 10px 28px rgba(0,0,0,.45);background:linear-gradient(180deg,rgba(14,33,30,.97),rgba(10,23,21,.9))}
+header .eyebrow{display:block;color:var(--glacier);font-size:11.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;opacity:.9}
+header h1{font-size:26px;letter-spacing:-.4px;line-height:1.1;transform-origin:left center;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+header.scrolled h1{transform:scale(.86)}
+header .logo{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+header.scrolled .logo{transform:scale(.88)}
+header h1.swap{animation:ttl .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes ttl{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.syncpill{position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 18px);display:flex;align-items:center;gap:6px;font-size:12px;color:var(--snow);background:rgba(124,200,234,.16);border:1px solid rgba(124,200,234,.35);padding:4px 10px;border-radius:999px;opacity:0;transform:translateY(-6px) scale(.96);transition:opacity .25s,transform .25s;pointer-events:none}
+.syncpill.on{opacity:1;transform:none}
+.spin{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:var(--glacier);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* nav + indicateur glissant */
+nav{overflow:visible}
+nav .tab{position:relative;z-index:1}
+nav .tab.on{background:none}
+nav .ind{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:18px;background:linear-gradient(180deg,rgba(124,200,234,.26),rgba(124,200,234,.08));border:1px solid rgba(124,200,234,.25);transition:transform .42s cubic-bezier(.3,1.25,.4,1),width .01s;will-change:transform;z-index:0}
+nav .tab svg{transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+nav .tab.on svg{transform:translateY(-1px) scale(1.08)}
+/* FAB */
+nav .fab{position:absolute;right:6px;bottom:calc(100% + 14px);width:60px;height:60px;border-radius:20px;border:0;padding:0;display:flex;align-items:center;justify-content:center;color:#2a1204;
+  background:linear-gradient(135deg,#fdba74,var(--sun) 45%,var(--sun2));box-shadow:0 12px 28px rgba(249,115,22,.45),0 0 0 1px rgba(255,255,255,.15) inset;transition:transform .25s cubic-bezier(.3,1.4,.5,1),opacity .2s}
+nav .fab svg{width:28px;height:28px;stroke:#2a1204;stroke-width:2.6;fill:none;stroke-linecap:round}
+nav .fab:active{transform:scale(.9) rotate(-8deg)}
+body.fab-hide nav .fab{transform:translate3d(0,24px,0) scale(.7);opacity:0;pointer-events:none}
+body.sheet-open nav .fab{transform:scale(.6);opacity:0;pointer-events:none}
+/* transitions de page (transform + opacity uniquement) */
+.page.on{animation:none}
+.page.on[data-dir="r"]{animation:inR .38s cubic-bezier(.2,.8,.2,1)}
+.page.on[data-dir="l"]{animation:inL .38s cubic-bezier(.2,.8,.2,1)}
+.page.on[data-dir="u"]{animation:rise .38s cubic-bezier(.2,.8,.2,1)}
+@keyframes inR{from{opacity:0;transform:translate3d(28px,0,0)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translate3d(-28px,0,0)}to{opacity:1;transform:none}}
+.page.dragging{transition:none!important;animation:none!important}
+.page.snap{transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s}
+.page.on .card{animation:cardIn .5s cubic-bezier(.2,.8,.2,1) both}
+.page.on .card:nth-child(2){animation-delay:.04s}.page.on .card:nth-child(3){animation-delay:.08s}.page.on .card:nth-child(4){animation-delay:.12s}.page.on .card:nth-child(n+5){animation-delay:.16s}
+@keyframes cardIn{from{opacity:0;transform:translate3d(0,14px,0) scale(.985)}to{opacity:1;transform:none}}
+/* bottom sheet */
+#sheetBg{position:fixed;inset:0;z-index:20;background:rgba(3,10,9,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s}
+body.sheet-open #sheetBg{opacity:1;pointer-events:auto}
+#p-add.page{display:block;position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:720px;margin:0 auto;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 0 env(safe-area-inset-bottom);border-radius:28px 28px 0 0;background:linear-gradient(180deg,#183430,#0f2320);border:1px solid var(--line);border-bottom:0;box-shadow:0 -20px 50px rgba(0,0,0,.5);
+  transform:translate3d(0,105%,0);visibility:hidden;transition:transform .42s cubic-bezier(.2,.9,.25,1),visibility 0s .42s;animation:none!important}
+body.sheet-open #p-add.page{transform:none;visibility:visible;transition:transform .42s cubic-bezier(.2,.9,.25,1),visibility 0s}
+#p-add.dragging{transition:none!important}
+#p-add .card{background:none;border:0;box-shadow:none;margin:0;padding:6px 16px 0;animation:none!important}
+.grab{position:sticky;top:0;z-index:2;display:flex;justify-content:center;padding:10px 0 8px;background:linear-gradient(180deg,#183430 70%,rgba(24,52,48,0));cursor:grab;touch-action:none}
+.grab i{width:44px;height:5px;border-radius:9px;background:rgba(255,255,255,.28)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center}
+.sheet-head h2{margin:0;font-size:21px}
+.xbtn{width:36px;height:36px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--txt);font-size:18px;line-height:1}
+.sheet-actions{position:sticky;bottom:0;z-index:2;margin:14px -16px 0!important;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(15,35,32,0),#0f2320 35%)}
+.sheet-actions .btn{flex:1}
+body.sheet-open{overflow:hidden}
+/* retours tactiles */
+.btn,.iconbtn,.xbtn,.chip,.seg button,nav .tab,.sess .d{transition:transform .18s cubic-bezier(.3,1.4,.5,1),filter .2s,background .25s}
+.btn:active,.iconbtn:active,.xbtn:active,.seg button:active{transform:scale(.95);filter:brightness(1.08)}
+nav .tab:active{transform:scale(.9)}
+.sess{transition:background .2s}
+.sess:active{background:rgba(255,255,255,.03)}
+/* barres en transform (60 fps) */
+.bar i{width:100%!important;transform-origin:left center;transform:scaleX(var(--v,0));transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.bar.pre i{transform:scaleX(0)}
+.ring .val{transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)}
+/* graphiques animés */
+.chart rect.b{transform-box:fill-box;transform-origin:50% 100%;animation:grow .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.chart path.l{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s .25s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.chart circle.p{transform-box:fill-box;transform-origin:center;animation:pop .35s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+/* squelettes & états vides */
+.sk{position:relative;overflow:hidden;background:rgba(255,255,255,.06);border-radius:14px}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);animation:shim 1.2s infinite}
+@keyframes shim{to{transform:translateX(100%)}}
+.empty{text-align:center;padding:22px 10px 8px}
+.empty svg{width:120px;height:80px;margin:0 auto 8px;display:block}
+.empty h3{margin:4px 0}
+.empty p{margin:0 0 14px}
+/* toast animé */
+.toast{display:block!important;opacity:0;transform:translate3d(-50%,16px,0) scale(.97);transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.25,1)}
+.toast.show{opacity:1;transform:translate3d(-50%,0,0)}
+@media (prefers-reduced-motion:reduce){
+  .page.on[data-dir],.page.on .card,.chart rect.b,.chart path.l,.chart circle.p,header h1.swap,.sk::after,.spin{animation:none!important}
+  .chart path.l{stroke-dashoffset:0}
+  #p-add.page,.toast,.bar i,.ring .val,nav .ind{transition:none!important}
+}
+
+.hero-card{background:radial-gradient(120% 90% at 100% 0%,rgba(251,146,60,.22),transparent 55%),linear-gradient(165deg,rgba(31,111,84,.55),rgba(16,32,29,.95))!important;border-color:rgba(52,179,138,.35)!important}
+.eyebrow2{color:var(--sun);font-size:11.5px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase}
+.ring.big{width:124px;height:124px}.ring.big svg{width:124px;height:124px}.ring.big circle{stroke-width:11}.ring.big .lbl{font-size:30px}.ring.big .lbl small{font-size:14px}
+.tip{margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:13.5px}
+body.pg-equip nav .fab,body.pg-data nav .fab{transform:translate3d(0,24px,0) scale(.7);opacity:0;pointer-events:none}
+input[type=file]{padding:8px}
+input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--snow);background:rgba(124,200,234,.14);border:1px solid rgba(124,200,234,.35);border-radius:10px;padding:8px 12px;margin-right:10px}
+</style>
+</head>
+<body>
+<header>
+  <svg class="ridge" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs><linearGradient id="hsun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdba74"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>
+    <radialGradient id="hglow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fdba74" stop-opacity=".55"/><stop offset=".45" stop-color="#fb923c" stop-opacity=".25"/><stop offset="1" stop-color="#fb923c" stop-opacity="0"/></radialGradient><circle cx="360" cy="66" r="46" fill="url(#hglow)"/>
+    <path d="M0 90V62l38-22 26 14 40-34 34 28 26-14 46 34 30-20 42 26 30-16 40 22 28-12v72z" fill="#7cc8ea" opacity=".10"/>
+    <path d="M0 90V72l50-20 34 16 44-30 40 26 34-16 50 28 40-18 54 22 54-14v34z" fill="#8b9a97" opacity=".14"/>
+    <path d="M0 90V80l60-12 40 8 50-16 46 14 44-8 56 12 50-10 54 12v12z" fill="#1f6f54" opacity=".35"/>
+  </svg>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f6f54"/><stop offset="1" stop-color="#0e2b25"/></linearGradient></defs>
+      <rect width="64" height="64" rx="16" fill="url(#lg)"/><circle cx="46" cy="22" r="7" fill="#fb923c"/>
+      <path d="M6 52l18-26 8 10 8-12 18 28z" fill="#8b9a97"/><path d="M24 26l-6 9 4-1 2 3 3-4 3 3z" fill="#f3f7f6"/><path d="M40 24l-5 7 3-1 2 2 3-2z" fill="#f3f7f6"/><path d="M6 52h52v6H6z" fill="#7cc8ea" opacity=".5"/></svg>
+    <div><small class="eyebrow" id="hdrSub">Suivi Montagne</small><h1 id="pageTitle">Journal</h1></div>
+  </div>
+  <div class="syncpill" id="syncPill" aria-live="polite"><span class="spin"></span>Synchro…</div>
+</header>
+<main>
+
+<!-- JOURNAL -->
+<section class="page" id="p-journal">
+  <div class="card">
+    <div class="kpis" id="kpiMonth"><div class="hero"><div class="sk" style="width:120px;height:24px"></div></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <h2 style="margin:0">Séances</h2>
+      <select id="fltType" style="width:auto;padding:6px 8px;font-size:14px"></select>
+    </div>
+    <div id="sessList"><div class="sess"><div class="sk" style="width:54px;height:58px"></div><div style="flex:1"><div class="sk" style="height:16px;width:60%;margin:4px 0 8px"></div><div class="sk" style="height:22px"></div></div></div><div class="sess"><div class="sk" style="width:54px;height:58px"></div><div style="flex:1"><div class="sk" style="height:16px;width:60%;margin:4px 0 8px"></div><div class="sk" style="height:22px"></div></div></div><div class="sess"><div class="sk" style="width:54px;height:58px"></div><div style="flex:1"><div class="sk" style="height:16px;width:60%;margin:4px 0 8px"></div><div class="sk" style="height:22px"></div></div></div></div>
+  </div>
+</section>
+
+<!-- SAISIE -->
+<section class="page" id="p-add" role="dialog" aria-modal="true" aria-labelledby="formTitle" aria-hidden="true">
+  <div class="grab" aria-hidden="true"><i></i></div>
+  <div class="card">
+    <div class="sheet-head"><h2 id="formTitle">Nouvelle séance</h2><button type="button" class="xbtn" id="btnSheetX" aria-label="Fermer">✕</button></div>
+    <form id="fSess" autocomplete="off">
+      <input type="hidden" id="f_id">
+      <div class="grid">
+        <div><label for="f_date">Date</label><input type="date" id="f_date" required></div>
+        <div><label for="f_type">Type</label><select id="f_type"></select></div>
+        <div><label for="f_dist">Distance (km)</label><input id="f_dist" inputmode="decimal" placeholder="ex. 5,2"></div>
+        <div><label for="f_dur">Durée (h:mm:ss)</label><input id="f_dur" inputmode="numeric" placeholder="1:00:00"></div>
+        <div><label for="f_dplus">D+ (m)</label><input id="f_dplus" inputmode="decimal"></div>
+        <div><label for="f_dminus">D- (m)</label><input id="f_dminus" inputmode="decimal"></div>
+        <div><label for="f_bpm">BPM moyen</label><input id="f_bpm" inputmode="numeric"></div>
+        <div><label for="f_bpmmax">BPM max</label><input id="f_bpmmax" inputmode="numeric"></div>
+        <div><label for="f_pas">Pas</label><input id="f_pas" inputmode="numeric"></div>
+        <div><label for="f_sac">Sac à dos (kg)</label><input id="f_sac" inputmode="decimal"></div>
+        <div><label for="f_sauts">Sauts corde</label><input id="f_sauts" inputmode="numeric"></div>
+        <div><label for="f_ress">Ressenti (1-10)</label><select id="f_ress"><option value="">–</option></select></div>
+        <div class="full" id="w_exos"><label for="f_exos">Exercices (séries × répétitions, charges…)</label><textarea id="f_exos" rows="3" placeholder="ex. Squats 4×12 à 20 kg&#10;Fentes 3×10/jambe&#10;Gainage 3×45 s"></textarea></div>
+        <div class="full"><label for="f_notes">Notes</label><textarea id="f_notes" rows="2"></textarea></div>
+        <div class="full auto" id="f_auto">Vitesse : – · Vitesse ascensionnelle : –</div>
+      </div>
+      <div class="row sheet-actions">
+        <button class="btn" type="submit" id="btnSave">Enregistrer</button>
+        <button class="btn sec" type="button" id="btnCancel">Annuler</button>
+      </div>
+      <p class="small mut" style="margin:8px 0 0">Décimales avec virgule ou point. Vitesse = distance / durée ; vitesse ascensionnelle = D+ / durée (m/h).</p>
+    </form>
+  </div>
+</section>
+
+<!-- OBJECTIFS -->
+<section class="page" id="p-obj">
+  <div class="card small mut">Valeurs <b>approximatives</b> issues de topos en ligne (sources sous chaque sommet). D+, distance et durée = sortie complète (aller-retour ou boucle) sauf mention.</div>
+  <div id="objList"></div>
+</section>
+
+<!-- PREPARATION -->
+<section class="page" id="p-prep">
+  <div id="prepHero"></div>
+  <div class="card small">
+    <div id="prepWin" class="mut"></div>
+    <details style="margin-top:8px"><summary>Comment l’indice est calculé</summary>
+    <div class="mut" style="margin-top:6px">Fenêtre : 4 dernières semaines (28 jours jusqu’à aujourd’hui).<br>
+    <b>A – Grosse séance</b> = D+ max d’une séance ÷ (65 % du D+ cible), plafonné à 100 %.<br>
+    <b>B – Volume</b> = D+ hebdo moyen (total 28 j ÷ 4) ÷ D+ cible, plafonné à 100 %.<br>
+    <b>Indice</b> = moyenne de A et B. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
+    ⚠️ Altitude : sommet ≥ 2 500 m → prévoir acclimatation, météo, vêtements chauds ; l’indice ne mesure pas cela.</div></details>
+  </div>
+  <div id="prepList"></div>
+</section>
+
+<!-- EVOLUTION -->
+<section class="page" id="p-evo">
+  <div class="seg"><button id="sgW" class="on">Hebdomadaire</button><button id="sgM">Mensuel</button></div>
+  <div id="evoW">
+    <div class="card"><h3>D+ (colonnes) et distance (ligne) par semaine</h3><div class="chart" id="chW1"></div></div>
+    <div class="card"><h3>Durée (h) et BPM moyen par semaine</h3><div class="chart" id="chW2"></div></div>
+    <div class="card"><h3>Totaux hebdomadaires</h3><div class="scroll" id="tblW"></div></div>
+  </div>
+  <div id="evoM" style="display:none">
+    <div class="card"><h3>Volume mensuel : distance (colonnes) et D+ (ligne)</h3><div class="chart" id="chM1"></div></div>
+    <div class="card"><h3>Tendance BPM moyen et vitesse moyenne</h3><div class="chart" id="chM2"></div></div>
+    <div class="card"><h3>Sauts de corde par mois</h3><div class="chart" id="chM3"></div></div>
+    <div class="card"><h3>Totaux mensuels (sept. 2026 → sept. 2027)</h3><div class="scroll" id="tblM"></div>
+</div>
+  </div>
+</section>
+
+<!-- EQUIPEMENT -->
+<section class="page" id="p-equip">
+  <div class="card">
+    <div class="kpis" id="eqKpi"></div>
+  </div>
+  <div id="eqList"></div>
+  <div class="card">
+    <h3>Nouvelle catégorie</h3>
+    <div class="row"><input id="eqNewCat" placeholder="ex. Bivouac" style="flex:1"><button class="btn sm" id="btnAddCat">Ajouter</button></div>
+  </div>
+  <p class="small mut" style="text-align:center">Coche un article quand il est acheté. Prix optionnel (€).</p>
+</section>
+
+<!-- DONNEES -->
+<section class="page" id="p-data">
+  <div class="card">
+    <h2>Sauvegarde</h2>
+    <p class="small mut">Les données restent sur ce téléphone (stockage local du navigateur). Exporte régulièrement un fichier JSON pour ne rien perdre.</p>
+    <div class="row">
+      <button class="btn" id="btnExpJson">Exporter JSON</button>
+      <button class="btn sec" id="btnExpCsv">Exporter CSV (séances)</button>
+      <button class="btn sec" id="btnExpCsvM">Exporter CSV (mois)</button>
+    </div>
+    <div style="margin-top:12px">
+      <label for="impFile">Importer une sauvegarde JSON (remplace les données actuelles)</label>
+      <input type="file" id="impFile" accept="application/json,.json">
+    </div>
+  </div>
+  <div class="card" id="syncCard">
+    <h2>Synchronisation (GitHub Gist privé)</h2>
+    <p class="small mut" style="margin-top:0">Partage les données entre ton téléphone et tes autres appareils via un gist secret sur ton compte GitHub. Fusion automatique : rien n’est écrasé, les suppressions sont reportées.</p>
+    <div id="syncLast" class="small"></div>
+    <div id="syncTokenState" class="small mut"></div>
+    <div id="syncGist" class="small mut"></div>
+    <div id="syncMsg" class="small mut" style="margin:6px 0"></div>
+    <label for="syncToken">Jeton GitHub (scope « gist » uniquement)</label>
+    <div class="row"><input id="syncToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ghp_… ou github_pat_…" style="flex:1"><button class="btn sec sm" id="btnTokShow" type="button" aria-label="Afficher le jeton">👁️</button></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnTokSave">Enregistrer et synchroniser</button>
+      <button class="btn sec" id="btnSync">Synchroniser</button>
+    </div>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;color:var(--txt)"><input type="checkbox" id="syncAuto" style="width:20px;height:20px"> Synchroniser automatiquement à l’ouverture</label>
+    <div class="row" style="margin-top:8px"><button class="btn bad sm" id="btnTokForget">Oublier le jeton</button></div>
+    <details style="margin-top:10px" class="small"><summary>Comment créer le jeton (2 minutes)</summary>
+      <ol style="padding-left:18px;margin:8px 0">
+        <li>Ouvre ce lien en étant connecté à GitHub : <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Suivi%20montagne" target="_blank" rel="noopener">créer un jeton « Suivi montagne »</a>.</li>
+        <li>La note « Suivi montagne » et la case <b>gist</b> sont déjà remplies. <b>Ne coche rien d’autre.</b></li>
+        <li><b>Expiration</b> : choisis « No expiration » (ou une date à 1 an ; il faudra alors refaire un jeton à l’échéance).</li>
+        <li>Tout en bas, clique sur le bouton vert <b>Generate token</b>.</li>
+        <li>Copie le jeton (il commence par <code>ghp_</code>). GitHub ne l’affiche qu’une seule fois : garde-le dans ton gestionnaire de mots de passe.</li>
+        <li>Colle-le ici puis touche <b>Enregistrer et synchroniser</b>. Le premier appareil crée le gist secret <code>suivi-montagne-data.json</code>.</li>
+        <li>Sur chaque autre appareil : ouvre l’app → Données → colle <b>le même jeton</b> → Enregistrer et synchroniser. Le gist existant est retrouvé et les données fusionnées.</li>
+      </ol>
+      <p class="mut">Sécurité : le jeton reste sur l’appareil et n’est envoyé qu’à api.github.com. Il ne donne accès qu’à tes gists et n’est jamais inclus dans les exports. Pour le révoquer : github.com → Settings → Developer settings → Personal access tokens. Un jeton « fine-grained » marche aussi s’il a uniquement la permission « Gists : Read and write ».</p>
+    </details>
+  </div>
+  <div class="card">
+    <h2>Réinitialiser</h2>
+    <p class="small mut">Remet les données de départ (séances de septembre et octobre 2026, liste d’équipement par défaut). Toutes les modifications seront perdues sur cet appareil (si la synchronisation est active, la prochaine synchro récupérera les données du gist).</p>
+    <button class="btn bad" id="btnReset">Réinitialiser les données</button>
+  </div>
+  <p class="small mut" style="text-align:center">Ajout à l’écran d’accueil : menu du navigateur → « Ajouter à l’écran d’accueil ».</p>
+</section>
+</main>
+
+<nav>
+  <span class="ind" aria-hidden="true"></span>
+  <button class="fab" data-p="add" aria-label="Ajouter une séance"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="tab on" data-p="journal" aria-label="Journal"><svg viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2"/><path d="M19 19v2H6"/><path d="M9 7h6M9 11h4"/></svg>Journal</button>
+  <button class="tab" data-p="obj" aria-label="Objectifs"><svg viewBox="0 0 24 24"><path d="M3 20l6-10 4 6 2-3 6 7z"/><path d="M9 10V4l5 2-5 2"/></svg>Objectifs</button>
+  <button class="tab" data-p="prep" aria-label="Préparation"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>Prépa</button>
+  <button class="tab" data-p="evo" aria-label="Évolution"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M5 16l4-5 4 3 6-8"/><path d="M15 6h4v4"/></svg>Évolution</button>
+  <button class="tab" data-p="equip" aria-label="Équipement"><svg viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2"/><rect x="5" y="7" width="14" height="14" rx="4"/><path d="M9 13h6v4H9z"/></svg>Équip.</button>
+  <button class="tab" data-p="data" aria-label="Données"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>Données</button>
+</nav>
+<div id="sheetBg"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const KEY = 'suiviMontagne.v1';
+const TYPES = ['Tapis 12%','Tapis 6%','Tapis 0%','Marche','Randonnée','Course','Corde à sauter','Musculation','Vélo','Autre'];
+const DATA_VERSION = 3;
+const STATUTS = ['À préparer','Prêt','Fait'];
+
+/* ---------- Objectifs (valeurs approximatives, recherche oct. 2026) ---------- */
+const OBJECTIFS = [
+ {n:1,sommet:'Puy de Dôme',iti:'Sentier des Muletiers (GR 441)',depart:'Col de Ceyssat',altDep:1078,altSom:1465,dplus:390,dist:3.8,duree:'≈ 50 min montée · 1 h 30 A/R',diff:'Facile à moyenne (court mais raide)',conf:'Élevée',
+  note:'Montée seule : 1,9 km / ≈ 365–390 m D+. Accès fermé du 6 au 17/10/2026 (travaux).',
+  src:[['Puy-de-Dôme Tourisme – chemin des Muletiers','https://www.puydedome-tourisme.com/fr/fiche/equipement/le-chemin-des-muletiers-orcines_TFO6453685/'],['Clermont Auvergne Volcans','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-muletiers/']]},
+ {n:2,sommet:'Puy de Dôme',iti:'Sentier des Chèvres (PR puis GR 441)',depart:'Gare du Panoramique des Dômes',altDep:980,altSom:1465,dplus:530,dist:10,duree:'1 h 15–2 h montée · ≈ 3 h–3 h 30 A/R',diff:'Moyenne',conf:'Élevée',
+  note:'Montée : ≈ 5 km / 526–532 m D+ (fiche officielle). Fin par des escaliers puis la route de service.',
+  src:[['Clermont Auvergne Volcans – chemin des Chèvres','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-chevres/'],['Chaîne des Puys en rando','https://chainedespuysenrando.fr/le-puy-de-dome-par-le-sentier-des-chevres/']]},
+ {n:3,sommet:'Puy de Sancy',iti:'Boucle Val d’Enfer / Val de Courre',depart:'Station du Mont-Dore (téléphérique)',altDep:1340,altSom:1885,dplus:560,dist:7,duree:'≈ 3 h (boucle)',diff:'Difficile (Val d’Enfer raide)',conf:'Élevée',
+  note:'Boucle PDIPR officielle « Le puy de Sancy » : 7 km, 560 m, 3 h.',
+  src:[['Sancy.com – Le puy de Sancy','https://www.sancy.com/fr/fiche/equipement/le-puy-de-sancy-mont-dore_TFO890393/'],['Visorando – Sancy par le Val de Courre','https://www.visorando.com/randonnee-le-puy-de-sancy-par-le-val-de-courre/']]},
+ {n:4,sommet:'La Rhune',iti:'Voie normale du Col de Saint-Ignace',depart:'Col de Saint-Ignace',altDep:169,altSom:905,dplus:740,dist:9.8,duree:'≈ 2 h 15–2 h 30 montée · 4 h A/R',diff:'Difficile (raide, rocailleux)',conf:'Élevée',
+  note:'Descente possible en petit train (selon places).',
+  src:[['Mapirando – La Rhune depuis le col de Saint-Ignace','https://www.mapirando.fr/topo/la-rhune-depuis-le-col-de-saint-ignace/'],['Les plus beaux villages – Sare','https://www.les-plus-beaux-villages.com/randonnees/sare/la-rhune-depuis-le-col-de-saint-ignace/']]},
+ {n:5,sommet:'Puy de Sancy',iti:'Grande boucle des Crêtes via la Grande Cascade',depart:'Centre-ville du Mont-Dore',altDep:1050,altSom:1885,dplus:1050,dist:18,duree:'≈ 7 h (boucle)',diff:'Difficile',conf:'Élevée',
+  note:'Boucle officielle « Les crêtes du Sancy » ; variantes 15,6–17 km / ≈ 990–1 030 m.',
+  src:[['Sancy.com – Les crêtes du Sancy','https://www.sancy.com/fr/fiche/equipement/les-cretes-du-sancy-mont-dore_TFO890509/'],['Les Terres du Milieu – crêtes du Sancy','https://www.lesterresdumilieu.fr/sancy-cretes']]},
+ {n:6,sommet:'Pic du Midi de Bigorre',iti:'Voie du Tourmalet (col de Sencours, Laquets)',depart:'Col du Tourmalet',altDep:2115,altSom:2877,dplus:800,dist:13,duree:'≈ 2 h 30 montée · 5–6 h A/R',diff:'Moyenne (haute montagne, sans neige)',conf:'Moyenne-élevée',
+  note:'Piste jusqu’à ≈ 2 637 m puis sentier ; éboulis sur la fin. D+ annoncé 760–850 m.',
+  src:[['Altituderando – Pic du Midi par le Tourmalet','https://www.altituderando.com/Pic-du-Midi-de-Bigorre-2876m-par-le-col-du-Tourmalet'],['Iris-Pyrénées','https://iris-py.fr/randonnee-pyrenees/le-pic-du-midi-de-bigorre-depuis-le-col-du-tourmalet/']]},
+ {n:7,sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
+  note:'Topos : 1 600–1 700 m D+, 19–20 km A/R. Certains départs (virage des Arizes) sont à ≈ 1 280 m.',
+  src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21']]},
+ {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'≈ 8 h 30–10 h (ou 2 jours via la cabane)',diff:'Difficile (T3, très physique, altitude)',conf:'Moyenne',
+  note:'Plus haut sommet randonnable de Suisse. Sources : 1 760–1 982 m D+, 19,8–21,2 km. Nuit à la Turtmannhütte (2 519 m) conseillée.',
+  src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097']]},
+ {n:9,sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
+  note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable.',
+  src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – rando Grande Sassière','https://www.tignes.net/magazine/randonnee-aiguille-sassiere']]}
+];
+
+/* ---------- Seed ---------- */
+const mk = (date,type,dist,dplus,dur,bpm,extra={}) => Object.assign({id:'seed-'+date+'-'+(dist==null?'x':Math.round(dist*100)),date,type,dist,dplus,dminus:null,dur,bpm,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:'',updatedAt:0},extra);
+// Séances réelles de septembre 2026 (remplacent les anciens totaux manuels)
+const SEPT_RAW = [];
+function septSessions(){ return SEPT_RAW.map(([d,t,k,p,du,b,sa])=>mk(d,t,k,p,hms(du),b,{sauts:sa||null})); }
+function octSessions(){ return []; }
+function defaultEquip(){
+  let ci=0; const C=(name,items)=>{ const cid='eqc-'+(ci++); return {id:cid,name,updatedAt:0,items:items.map((x,ii)=>{ const [n,note]=Array.isArray(x)?x:[x,'']; return {id:cid.replace('eqc','eqi')+'-'+ii,name:n,note,price:null,bought:false,updatedAt:0}; })}; };
+  return [
+   C('Chaussures',[['Chaussures de randonnée tige haute','semelle crantée type Vibram, imperméables'],'Chaussettes de randonnée (×3 paires)',['Guêtres','pierriers, neige, boue'],['Chaussures d’approche / trail','optionnel, pour les sorties courtes']]),
+   C('Vêtements (système 3 couches)',[['Couche 1 : t-shirt technique respirant','mérinos ou synthétique, pas de coton'],'Couche 1 : sous-vêtement thermique manches longues',['Couche 2 : polaire','ou doudoune légère'],['Couche 3 : veste imperméable-respirante','type Gore-Tex, avec capuche'],'Pantalon de randonnée déperlant','Surpantalon imperméable','Bonnet','Gants fins','Casquette / buff',['Lunettes de soleil','catégorie 3 minimum']]),
+   C('Sac & hydratation',['Sac à dos 25–30 L avec ceinture ventrale','Housse de pluie pour le sac',['Poche à eau ou gourdes','≥ 2 L pour les longues sorties'],'Thermos','Boîte à encas (barres, fruits secs)']),
+   C('Bâtons',['Paire de bâtons télescopiques',['Rondelles neige','pour bâtons']]),
+   C('Sécurité & orientation',['Trousse de premiers secours (+ pansements ampoules)','Couverture de survie','Lampe frontale + piles de rechange','Carte IGN / Swisstopo + boussole',['Appli GPS hors-ligne + traces GPX','ex. IGNrando, Visorando, SwitzerlandMobility'],'Batterie externe + câble','Crème solaire indice 50 + stick lèvres','Sifflet','Couteau / multi-outil',['Assurance secours en montagne','indispensable en Suisse (hélicoptère payant)']]),
+   C('Haute montagne (Barrhorn, Grande Sassière)',[['Crampons','compatibles avec les chaussures ; micro-crampons au minimum'],['Piolet','si pente finale enneigée ou gelée'],['Casque','chutes de pierres'],'Chaussures semi-rigides compatibles crampons',['Doudoune chaude','au-delà de 3 500 m il peut geler en été'],'Gants chauds imperméables',['Lunettes de glacier','catégorie 4'],['Réservation Turtmannhütte','si le Barrhorn se fait en 2 jours']])
+  ];
+}
+function seed(){
+  return { version:DATA_VERSION, sessions:[...septSessions(),...octSessions()], objectifs:{}, equip:defaultEquip(), tomb:{s:{},c:{},i:{}} };
+}
+const sessKey = s => s.date+'|'+(s.dist==null?'':Math.round(s.dist*100));
+const SESS_FIELDS=['type','dist','dplus','dminus','dur','bpm','bpmMax','pas','sac','sauts','ress','exos','notes'];
+const nz=v=>(v===''||v===undefined||v===0)?null:v;
+function sameSession(a,b){ return SESS_FIELDS.every(k=>nz(a[k])===nz(b[k])); }
+function newTomb(){ return {s:{},c:{},i:{}}; }
+/* Migration non destructive : ne supprime rien de ce que l'utilisateur a saisi. */
+function migrate(db){
+  const log=[]; db.version = db.version||1;
+  if(!Array.isArray(db.sessions)) db.sessions=[];
+  db.objectifs = db.objectifs||{};
+  if(db.version < 2){
+    const have = new Set(db.sessions.map(sessKey)); let added=0;
+    for(const s of septSessions()){ const k=sessKey(s); if(!have.has(k)){ db.sessions.push(s); have.add(k); added++; } }
+    if(db.manualMonths && Object.keys(db.manualMonths).length){ db.legacyManualMonths = Object.assign({}, db.legacyManualMonths||{}, db.manualMonths); }
+    delete db.manualMonths;
+    if(added) log.push(added+' séances de septembre ajoutées');
+  }
+  let equipCreated=false;
+  if(!Array.isArray(db.equip)){ db.equip=defaultEquip(); equipCreated=true; log.push('liste d’équipement créée'); }
+  if(db.version < 3){
+    // v3 : identifiants stables (identiques sur tous les appareils pour les données de départ), horodatage, pierres tombales
+    db.tomb = Object.assign(newTomb(), db.tomb||{});
+    const seeds=[...septSessions(),...octSessions()]; const byKey=new Map(seeds.map(s=>[sessKey(s),s])); const matched=new Set();
+    for(const s of db.sessions){
+      const sd=byKey.get(sessKey(s));
+      if(sd && !matched.has(sd.id)){ matched.add(sd.id); s.id=sd.id; s.updatedAt = sameSession(s,sd)?0:1; }
+      else { if(!s.id||String(s.id).startsWith('seed-')) s.id=uid(); if(typeof s.updatedAt!=='number') s.updatedAt=1; }
+    }
+    for(const sd of seeds) if(!matched.has(sd.id)) db.tomb.s[sd.id]=1;
+    if(!equipCreated){
+      const D=defaultEquip(); const usedC=new Set();
+      for(const c of db.equip){
+        const dc=D.find(x=>x.name===c.name&&!usedC.has(x.id));
+        if(!dc){ if(typeof c.updatedAt!=='number') c.updatedAt=1; c.items.forEach(i=>{ if(typeof i.updatedAt!=='number') i.updatedAt=1; }); continue; }
+        usedC.add(dc.id); c.id=dc.id; c.updatedAt=0; const usedI=new Set();
+        for(const it of c.items){ const di=dc.items.find(x=>x.name===it.name&&!usedI.has(x.id));
+          if(di){ usedI.add(di.id); it.id=di.id; it.updatedAt=(it.bought||it.price!=null||(it.note||'')!==(di.note||''))?1:0; }
+          else { if(!it.id||String(it.id).startsWith('eq')) it.id=uid(); if(typeof it.updatedAt!=='number') it.updatedAt=1; } }
+        for(const di of dc.items) if(!usedI.has(di.id)) db.tomb.i[di.id]=1;
+      }
+      for(const dc of D) if(!usedC.has(dc.id)){ db.tomb.c[dc.id]=1; dc.items.forEach(i=>db.tomb.i[i.id]=1); }
+    }
+    for(const [n,o] of Object.entries(db.objectifs)){ if(o&&typeof o.updatedAt!=='number') o.updatedAt=(o.statut&&o.statut!=='À préparer')||o.datePrevue||o.dateRealisee?1:0; }
+  }
+  db.tomb = Object.assign(newTomb(), db.tomb||{});
+  db.sessions.forEach(s=>{ if(!s.id) s.id=uid(); if(s.exos==null) s.exos=''; if(typeof s.updatedAt!=='number') s.updatedAt=1; });
+  db.equip.forEach(c=>{ if(!c.id) c.id=uid(); if(typeof c.updatedAt!=='number') c.updatedAt=1; if(!Array.isArray(c.items)) c.items=[]; c.items.forEach(i=>{ if(!i.id) i.id=uid(); if(typeof i.updatedAt!=='number') i.updatedAt=1; }); });
+  db.version = Math.max(db.version, DATA_VERSION);
+  return log;
+}
+
+/* ---------- Fusion (synchronisation) ---------- */
+// Règle : pour chaque élément (même id), la version la plus récente (updatedAt) gagne ; à égalité, la version distante.
+// Une suppression (pierre tombale) l'emporte sur toute version modifiée avant ou au moment de la suppression.
+function mergeDB(L,R){
+  const tomb=newTomb();
+  for(const k of ['s','c','i']) for(const src of [L.tomb,R.tomb]) for(const [id,ts] of Object.entries((src&&src[k])||{})) tomb[k][id]=Math.max(tomb[k][id]||0,+ts||0);
+  const ts=x=>x&&typeof x.updatedAt==='number'?x.updatedAt:0;
+  const pick=(a,b)=>!a?b:!b?a:(ts(b)>=ts(a)?b:a);
+  const alive=(k,x)=>!(tomb[k][x.id]!=null && tomb[k][x.id]>=ts(x));
+  const sm=new Map(); for(const s of L.sessions||[]) sm.set(s.id,s); for(const s of R.sessions||[]) sm.set(s.id,pick(sm.get(s.id),s));
+  const sessions=[...sm.values()].filter(s=>alive('s',s)).map(s=>Object.assign({},s));
+  const objectifs={}; const ok=new Set([...Object.keys(L.objectifs||{}),...Object.keys(R.objectifs||{})]);
+  for(const n of ok){ const v=pick((L.objectifs||{})[n],(R.objectifs||{})[n]); if(v) objectifs[n]=Object.assign({},v); }
+  const cm=new Map(), corder=[], im=new Map(), iorder=[];
+  for(const side of [L,R]) for(const c of side.equip||[]){
+    if(!cm.has(c.id)) corder.push(c.id); cm.set(c.id,pick(cm.get(c.id),c));
+    for(const it of c.items||[]){ const prev=im.get(it.id); if(!prev) iorder.push(it.id);
+      const chosen=pick(prev&&prev.it, it); im.set(it.id,{it:chosen, cat:(chosen===it? c.id : prev.cat)}); }
+  }
+  const equip=corder.map(id=>cm.get(id)).filter(c=>alive('c',c)).map(c=>{ const {items,...rest}=c;
+    return Object.assign({},rest,{items:iorder.map(id=>im.get(id)).filter(x=>x.cat===c.id&&alive('i',x.it)).map(x=>Object.assign({},x.it))}); });
+  return Object.assign({}, R, L, {version:Math.max(L.version||1,R.version||1,DATA_VERSION), sessions, objectifs, equip, tomb});
+}
+
+/* ---------- Utils ---------- */
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function hms(t){ if(t==null) return null; t=String(t).trim(); if(!t) return null;
+  const p=t.split(':').map(x=>x.trim()); if(p.some(x=>x===''||isNaN(+x))) return NaN;
+  if(p.length===3) return (+p[0])*3600+(+p[1])*60+(+p[2]);
+  if(p.length===2) return (+p[0])*3600+(+p[1])*60;
+  if(p.length===1) return (+p[0])*60; return NaN; }
+function fmtDur(s){ if(s==null||isNaN(s)) return '–'; s=Math.round(s); const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60; return h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'); }
+function num(v){ if(v==null) return null; v=String(v).trim().replace(/\s/g,'').replace(',','.'); if(v==='') return null; const n=+v; return isNaN(n)?NaN:n; }
+const nf = (d=1)=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:d,minimumFractionDigits:0});
+function f(n,d=1){ return (n==null||isNaN(n)||!isFinite(n))?'–':nf(d).format(n).replace(/\u202f/g,'\u00a0'); } // espace insécable classique (affichage)
+function dFR(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function parseISO(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function toISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function monday(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); return x; }
+function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1)); return Math.ceil(((t-y0)/86400000+1)/7); }
+const MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+function speed(s){ return (s.dist!=null&&s.dur>0)? s.dist/(s.dur/3600):null; }
+function vasc(s){ return (s.dplus!=null&&s.dur>0)? s.dplus/(s.dur/3600):null; }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2400); }
+function todayISO(){ return toISO(new Date()); }
+
+/* ---------- Store ---------- */
+let DB;
+function load(){ try{ const r=localStorage.getItem(KEY); DB = r? JSON.parse(r) : null; }catch(e){ DB=null; }
+  if(!DB||typeof DB!=='object'||!Array.isArray(DB.sessions)){ DB=seed(); save(); return; }
+  if((DB.version||1) < DATA_VERSION || !Array.isArray(DB.equip)){
+    try{ localStorage.setItem(KEY+'.backup.v'+(DB.version||1), JSON.stringify(DB)); }catch(e){}
+    const log=migrate(DB); save(); if(log.length) setTimeout(()=>toast('Mise à jour des données : '+log.join(' · ')),400);
+  } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(DB)); }
+function objState(n){ return Object.assign({datePrevue:'',statut:'À préparer',dateRealisee:''}, DB.objectifs[n]||{}); }
+
+/* ---------- Aggregation ---------- */
+function agg(list){
+  const r={n:list.length,dist:0,dplus:0,dminus:0,dur:0,sauts:0,bpmW:0,bpmDur:0,bpmSum:0,bpmN:0,distTimed:0};
+  for(const s of list){ r.dist+=s.dist||0; r.dplus+=s.dplus||0; r.dminus+=s.dminus||0; r.dur+=s.dur||0; r.sauts+=s.sauts||0;
+    if(s.dur>0&&s.dist!=null) r.distTimed+=s.dist;
+    if(s.bpm){ r.bpmSum+=s.bpm; r.bpmN++; if(s.dur>0){ r.bpmW+=s.bpm*s.dur; r.bpmDur+=s.dur; } } }
+  r.bpm = r.bpmDur? r.bpmW/r.bpmDur : (r.bpmN? r.bpmSum/r.bpmN : null);
+  r.speed = r.dur? r.distTimed/(r.dur/3600) : null;
+  return r;
+}
+function monthAgg(ym){
+  return agg(DB.sessions.filter(s=>s.date.slice(0,7)===ym));
+}
+function monthsRange(){ const out=[]; let y=2026,m=9; while(y<2027||(y===2027&&m<=9)){ out.push(y+'-'+String(m).padStart(2,'0')); m++; if(m>12){m=1;y++;} } return out; }
+function weeksRange(){
+  const dates=DB.sessions.map(s=>s.date).sort();
+  let start = dates.length? monday(parseISO(dates[0])) : monday(new Date());
+  const minStart = monday(new Date(2026,8,1)); if(start<minStart) start=minStart;
+  let endD = new Date(); if(dates.length && parseISO(dates[dates.length-1])>endD) endD=parseISO(dates[dates.length-1]);
+  const maxEnd=new Date(2027,8,30); if(endD>maxEnd) endD=maxEnd;
+  const end=monday(endD); const out=[]; const d=new Date(start);
+  while(d<=end){ out.push(toISO(d)); d.setDate(d.getDate()+7); }
+  return out;
+}
+function weekAgg(monISO){ const a=parseISO(monISO); const b=new Date(a); b.setDate(b.getDate()+6); const A=monISO,B=toISO(b);
+  return agg(DB.sessions.filter(s=>s.date>=A&&s.date<=B)); }
+
+/* ---------- SVG chart ---------- */
+function chart(el, labels, series, opt={}){
+  const W=420,H=240,L=38,R=38,T=12,B=48; const iw=W-L-R, ih=H-T-B; const n=labels.length||1;
+  const axes={left:[],right:[]}; series.forEach(s=>axes[s.axis||'left'].push(...s.values.filter(v=>v!=null&&isFinite(v))));
+  const nice=v=>{ if(!v||v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const k=v/p; return (k<=1?1:k<=2?2:k<=2.5?2.5:k<=5?5:10)*p; };
+  const mn={left:0,right:0};
+  if(opt.rightMin!=null&&axes.right.length){ const lo=Math.min(...axes.right); mn.right=Math.max(0,Math.floor((lo*0.9)/10)*10); }
+  const top=ax=>{ const hi=Math.max(mn[ax],...axes[ax]); const st=nice((hi-mn[ax])*1.05/4||1); return mn[ax]+st*4; };
+  const mx={left:top('left'), right:top('right')};
+  const y=(v,ax)=>T+ih-(v-mn[ax])/(mx[ax]-mn[ax]||1)*ih; const xc=i=>L+iw*(i+0.5)/n;
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" xmlns="http://www.w3.org/2000/svg" font-family="Outfit,system-ui,sans-serif" font-size="11.5">`;
+  for(let k=0;k<=4;k++){ const yy=T+ih*k/4; g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="rgba(255,255,255,.07)"/>`;
+    const vl=mx.left-(mx.left-mn.left)*k/4; g+=`<text x="${L-6}" y="${yy+4}" text-anchor="end" fill="#a9b8b5">${f(vl,vl<10?1:0)}</text>`;
+    if(axes.right.length){ const vr=mx.right-(mx.right-mn.right)*k/4; g+=`<text x="${W-R+6}" y="${yy+4}" fill="#a9b8b5">${f(vr,vr<10?1:0)}</text>`; } }
+  const gid='cg'+(el.id||'x'); g+='<defs>'+series.map((s,k)=>`<linearGradient id="${gid}${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}"/><stop offset="1" stop-color="${s.color}" stop-opacity=".35"/></linearGradient>`).join('')+'</defs>';
+  const bars=series.filter(s=>s.type==='bar'); const bw=Math.min(28,iw/n*0.7)/Math.max(1,bars.length);
+  bars.forEach((s,bi)=>{ s.values.forEach((v,i)=>{ if(v==null||!v) return; const ax=s.axis||'left'; const x=xc(i)-bw*bars.length/2+bi*bw; const yy=y(v,ax);
+    g+=`<rect class="b" style="animation-delay:${(i*35+bi*60)}ms" x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${(bw-1).toFixed(1)}" height="${(T+ih-yy).toFixed(1)}" rx="4" fill="url(#${gid}${series.indexOf(s)})"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></rect>`; }); });
+  series.filter(s=>s.type==='line').forEach(s=>{ const ax=s.axis||'left'; let d='',pen=false;
+    s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)){pen=false;return;} d+=(pen?'L':'M')+xc(i).toFixed(1)+' '+y(v,ax).toFixed(1); pen=true; });
+    g+=`<path class="l" pathLength="1" d="${d}" fill="none" stroke="${s.color}" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)) return; g+=`<circle class="p" style="animation-delay:${300+i*40}ms" cx="${xc(i).toFixed(1)}" cy="${y(v,ax).toFixed(1)}" r="3.8" fill="#0a1715" stroke="${s.color}" stroke-width="2.2"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></circle>`; }); });
+  const step=Math.ceil(n/12);
+  labels.forEach((lb,i)=>{ if(i%step) return; g+=`<text x="${xc(i).toFixed(1)}" y="${H-B+16}" text-anchor="end" transform="rotate(-35 ${xc(i).toFixed(1)} ${H-B+16})" fill="#c9d6d3">${esc(lb)}</text>`; });
+  g+='</svg>';
+  g+='<div class="legend">'+series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}${(s.axis==='right')?' (axe droit)':''}</span>`).join('')+'</div>';
+  el.innerHTML=g;
+}
+
+/* ---------- Render: Journal ---------- */
+function renderJournal(){
+  const flt=document.getElementById('fltType').value;
+  const list=DB.sessions.filter(s=>!flt||s.type===flt).sort((a,b)=>b.date.localeCompare(a.date)||(b.id>a.id?1:-1));
+  const ymNow = (DB.sessions.map(s=>s.date).sort().pop()||todayISO()).slice(0,7);
+  const ma=monthAgg(ymNow); const [yy,mm]=ymNow.split('-');
+  document.getElementById('kpiMonth').innerHTML=`<div class="hero"><h2>${MOIS[+mm-1]} ${yy}</h2><span class="tag">${ma.n??0} séances</span></div>`+
+    [['km',f(ma.dist,1),'k-dist',ma.dist,1],['D+ m',f(ma.dplus,0),'k-dplus',ma.dplus,0],['durée',fmtDur(ma.dur),''],['km/h moy.',f(ma.speed,2),'',ma.speed,2],['BPM moy.',f(ma.bpm,0),'',ma.bpm,0],['sauts',f(ma.sauts,0),'',ma.sauts,0]].map(([k,v,c,n,d])=>`<div class="kpi ${c}"><b${(n!=null&&isFinite(n))?` data-count="${n}" data-dec="${d}"`:''}>${v}</b><small>${k}</small></div>`).join('');
+  const box=document.getElementById('sessList');
+  if(!list.length){ box.innerHTML=`<div class="empty"><svg viewBox="0 0 120 80" aria-hidden="true"><circle cx="92" cy="22" r="10" fill="#fb923c" opacity=".8"/><path d="M4 74l30-40 14 18 16-24 28 46z" fill="#8b9a97" opacity=".55"/><path d="M34 34l-8 11 6-2 3 4 4-5 5 3z" fill="#f3f7f6"/><path d="M0 74h120v6H0z" fill="#1f6f54"/></svg><h3>${flt?'Aucune séance « '+esc(flt)+' »':'Aucune séance pour l’instant'}</h3><p class="small mut">Chaque montée compte. Ajoute ta première séance.</p><button class="btn" data-open-add>Ajouter une séance</button></div>`; return; }
+  let html='',cur='';
+  for(const s of list){ const ym=s.date.slice(0,7);
+    if(ym!==cur){ cur=ym; const a=agg(DB.sessions.filter(x=>x.date.slice(0,7)===ym&&(!flt||x.type===flt))); const [y,m]=ym.split('-');
+      html+=`<div class="month"><b>${MOIS[+m-1]} ${y}</b><span class="small mut">${f(a.dist)} km · ${f(a.dplus,0)} m D+ · ${fmtDur(a.dur)}</span></div>`; }
+    const d=parseISO(s.date); const sp=speed(s), va=vasc(s);
+    const chips=[ s.dist!=null?f(s.dist,2)+' km':null, s.dplus!=null?'D+ '+f(s.dplus,0)+' m':null, s.dminus!=null?'D- '+f(s.dminus,0)+' m':null, s.dur?fmtDur(s.dur):null,
+      sp!=null?f(sp,2)+' km/h':null, va!=null&&s.dplus>0?f(va,0)+' m/h':null, s.bpm?'♥ '+s.bpm+(s.bpmMax?' / '+s.bpmMax:''):null,
+      s.pas?f(s.pas,0)+' pas':null, s.sac?'🎒 '+f(s.sac)+' kg':null, s.sauts?'🪢 '+f(s.sauts,0):null, s.ress?'ressenti '+s.ress+'/10':null ].filter(Boolean);
+    html+=`<div class="sess" data-id="${s.id}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
+      <div class="b"><span class="tag">${esc(s.type)}</span> <span class="small mut">${dFR(s.date)} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
+      <div class="acts"><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`; }
+  box.innerHTML=html;
+}
+
+/* ---------- Form ---------- */
+const FF=['date','type','dist','dur','dplus','dminus','bpm','bpmmax','pas','sac','sauts','ress','notes'];
+const $=id=>document.getElementById(id);
+function fillForm(s){
+  $('f_id').value=s?s.id:''; $('formTitle').textContent=s?'Modifier la séance':'Nouvelle séance';
+  $('f_date').value=s?s.date:todayISO(); $('f_type').value=s?s.type:'Marche';
+  const v=x=>x==null?'':String(x).replace('.',',');
+  $('f_dist').value=s?v(s.dist):''; $('f_dur').value=s&&s.dur?fmtDur(s.dur):''; $('f_dplus').value=s?v(s.dplus):''; $('f_dminus').value=s?v(s.dminus):'';
+  $('f_bpm').value=s?v(s.bpm):''; $('f_bpmmax').value=s?v(s.bpmMax):''; $('f_pas').value=s?v(s.pas):''; $('f_sac').value=s?v(s.sac):''; $('f_sauts').value=s?v(s.sauts):'';
+  $('f_ress').value=s&&s.ress?String(s.ress):''; $('f_notes').value=s?s.notes||'':''; $('f_exos').value=s?s.exos||'':''; updExos(); updAuto();
+}
+function readForm(){
+  const errs=[]; const n=(id,lab,int)=>{ const x=num($(id).value); if(x!=null&&(isNaN(x)||x<0)){ errs.push(lab); return null;} return x==null?null:(int?Math.round(x):x); };
+  const dur=hms($('f_dur').value); if(dur!=null&&isNaN(dur)) errs.push('Durée (format h:mm:ss)');
+  const date=$('f_date').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('Date');
+  const s={ date, type:$('f_type').value, dist:n('f_dist','Distance'), dur:(dur!=null&&!isNaN(dur)&&dur>0)?dur:null, dplus:n('f_dplus','D+'), dminus:n('f_dminus','D-'),
+    bpm:n('f_bpm','BPM moyen',1), bpmMax:n('f_bpmmax','BPM max',1), pas:n('f_pas','Pas',1), sac:n('f_sac','Sac'), sauts:n('f_sauts','Sauts',1),
+    ress:$('f_ress').value?+$('f_ress').value:null, exos:$('f_exos').value.trim(), notes:$('f_notes').value.trim() };
+  return {s,errs};
+}
+function updExos(){ $('w_exos').style.display = ($('f_type').value==='Musculation' || $('f_exos').value.trim()) ? '' : 'none'; }
+function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s);
+  $('f_auto').textContent='Vitesse : '+(sp!=null?f(sp,2)+' km/h':'–')+' · Vitesse ascensionnelle : '+(va!=null?f(va,0)+' m/h':'–'); }
+
+/* ---------- Objectifs ---------- */
+function renderObj(){
+  $('objList').innerHTML=OBJECTIFS.map(o=>{ const st=objState(o.n);
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}</h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
+    <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
+    <div class="kpis" style="margin:8px 0">
+      <div class="kpi"><b>${f(o.altDep,0)} m</b><small>alt. départ</small></div><div class="kpi"><b>${f(o.altSom,0)} m</b><small>alt. sommet</small></div><div class="kpi"><b>≈ ${f(o.dplus,0)} m</b><small>D+ estimé</small></div>
+      <div class="kpi"><b>≈ ${f(o.dist,1)} km</b><small>distance</small></div><div class="kpi" style="grid-column:span 2"><b style="font-size:13.5px">${esc(o.duree)}</b><small>durée estimée</small></div></div>
+    <div class="small"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Confiance :</span> ${esc(o.conf)}</div>
+    <div class="small mut" style="margin:3px 0 8px">${esc(o.note)}</div>
+    <div class="grid">
+      <div><label>Statut</label><select data-obj="${o.n}" data-k="statut">${STATUTS.map(x=>`<option${x===st.statut?' selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>Date prévue</label><input type="date" data-obj="${o.n}" data-k="datePrevue" value="${st.datePrevue}"></div>
+      <div><label>Date réalisée</label><input type="date" data-obj="${o.n}" data-k="dateRealisee" value="${st.dateRealisee}"></div></div>
+    <details style="margin-top:8px" class="small"><summary>Sources</summary>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}</details></div>`; }).join('');
+}
+
+/* ---------- Préparation ---------- */
+function readinessWindow(){ const end=new Date(); const start=new Date(end.getFullYear(),end.getMonth(),end.getDate()-27); return [toISO(start),toISO(end)]; }
+function renderPrep(){
+  const [A,B]=readinessWindow(); const win=DB.sessions.filter(s=>s.date>=A&&s.date<=B);
+  const maxD=Math.max(0,...win.map(s=>s.dplus||0)); const tot=win.reduce((t,s)=>t+(s.dplus||0),0); const wk=tot/4;
+  const best=win.find(s=>(s.dplus||0)===maxD&&maxD>0);
+  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${win.length} séances · D+ total ${f(tot,0)} m · D+ hebdo moyen <b>${f(wk,0)} m</b> · plus grosse séance <b>${f(maxD,0)} m</b>${best?' ('+dFR(best.date)+')':''}`;
+  $('prepList').innerHTML=OBJECTIFS.map(o=>{ const a=Math.min(1,maxD/(0.65*o.dplus)), b=Math.min(1,wk/o.dplus), r=(a+b)/2;
+    const c=r>=0.8?'green':r>=0.5?'orange':'red'; const st=objState(o.n);
+    const R=33, C=2*Math.PI*R, col=c==='green'?'#4ade80':c==='orange'?'#fb923c':'#f87171';
+    return `<div class="card"><div class="prep"><div class="ring" role="img" aria-label="Préparation ${f(r*100,0)} %"><svg viewBox="0 0 78 78"><circle class="trk" cx="39" cy="39" r="${R}"/><circle class="val" cx="39" cy="39" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-r)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>%</small></div></div>
+    <div style="flex:1;min-width:0"><h3 style="margin:0">${o.n}. ${esc(o.sommet)}</h3><div class="small mut">${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(o.dplus,0)} m · sommet ${f(o.altSom,0)} m</div></div></div>
+    <div class="mini"><span>A · grosse séance</span><div class="bar pre"><i style="--v:${a.toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div><b>${f(a*100,0)} %</b>
+      <span>B · volume hebdo</span><div class="bar pre"><i style="--v:${b.toFixed(3)};background:linear-gradient(90deg,#f97316,#fdba74)"></i></div><b>${f(b*100,0)} %</b></div>
+    <div class="small mut" style="margin-top:4px">${f(maxD,0)} / ${f(0.65*o.dplus,0)} m · ${f(wk,0)} / ${f(o.dplus,0)} m/sem</div>
+    <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st.statut)}</span>${st.datePrevue?'<span class="chip">prévu '+dFR(st.datePrevue)+'</span>':''}</div></div>`; }).join('');
+  const nx=OBJECTIFS.find(o=>objState(o.n).statut!=='Fait');
+  if(!nx){ $('prepHero').innerHTML='<div class="card hero-card"><div class="eyebrow2">Tous les objectifs</div><h2 style="margin:4px 0 0">Bravo, les 9 ascensions sont faites 🎉</h2></div>'; return; }
+  { const a=Math.min(1,maxD/(0.65*nx.dplus)), b=Math.min(1,wk/nx.dplus), r=(a+b)/2, c=r>=0.8?'green':r>=0.5?'orange':'red', col=c==='green'?'#4ade80':c==='orange'?'#fb923c':'#f87171';
+    const R=52, C=2*Math.PI*R, st=objState(nx.n), gap=Math.max(0,Math.round(nx.dplus-wk)), big=Math.max(0,Math.round(0.65*nx.dplus-maxD));
+    const tip = r>=0.8 ? 'Tu es prêt : vérifie la météo et le matériel.' : big>0 ? `Vise une sortie d’au moins ${f(Math.round(0.65*nx.dplus),0)} m de D+ (il manque ${f(big,0)} m).` : `Augmente le volume : ${f(gap,0)} m de D+ par semaine en plus.`;
+    $('prepHero').innerHTML=`<div class="card hero-card"><div class="eyebrow2">Prochain objectif</div>
+      <div class="prep" style="margin-top:6px"><div class="ring big" role="img" aria-label="Préparation ${f(r*100,0)} %"><svg viewBox="0 0 124 124"><circle class="trk" cx="62" cy="62" r="${R}"/><circle class="val" cx="62" cy="62" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-r)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>%</small></div></div>
+      <div style="flex:1;min-width:0"><h2 style="margin:0">${esc(nx.sommet)}</h2><div class="small mut">${esc(nx.iti)}</div><div class="row" style="margin-top:8px"><span class="tag">${f(nx.dplus,0)} m D+</span><span class="tag">${f(nx.altSom,0)} m</span>${st.datePrevue?`<span class="tag">${dFR(st.datePrevue)}</span>`:''}</div></div></div>
+      <div class="tip">${tip}</div></div>`; }
+}
+
+/* ---------- Évolution ---------- */
+function renderEvo(){
+  const ws=weeksRange(); const wa=ws.map(weekAgg);
+  const wl=ws.map(w=>{ const d=parseISO(w); return 'S'+isoWeek(d)+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); });
+  chart($('chW1'),wl,[{name:'D+ (m)',type:'bar',color:'#7cc8ea',values:wa.map(a=>a.dplus)},{name:'Distance (km)',type:'line',axis:'right',color:'#fb923c',values:wa.map(a=>a.n?a.dist:null)}]);
+  chart($('chW2'),wl,[{name:'Durée (h)',type:'bar',color:'#34b38a',values:wa.map(a=>a.dur/3600)},{name:'BPM moyen',type:'line',axis:'right',color:'#fda4af',values:wa.map(a=>a.bpm)}],{rightMin:true});
+  const th='<tr><th>Semaine</th><th>Séances</th><th>km</th><th>D+ m</th><th>Durée</th><th>km/h</th><th>BPM</th><th>Sauts</th></tr>';
+  $('tblW').innerHTML='<table class="tbl">'+th+ws.map((w,i)=>{const a=wa[i];return `<tr><td>${wl[i]}</td><td>${a.n}</td><td>${f(a.dist,1)}</td><td>${f(a.dplus,0)}</td><td>${fmtDur(a.dur)}</td><td>${f(a.speed,2)}</td><td>${f(a.bpm,0)}</td><td>${f(a.sauts,0)}</td></tr>`}).reverse().join('')+'</table>';
+  const ms=monthsRange(); const ma=ms.map(monthAgg); const ml=ms.map(m=>{const [y,mm]=m.split('-');return MOIS[+mm-1]+' '+y.slice(2)});
+  chart($('chM1'),ml,[{name:'Distance (km)',type:'bar',color:'#fb923c',values:ma.map(a=>a.dist)},{name:'D+ (m)',type:'line',axis:'right',color:'#7cc8ea',values:ma.map(a=>a.n?a.dplus:null)}]);
+  chart($('chM2'),ml,[{name:'Vitesse moy. (km/h)',type:'line',color:'#34b38a',values:ma.map(a=>a.speed)},{name:'BPM moyen',type:'line',axis:'right',color:'#fda4af',values:ma.map(a=>a.bpm)}],{rightMin:true});
+  chart($('chM3'),ml,[{name:'Sauts corde',type:'bar',color:'#c9d6d3',values:ma.map(a=>a.sauts)}]);
+  $('tblM').innerHTML='<table class="tbl"><tr><th>Mois</th><th>Séances</th><th>km</th><th>D+ m</th><th>Durée</th><th>km/h</th><th>BPM</th><th>Sauts</th></tr>'+ms.map((m,i)=>{const a=ma[i];return `<tr><td>${ml[i]}</td><td>${a.n}</td><td>${f(a.dist,2)}</td><td>${f(a.dplus,1)}</td><td>${fmtDur(a.dur)}</td><td>${f(a.speed,2)}</td><td>${f(a.bpm,0)}</td><td>${f(a.sauts,0)}</td></tr>`}).join('')+'</table>';
+}
+
+/* ---------- Équipement ---------- */
+function findItem(cid,iid){ const c=DB.equip.find(x=>x.id===cid); return [c, c&&iid? c.items.find(i=>i.id===iid):null]; }
+function renderEquip(){
+  let tot=0,bought=0,nb=0,nbB=0;
+  DB.equip.forEach(c=>c.items.forEach(i=>{ nb++; if(i.bought) nbB++; if(i.price){ tot+=i.price; if(i.bought) bought+=i.price; } }));
+  $('eqKpi').innerHTML=[['articles achetés',nbB+' / '+nb],['budget total',f(tot,2)+' €'],['reste à acheter',f(tot-bought,2)+' €']].map(([k,v])=>`<div class="kpi"><b>${v}</b><small>${k}</small></div>`).join('');
+  $('eqList').innerHTML=DB.equip.map(c=>{ const st=c.items.reduce((t,i)=>t+(i.price||0),0); const done=c.items.filter(i=>i.bought).length;
+    return `<div class="card" data-cat="${c.id}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(c.name)} <span class="small mut">${done}/${c.items.length}${st?' · '+f(st,2)+' €':''}</span></h3>
+      <div><button class="iconbtn" data-act="rencat" aria-label="Renommer la catégorie">✏️</button><button class="iconbtn" data-act="delcat" aria-label="Supprimer la catégorie">🗑️</button></div></div>
+      ${c.items.map(i=>`<div class="eq${i.bought?' done':''}" data-item="${i.id}"><input type="checkbox" data-act="tog" ${i.bought?'checked':''} aria-label="Acheté">
+        <div class="nm"><b>${esc(i.name)}</b>${i.note?`<div class="small mut">${esc(i.note)}</div>`:''}</div>
+        <span class="pr">${i.price!=null?f(i.price,2)+' €':''}</span>
+        <button class="iconbtn" data-act="edit" aria-label="Modifier">✏️</button><button class="iconbtn" data-act="del" aria-label="Supprimer">🗑️</button></div>`).join('')}
+      <div class="row" style="margin-top:8px"><input data-new="name" placeholder="Nouvel article" style="flex:2;min-width:140px"><input data-new="price" placeholder="Prix €" inputmode="decimal" style="flex:1;min-width:80px"><button class="btn sm" data-act="add">Ajouter</button></div></div>`; }).join('') || '<div class="card mut">Aucune catégorie.</div>';
+}
+function equipClick(e){
+  const b=e.target.closest('[data-act]'); if(!b) return; const card=b.closest('[data-cat]'); if(!card) return;
+  const cid=card.dataset.cat, row=b.closest('[data-item]'), iid=row&&row.dataset.item; const [c,it]=findItem(cid,iid); if(!c) return; const act=b.dataset.act;
+  const now=Date.now();
+  if(act==='tog'){ it.bought=b.checked; it.updatedAt=now; }
+  else if(act==='del'){ if(!confirm('Supprimer « '+it.name+' » ?')) return; c.items=c.items.filter(i=>i.id!==iid); DB.tomb.i[iid]=now; }
+  else if(act==='edit'){ const n=prompt('Nom de l’article',it.name); if(n===null) return; if(n.trim()) it.name=n.trim();
+    const no=prompt('Note (optionnelle)',it.note||''); if(no!==null) it.note=no.trim();
+    const p=prompt('Prix en € (vide = aucun)',it.price!=null?String(it.price).replace('.',','):''); if(p!==null){ const x=num(p); if(x!=null&&(isNaN(x)||x<0)) alert('Prix invalide'); else it.price=x; } it.updatedAt=now; }
+  else if(act==='add'){ const inp=card.querySelector('[data-new=name]'); const nm=inp.value.trim(); if(!nm){ inp.focus(); return; }
+    const pr=num(card.querySelector('[data-new=price]').value); if(pr!=null&&(isNaN(pr)||pr<0)){ alert('Prix invalide'); return; }
+    c.items.push({id:uid(),name:nm,note:'',price:pr,bought:false,updatedAt:now}); }
+  else if(act==='rencat'){ const n=prompt('Nom de la catégorie',c.name); if(n===null||!n.trim()) return; c.name=n.trim(); c.updatedAt=now; }
+  else if(act==='delcat'){ if(!confirm('Supprimer la catégorie « '+c.name+' » et ses '+c.items.length+' articles ?')) return; DB.equip=DB.equip.filter(x=>x.id!==cid); DB.tomb.c[cid]=now; c.items.forEach(i=>DB.tomb.i[i.id]=now); }
+  else return;
+  save(); renderEquip();
+}
+
+/* ---------- Synchronisation GitHub Gist ---------- */
+// Le jeton reste dans ce navigateur (localStorage) et n'est envoyé qu'à https://api.github.com.
+const SYNC_KEY = KEY+'.sync'; const GIST_FILE='suivi-montagne-data.json'; const GH_API='https://api.github.com';
+function syncCfg(){ const d={token:'',gistId:'',lastSync:0,auto:true}; try{ return Object.assign(d,JSON.parse(localStorage.getItem(SYNC_KEY)||'{}')); }catch(e){ return d; } }
+function saveSyncCfg(c){ localStorage.setItem(SYNC_KEY,JSON.stringify(c)); }
+class SyncError extends Error{ constructor(m,status){ super(m); this.status=status; } }
+async function gh(token,path,opt={}){
+  if(navigator.onLine===false) throw new SyncError('Pas de connexion internet : synchronisation impossible pour le moment.');
+  const headers={'Accept':'application/vnd.github+json','Authorization':'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28'};
+  if(opt.body) headers['Content-Type']='application/json';
+  let r;
+  try{ r=await fetch(GH_API+path,{method:opt.method||'GET',headers,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'}); }
+  catch(e){ throw new SyncError('Impossible de joindre GitHub : vérifie ta connexion internet.'); }
+  if(r.ok) return r.status===204?null:r.json();
+  let msg=''; try{ msg=(await r.json()).message||''; }catch(e){}
+  if(r.status===401) throw new SyncError('Jeton refusé par GitHub (invalide, expiré ou révoqué). Crée un nouveau jeton et colle-le ici.',401);
+  if(r.status===403||r.status===429){
+    if(r.headers.get('x-ratelimit-remaining')==='0'||/rate limit/i.test(msg)) throw new SyncError('Limite de requêtes GitHub atteinte. Réessaie dans quelques minutes.',r.status);
+    throw new SyncError('Ce jeton n’a pas le droit d’utiliser les Gists. Recrée-le avec la case « gist » cochée.',r.status); }
+  if(r.status===404) throw new SyncError('Gist introuvable (supprimé, ou jeton sans accès aux Gists).',404);
+  if(r.status===422) throw new SyncError('GitHub a refusé les données'+(msg?' ('+msg+')':'')+'.',422);
+  throw new SyncError('Erreur GitHub ('+r.status+(msg?' : '+msg:'')+'). Réessaie plus tard.',r.status);
+}
+async function findGist(token){
+  for(let p=1;p<=10;p++){ const list=await gh(token,'/gists?per_page=100&page='+p);
+    const g=(list||[]).find(x=>x.files&&x.files[GIST_FILE]); if(g) return g; if(!list||list.length<100) return null; }
+  return null;
+}
+async function readGistFile(gist){ const f=gist.files&&gist.files[GIST_FILE]; if(!f) return null;
+  if(f.truncated&&f.raw_url){ try{ return await (await fetch(f.raw_url,{cache:'no-store'})).text(); }catch(e){ throw new SyncError('Impossible de télécharger le fichier du gist.'); } } // sans jeton
+  return f.content; }
+let syncing=false;
+async function syncNow(opts={}){
+  const c=syncCfg(); if(!c.token){ setSyncStatus('Aucun jeton enregistré : colle ton jeton GitHub ci-dessus.','red'); return false; }
+  if(syncing) return false; syncing=true; setSyncStatus('Synchronisation en cours…');
+  const btn=$('btnSync'); if(btn) btn.disabled=true;
+  try{
+    let gist=null;
+    if(c.gistId){ try{ gist=await gh(c.token,'/gists/'+encodeURIComponent(c.gistId)); }catch(e){ if(e.status!==404) throw e; c.gistId=''; } }
+    if(!gist){ const g=await findGist(c.token); if(g) gist=await gh(c.token,'/gists/'+encodeURIComponent(g.id)); }
+    let remote=null;
+    if(gist){ const txt=await readGistFile(gist);
+      if(txt){ try{ remote=JSON.parse(txt); }catch(e){ throw new SyncError('Le fichier du gist est illisible (JSON invalide).'); }
+        if(!validImport(remote)) throw new SyncError('Le fichier du gist n’a pas le format attendu.'); migrate(remote); } }
+    const snapshot=JSON.parse(JSON.stringify(DB));
+    const merged=remote? mergeDB(snapshot,remote) : snapshot;
+    const body={files:{[GIST_FILE]:{content:JSON.stringify(merged)}}};
+    if(gist){ await gh(c.token,'/gists/'+encodeURIComponent(gist.id),{method:'PATCH',body}); c.gistId=gist.id; }
+    else { const g=await gh(c.token,'/gists',{method:'POST',body:Object.assign({description:'Suivi montagne – données (gist secret, ne pas rendre public)',public:false},body)}); c.gistId=g.id; }
+    DB=mergeDB(merged,DB); // conserve une éventuelle saisie faite pendant la synchro
+    save(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); saveSyncCfg(c2);
+    renderAll(); setSyncStatus('Synchronisé ✔','green'); if(!opts.silent) toast('Synchronisation réussie');
+    return true;
+  }catch(e){
+    const m=e instanceof SyncError? e.message : 'Erreur inattendue pendant la synchronisation : '+e.message;
+    if(c.gistId!==syncCfg().gistId){ const c3=syncCfg(); c3.gistId=c.gistId; saveSyncCfg(c3); }
+    setSyncStatus(m,'red'); if(!opts.silent) toast(m); return false;
+  }finally{ syncing=false; if(btn) btn.disabled=false; }
+}
+function fmtDT(t){ const d=new Date(t); return dFR(toISO(d))+' à '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function setSyncStatus(msg,cls){ const el=$('syncMsg'); if(el){ el.textContent=msg||''; el.className='small '+(cls||'mut'); } }
+function renderSync(){ const c=syncCfg();
+  $('syncLast').textContent=c.lastSync?('Dernière synchronisation : '+fmtDT(c.lastSync)):'Jamais synchronisé sur cet appareil.';
+  $('syncTokenState').textContent=c.token?('Jeton enregistré ('+c.token.slice(0,7)+'…'+c.token.slice(-4)+')'):'Aucun jeton enregistré.';
+  $('syncAuto').checked=!!c.auto;
+  $('syncGist').innerHTML=c.gistId?('Gist : <a href="https://gist.github.com/'+encodeURIComponent(c.gistId)+'" target="_blank" rel="noopener">'+esc(c.gistId.slice(0,10))+'…</a>'):'';
+}
+function initSync(){
+  $('btnTokSave').addEventListener('click',async()=>{ const t=$('syncToken').value.trim(); if(!t){ setSyncStatus('Colle d’abord ton jeton.','red'); return; }
+    if(!/^(ghp_|github_pat_)[A-Za-z0-9_]+$/.test(t) && !confirm('Ce texte ne ressemble pas à un jeton GitHub (ghp_… ou github_pat_…). L’enregistrer quand même ?')) return;
+    const c=syncCfg(); if(c.token!==t){ c.token=t; } saveSyncCfg(c); $('syncToken').value=''; renderSync(); await syncNow(); renderSync(); });
+  $('btnSync').addEventListener('click',async()=>{ await syncNow(); renderSync(); });
+  $('btnTokForget').addEventListener('click',()=>{ if(!confirm('Oublier le jeton sur cet appareil ? (les données restent sur le téléphone et dans le gist)')) return; const c=syncCfg(); c.token=''; saveSyncCfg(c); renderSync(); setSyncStatus('Jeton supprimé de cet appareil.'); });
+  $('syncAuto').addEventListener('change',e=>{ const c=syncCfg(); c.auto=e.target.checked; saveSyncCfg(c); });
+  $('btnTokShow').addEventListener('click',()=>{ const i=$('syncToken'); i.type=i.type==='password'?'text':'password'; });
+  renderSync();
+  const c=syncCfg(); if(c.token&&c.auto) syncNow({silent:true}).then(renderSync);
+}
+
+/* ---------- Données ---------- */
+function download(name, text, mime){ const blob=new Blob([text],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }
+const csvN=v=>(v==null||v===''||(typeof v==='number'&&!isFinite(v)))?'':String(typeof v==='number'?Math.round(v*100)/100:v).replace('.',',');
+const csvS=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+function sessionsCSV(){ const h=['Date','Semaine','Mois','Type','Distance km','D+ m','D- m','Durée','Vitesse km/h','Vitesse asc. m/h','BPM moyen','BPM max','Pas','Sac kg','Sauts corde','Ressenti','Exercices','Notes'];
+  const rows=DB.sessions.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const d=parseISO(s.date);return [dFR(s.date),d.getFullYear()+'-S'+String(isoWeek(d)).padStart(2,'0'),s.date.slice(0,7),csvS(s.type),csvN(s.dist),csvN(s.dplus),csvN(s.dminus),s.dur?fmtDur(s.dur):'',csvN(speed(s)),csvN(vasc(s)),csvN(s.bpm),csvN(s.bpmMax),csvN(s.pas),csvN(s.sac),csvN(s.sauts),csvN(s.ress),csvS(s.exos),csvS(s.notes)].join(';')});
+  return '\ufeff'+h.join(';')+'\n'+rows.join('\n'); }
+function monthsCSV(){ const h=['Mois','Séances','Distance km','D+ m','Durée','Vitesse moy km/h','BPM moyen','Sauts'];
+  return '\ufeff'+h.join(';')+'\n'+monthsRange().map(m=>{const a=monthAgg(m);return [m,a.n,csvN(a.dist),csvN(a.dplus),fmtDur(a.dur),csvN(a.speed),csvN(a.bpm&&Math.round(a.bpm)),csvN(a.sauts)].join(';')}).join('\n'); }
+function validImport(o){ return o&&Array.isArray(o.sessions)&&o.sessions.every(s=>s&&typeof s.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&typeof s.type==='string'); }
+
+/* ---------- Nav ---------- */
+let curPage='journal';
+function show(p){
+  if(p==='add'){ openSheet(); return; }
+  document.body.classList.remove('fab-hide');
+  const wasSheet=document.body.classList.contains('sheet-open'); closeSheet();
+  const prev=curPage; const changed=prev!==p||!document.querySelector('.page.on:not(#p-add)'); curPage=p;
+  const dir=TABS.indexOf(p)>TABS.indexOf(prev)?'r':TABS.indexOf(p)<TABS.indexOf(prev)?'l':'u';
+  document.querySelectorAll('.page:not(#p-add)').forEach(x=>{ const on=x.id==='p-'+p; if(on&&changed){ x.classList.remove('on'); void x.offsetWidth; x.dataset.dir=dir; } x.classList.toggle('on',on); });
+  document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+  TABS.forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
+  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='equip') renderEquip(); if(p==='data') renderSync();
+  const t=$('pageTitle'); if(t&&t.textContent!==TITLES[p]){ t.textContent=TITLES[p]; t.classList.remove('swap'); void t.offsetWidth; t.classList.add('swap'); }
+  moveInd(); if(changed||wasSheet) animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
+function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderEquip(); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
+
+/* ---------- Couche UI (navigation, feuille, animations) — n'altère pas les données ---------- */
+const TABS=['journal','obj','prep','evo','equip','data'];
+const TITLES={journal:'Journal',obj:'Objectifs',prep:'Préparation',evo:'Évolution',equip:'Équipement',data:'Données'};
+const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function moveInd(){ const nav=document.querySelector('nav'), ind=nav&&nav.querySelector('.ind'), b=nav&&nav.querySelector('.tab.on'); if(!ind||!b) return;
+  ind.style.width=b.offsetWidth+'px'; ind.style.transform='translate3d('+b.offsetLeft+'px,0,0)'; }
+function openSheet(){ document.body.classList.add('sheet-open'); const sh=$('p-add'); sh.scrollTop=0; sh.setAttribute('aria-hidden','false'); }
+function closeSheet(){ document.body.classList.remove('sheet-open'); const sh=$('p-add'); sh.style.transform=''; sh.setAttribute('aria-hidden','true'); }
+function animateIn(root){
+  if(!root) return; const rm=RM();
+  root.querySelectorAll('.bar.pre').forEach(b=>{ if(rm) b.classList.remove('pre'); });
+  root.querySelectorAll('.ring .val[data-off]').forEach(c=>{ if(rm) c.style.strokeDashoffset=c.dataset.off; });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    root.querySelectorAll('.bar.pre').forEach(b=>b.classList.remove('pre'));
+    root.querySelectorAll('.ring .val[data-off]').forEach(c=>c.style.strokeDashoffset=c.dataset.off);
+  }));
+  root.querySelectorAll('[data-count]').forEach(el=>{ const to=+el.dataset.count, dec=+(el.dataset.dec||0), suf=el.dataset.suf||'';
+    if(!isFinite(to)||rm){ return; } const t0=performance.now(), D=800;
+    const step=t=>{ const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3); el.textContent=f(to*e,dec)+suf; if(k<1) requestAnimationFrame(step); else el.textContent=f(to,dec)+suf; };
+    requestAnimationFrame(step); });
+}
+function initUI(){
+  // en-tête : ombre au défilement
+  const hdr=document.querySelector('header'); let tick=false;
+  let lastY=scrollY; addEventListener('scroll',()=>{ if(tick) return; tick=true; requestAnimationFrame(()=>{ const y=scrollY; hdr.classList.toggle('scrolled',y>8); if(Math.abs(y-lastY)>6){ document.body.classList.toggle('fab-hide',y>lastY&&y>120); lastY=y; } tick=false; }); },{passive:true});
+  addEventListener('resize',moveInd);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(moveInd);
+  // feuille : fond, croix, glisser vers le bas, Échap
+  $('sheetBg').addEventListener('click',()=>{ fillForm(null); show(curPage); });
+  $('btnSheetX').addEventListener('click',()=>{ fillForm(null); show(curPage); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } });
+  const sh=$('p-add'), grab=sh.querySelector('.grab'); let y0=null,dy=0;
+  grab.addEventListener('pointerdown',e=>{ y0=e.clientY; dy=0; sh.classList.add('dragging'); grab.setPointerCapture(e.pointerId); });
+  grab.addEventListener('pointermove',e=>{ if(y0==null) return; dy=Math.max(0,e.clientY-y0); sh.style.transform='translate3d(0,'+dy+'px,0)'; });
+  const end=()=>{ if(y0==null) return; y0=null; sh.classList.remove('dragging'); sh.style.transform=''; if(dy>110){ fillForm(null); show(curPage); } };
+  grab.addEventListener('pointerup',end); grab.addEventListener('pointercancel',end);
+  // balayage horizontal entre onglets
+  const main=document.querySelector('main'); let sx=0,sy=0,lock=null,pg=null,dx=0;
+  main.addEventListener('touchstart',e=>{ if(document.body.classList.contains('sheet-open')||e.touches.length>1){ lock='n'; return; }
+    const t=e.target; if(t.closest('input,textarea,select,.scroll,.seg,[contenteditable]')){ lock='n'; return; }
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; lock=null; dx=0; pg=document.querySelector('.page.on:not(#p-add)'); },{passive:true});
+  main.addEventListener('touchmove',e=>{ if(lock==='n'||!pg) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy;
+    if(lock==null){ if(Math.abs(x)<10&&Math.abs(y)<10) return; lock=Math.abs(x)>Math.abs(y)*1.4?'h':'n'; if(lock==='h') pg.classList.add('dragging'); }
+    if(lock!=='h') return; const i=TABS.indexOf(curPage); dx=x; if((i===0&&x>0)||(i===TABS.length-1&&x<0)) dx=x*0.25;
+    pg.style.transform='translate3d('+(dx*0.45)+'px,0,0)'; pg.style.opacity=String(1-Math.min(.35,Math.abs(dx)/600)); },{passive:true});
+  main.addEventListener('touchend',()=>{ if(lock!=='h'||!pg){ lock=null; return; } const i=TABS.indexOf(curPage); const p=pg; p.classList.remove('dragging');
+    let to=null; if(dx<-70&&i<TABS.length-1) to=TABS[i+1]; else if(dx>70&&i>0) to=TABS[i-1];
+    if(to){ p.style.transform=''; p.style.opacity=''; haptic(); show(to); }
+    else { p.classList.add('snap'); p.style.transform=''; p.style.opacity=''; setTimeout(()=>p.classList.remove('snap'),320); }
+    lock=null; pg=null; },{passive:true});
+  // retour haptique léger (Android) + état vide
+  document.addEventListener('pointerdown',e=>{ if(e.target.closest('.btn,nav button,.iconbtn,.xbtn,.seg button')) haptic(); },{passive:true});
+  document.addEventListener('click',e=>{ const b=e.target.closest('[data-open-add]'); if(b){ fillForm(null); show('add'); } });
+  // indicateur de synchro dans l'en-tête (observe le message existant)
+  const msg=$('syncMsg'), pill=$('syncPill'); if(msg&&pill) new MutationObserver(()=>pill.classList.toggle('on',/en cours/.test(msg.textContent))).observe(msg,{childList:true,characterData:true,subtree:true});
+  moveInd();
+}
+function haptic(){ try{ if(navigator.vibrate&&!RM()) navigator.vibrate(8); }catch(e){} }
+
+/* ---------- Init ---------- */
+function init(){
+  load();
+  $('f_type').innerHTML=TYPES.map(t=>`<option>${t}</option>`).join('');
+  $('fltType').innerHTML='<option value="">Tous types</option>'+TYPES.map(t=>`<option>${t}</option>`).join('');
+  for(let i=1;i<=10;i++) $('f_ress').insertAdjacentHTML('beforeend',`<option value="${i}">${i}</option>`);
+  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.p==='add'&&!$('f_id').value) fillForm(null); show(b.dataset.p); }));
+  $('fltType').addEventListener('change',renderJournal);
+  $('f_type').addEventListener('change',updExos);
+  $('eqList').addEventListener('click',e=>{ if(e.target.matches('input[type=checkbox]')) return; equipClick(e); });
+  $('eqList').addEventListener('change',e=>{ if(e.target.matches('input[type=checkbox]')) equipClick(e); });
+  $('btnAddCat').addEventListener('click',()=>{ const n=$('eqNewCat').value.trim(); if(!n) return; DB.equip.push({id:uid(),name:n,items:[],updatedAt:Date.now()}); $('eqNewCat').value=''; save(); renderEquip(); toast('Catégorie ajoutée'); });
+  $('sessList').addEventListener('click',e=>{ const ed=e.target.closest('[data-edit]'), de=e.target.closest('[data-del]');
+    if(ed){ fillForm(DB.sessions.find(s=>s.id===ed.dataset.edit)); show('add'); }
+    if(de){ const s=DB.sessions.find(x=>x.id===de.dataset.del); if(s&&confirm('Supprimer la séance du '+dFR(s.date)+' ('+s.type+') ?')){ DB.sessions=DB.sessions.filter(x=>x.id!==s.id); DB.tomb.s[s.id]=Date.now(); save(); renderJournal(); toast('Séance supprimée'); } } });
+  ['f_dist','f_dur','f_dplus'].forEach(id=>$(id).addEventListener('input',updAuto));
+  $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();
+    if(errs.length){ alert('Valeurs invalides : '+errs.join(', ')); return; }
+    const id=$('f_id').value;
+    s.updatedAt=Date.now(); if(id){ const i=DB.sessions.findIndex(x=>x.id===id); if(i>=0) DB.sessions[i]=Object.assign({id},s); } else DB.sessions.push(Object.assign({id:uid()},s));
+    save(); fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); show('journal'); });
+  $('btnCancel').addEventListener('click',()=>{ fillForm(null); show('journal'); });
+  $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj; DB.objectifs[n]=Object.assign(objState(n),{[t.dataset.k]:t.value,updatedAt:Date.now()}); save(); toast('Objectif mis à jour'); });
+  $('sgW').addEventListener('click',()=>{ $('sgW').classList.add('on'); $('sgM').classList.remove('on'); $('evoW').style.display=''; $('evoM').style.display='none'; });
+  $('sgM').addEventListener('click',()=>{ $('sgM').classList.add('on'); $('sgW').classList.remove('on'); $('evoM').style.display=''; $('evoW').style.display='none'; });
+  const stamp=()=>todayISO();
+  $('btnExpJson').addEventListener('click',()=>download('suivi-montagne-'+stamp()+'.json',JSON.stringify(DB,null,2),'application/json'));
+  $('btnExpCsv').addEventListener('click',()=>download('suivi-montagne-seances-'+stamp()+'.csv',sessionsCSV(),'text/csv;charset=utf-8'));
+  $('btnExpCsvM').addEventListener('click',()=>download('suivi-montagne-mois-'+stamp()+'.csv',monthsCSV(),'text/csv;charset=utf-8'));
+  $('impFile').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
+    rd.onload=()=>{ try{ const o=JSON.parse(rd.result); if(!validImport(o)) throw new Error('format');
+      if(!confirm('Remplacer les données actuelles par ce fichier ('+o.sessions.length+' séances) ?')) return;
+      DB=Object.assign({version:1,objectifs:{}},o); migrate(DB); save(); renderAll(); toast('Import réussi'); }
+      catch(err){ alert('Fichier invalide : JSON de sauvegarde attendu.'); } finally { e.target.value=''; } };
+    rd.readAsText(file); });
+  $('btnReset').addEventListener('click',()=>{ if(confirm('Réinitialiser toutes les données ?')){ DB=seed(); save(); renderAll(); toast('Données réinitialisées'); } });
+  fillForm(null); renderAll(); show('journal');
+  initSync();
+  initUI();
+  if('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

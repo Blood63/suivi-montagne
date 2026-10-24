@@ -337,7 +337,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -986,7 +986,7 @@ function renderSnaps(){ const a=snapshots(), el=$('snapList'); if(!el) return;
   el.innerHTML=a.length? a.map((s,i)=>`<div class="snaprow"><div class="nm"><b>${fmtDT(s.t)}</b><div class="small mut">${esc(s.reason)} · ${s.n} séances${s.w!=null?' · '+s.w+' pesée(s)':''}${s.d?' · '+s.d+' jour(s) d’activité':''}</div></div><button class="btn sm sec" data-snap="${i}">Restaurer</button></div>`).join('') : '<div class="small mut">Aucune copie pour l’instant.</div>'; }
 function restoreSnap(i){ const s=snapshots()[i]; if(!s) return; let o; try{ o=JSON.parse(s.data); }catch(e){ alert('Copie illisible.'); return; }
   if(!validImport(o)){ alert('Copie illisible.'); return; }
-  if(s.noGpx){ o.objectifs=o.objectifs||{}; for(const [k,v] of Object.entries(DB.objectifs||{})) if(v&&v.gpx&&!(o.objectifs[k]&&o.objectifs[k].gpx)) o.objectifs[k]=Object.assign({},o.objectifs[k]||{datePrevue:'',statut:'À préparer',dateRealisee:'',updatedAt:v.updatedAt||1},{gpx:v.gpx}); } // traces GPX actuelles conservées
+  if(s.noGpx){ o.objectifs=o.objectifs||{}; for(const [k,v] of Object.entries(DB.objectifs||{})) if(v&&v.gpx&&!(o.objectifs[k]&&o.objectifs[k].gpx)) o.objectifs[k]=Object.assign({},o.objectifs[k]||{datePrevue:'',statut:'À préparer',dateRealisee:'',updatedAt:v.updatedAt||1},{gpx:v.gpx,updatedAt:Math.max(Date.now(),(v.updatedAt||0)+1)}); } // traces GPX actuelles conservées ; v24 : date de modification rafraîchie, sinon un objectif plus récent du gist (sans la trace) l'emporterait à la synchro
   if(!confirm('Restaurer la copie du '+fmtDT(s.t)+' ('+s.n+' séances) ? Les données actuelles sont d’abord sauvegardées dans une nouvelle copie.')) return;
   snapshot('avant restauration',true); DB=normalizeDB(o); if((DB.version||1)<DATA_VERSION) migrate(DB); save(); renderAll(); renderSnaps(); toast('Copie restaurée'); }
 
@@ -1619,7 +1619,10 @@ function sunTimes(d,lat,lon){ const rad=Math.PI/180, y=d.getFullYear();
   const x=Math.cos(90.833*rad)/(Math.cos(lat*rad)*Math.cos(de))-Math.tan(lat*rad)*Math.tan(de); if(x<-1||x>1) return null;
   const ha=Math.acos(x)/rad, noon=720-4*lon-eq, base=Date.UTC(y,d.getMonth(),d.getDate());
   return {rise:new Date(base+(noon-4*ha)*6e4), set:new Date(base+(noon+4*ha)*6e4)}; }
-const hhmm=d=>String(d.getHours()).padStart(2,'0')+'h'+String(d.getMinutes()).padStart(2,'0');
+// v24 : heures de soleil affichées à l'heure de Paris (tous les sommets sont en France ou en Suisse, même fuseau), quel que soit le fuseau de l'appareil
+const PARIS_HM=(()=>{ try{ const F=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}); return d=>{ const p=F.formatToParts(d), g=t=>+((p.find(x=>x.type===t)||{}).value||0); return [g('hour')%24,g('minute')]; }; }catch(e){ return d=>[d.getHours(),d.getMinutes()]; } })();
+const hourP=d=>{ const [h,m]=PARIS_HM(d); return h+m/60; };
+const hhmm=d=>{ const [h,m]=PARIS_HM(d); return String(h).padStart(2,'0')+'h'+String(m).padStart(2,'0'); };
 const WALK_TYPES=/^(Marche|Randonnée|Trail|Tapis)/;
 function trainStats(ref){
   ref=ref||new Date(); const day=k=>toISO(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()-k));
@@ -1839,11 +1842,13 @@ function loadLeaflet(){ if(window.L) return Promise.resolve(window.L); if(leafle
 async function initGpxMap(n){ const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n), g=sanGpx(st.gpx); const el=$('sumMap'); if(!o||!el||(!g&&!offMeta(n))) return;
   if(el._map){ try{ el._map.remove(); }catch(e){} el._map=null; }
   try{ const L=await loadLeaflet(); if(curSum!==o.n||!document.body.contains(el)) return;
-    const map=L.map(el,{scrollWheelZoom:false}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+    const M=offMeta(n), off=navigator.onLine===false, zc=off&&M&&M.zmax?M.zmax:0; // v24 : hors-ligne, seules les tuiles préparées (zoom 11–zmax) existent
+    const map=L.map(el,{scrollWheelZoom:false,maxZoom:zc?zc+2:18,minZoom:zc?TILE_ZMIN:0}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:zc?zc+2:18,maxNativeZoom:zc||18,minZoom:zc?TILE_ZMIN:0,attribution:'© OpenStreetMap'}).addTo(map); // au-delà de zmax : tuiles préparées agrandies
+    const fz=zc||17;
     el._map=map; const I=OBJ_INFO[o.n];
-    if(g){ const line=L.polyline(g.pts.map(x=>[x[0],x[1]]),{color:'#fb923c',weight:4}).addTo(map); map.fitBounds(line.getBounds(),{padding:[18,18]});
+    if(g){ const line=L.polyline(g.pts.map(x=>[x[0],x[1]]),{color:'#fb923c',weight:4}).addTo(map); map.fitBounds(line.getBounds(),{padding:[18,18],maxZoom:fz});
     L.marker(g.pts[0]).addTo(map).bindPopup('Départ de la trace'); L.marker(g.pts[g.pts.length-1]).addTo(map).bindPopup('Fin de la trace'); }
-    else { L.marker(I.start.ll).addTo(map).bindPopup('Départ : '+esc(I.start.nm)); map.fitBounds([I.sum,I.start.ll],{padding:[30,30],maxZoom:15}); }
+    else { L.marker(I.start.ll).addTo(map).bindPopup('Départ : '+esc(I.start.nm)); map.fitBounds([I.sum,I.start.ll],{padding:[30,30],maxZoom:Math.min(15,fz)}); }
      if(I&&I.sum) L.circleMarker(I.sum,{radius:6,color:'#7cc8ea',fillColor:'#7cc8ea',fillOpacity:.8}).addTo(map).bindPopup('Sommet : '+esc(o.sommet));
     el.style.display=''; const sm=$('sumStaticMap'); if(sm) sm.style.display='none'; setTimeout(()=>map.invalidateSize(),60); }
   catch(e){ const note=$('sumMapNote'); if(note) note.textContent='Carte interactive indisponible (hors-ligne ?) : la carte classique ci-dessus et le profil ci-dessous restent utilisables.'; el.style.display='none'; } }
@@ -1914,10 +1919,10 @@ function dayJRender(n){ const el=$('sumDayJ'); if(!el||curSum!==+n) return; cons
   const wx=wxCache(n,true), T=todayISO(), tm=toISO(new Date(Date.now()+864e5));
   const day=st.datePrevue&&st.datePrevue>=T? st.datePrevue : tm, dd=parseISO(day), sun=sunTimes(dd,I.start.ll[0],I.start.ll[1]);
   const W=wx&&wx.days?wx.days.find(d=>d.date===day):null, H=W&&W.hours?W.hours:null, h=o.multi?o.h:(o.h||4);
-  let limit=sun?sun.set.getHours()+sun.set.getMinutes()/60-0.5:19, why='coucher du soleil − 30 min', storm=null;
+  let limit=sun?hourP(sun.set)-0.5:19, why='coucher du soleil − 30 min', storm=null;
   if(H){ const bad=H.find(x=>x[0]>=11&&(x[2]>=95||(x[3]!=null&&x[3]>=60))); if(bad){ storm=bad; if(bad[0]-0.5<limit){ limit=bad[0]-0.5; why=bad[2]>=95?'orage possible vers '+bad[0]+' h':'averses probables ('+bad[3]+' %) vers '+bad[0]+' h'; } } }
   const fh=x=>{ const m=Math.round(x*60); return String(Math.floor(m/60)).padStart(2,'0')+'h'+String(m%60).padStart(2,'0'); };
-  const dep=limit-h-0.5, rise=sun?sun.rise.getHours()+sun.rise.getMinutes()/60:6, depTxt=dep<rise-1? 'avant '+fh(rise)+' (frontale) — ou raccourcis la sortie' : 'au plus tard '+fh(dep);
+  const dep=limit-h-0.5, rise=sun?hourP(sun.rise):6, depTxt=dep<rise-1? 'avant '+fh(rise)+' (frontale) — ou raccourcis la sortie' : 'au plus tard '+fh(dep);
   const ic=c=>c==null?'·':c>=95?'⛈️':c>=71&&c<=86&&!(c>=80&&c<=82)?'❄️':c>=51?'🌧️':c===45||c===48?'🌫️':c>=3?'☁️':c>=1?'⛅':'☀️';
   const strip=H? `<div class="hstrip">${H.filter(x=>x[0]>=6&&x[0]<=20).map(x=>`<div class="${x[2]>=95?'st':''}"><small>${x[0]}h</small><b>${ic(x[2])}</b><small>${x[1]!=null?f(x[1],0)+'°':''}</small><small class="mut">${x[3]!=null?x[3]+'%':''}</small></div>`).join('')}</div>` : '';
   const g=gearStatus(o.n), miss=g.filter(x=>x.st!=='ok'), G=sanGpx(st.gpx), M=offMeta(n);
@@ -2866,10 +2871,10 @@ function show(p){
   const prev=curPage; const changed=prev!==p||!document.querySelector('.page.on:not(#p-add)'); curPage=p;
   if(prev!=='sum'&&p==='sum') sumFrom=prev; if(IMP.isOpen()&&p!==prev) IMP.close();
   if(prev==='sum'&&p!=='sum'&&history.state&&history.state.sum){ try{ history.back(); }catch(e){} } // quitte la fiche par un onglet : retire l'entrée d'historique
-  const dir=p==='sum'&&prev!=='sum'?'r':prev==='sum'&&p!=='sum'?'l':TABS.indexOf(p)>TABS.indexOf(prev)?'r':TABS.indexOf(p)<TABS.indexOf(prev)?'l':'u';
+  const dir=p==='sum'&&prev!=='sum'?'r':prev==='sum'&&p!=='sum'?'l':tabIdx(p)>tabIdx(prev)?'r':tabIdx(p)<tabIdx(prev)?'l':'u';
   document.querySelectorAll('.page:not(#p-add)').forEach(x=>{ const on=x.id==='p-'+p; if(on&&changed){ x.classList.remove('on'); void x.offsetWidth; x.dataset.dir=dir; } x.classList.toggle('on',on); });
   const tabP0=p==='sum'?sumFrom:p, tabP=PARENT_TAB[tabP0]||tabP0; document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('on',b.dataset.p===tabP));
-  [...TABS,'sum'].forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
+  [...PAGES,'sum'].forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
   if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); renderPrefs(); }
   const t=$('pageTitle'); if(t&&t.textContent!==TITLES[p]){ t.textContent=TITLES[p]; t.classList.remove('swap'); void t.offsetWidth; t.classList.add('swap'); }
   moveInd(); animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
@@ -2880,8 +2885,9 @@ function openSummitNoPush(n){ if(renderSummit(n)) show('sum'); }
 function closeSummit(){ if(history.state&&history.state.sum){ history.back(); } else show(sumFrom||'obj'); }
 
 /* ---------- Couche UI (navigation, feuille, animations) — n'altère pas les données ---------- */
-const TABS=['journal','obj','prep','equip','evo','poids','data']; // v22 : 5 onglets ; Équipement dans Prépa, Poids dans Évolution (sous-onglets)
-const PARENT_TAB={equip:'prep',poids:'evo'};
+const TABS=['journal','obj','prep','evo','data']; // v24 : les 5 onglets de la barre du bas (balayage) ; Équipement est un sous-onglet de Prépa, Poids d'Évolution
+const PARENT_TAB={equip:'prep',poids:'evo'}, PAGES=['journal','obj','prep','equip','evo','poids','data'];
+const tabIdx=p=>TABS.indexOf(PARENT_TAB[p]||p);
 const TITLES={journal:'Journal',obj:'Objectifs',prep:'Préparation',evo:'Évolution',poids:'Poids',equip:'Équipement',data:'Données',sum:'Fiche sommet'};
 const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 // L'indicateur est positionné en CSS par son index (--i) : aucune mesure, donc toujours aligné (largeur, rotation, police, encoches).
@@ -2925,9 +2931,9 @@ function initUI(){
     sx=e.touches[0].clientX; sy=e.touches[0].clientY; lock=null; dx=0; pg=document.querySelector('.page.on:not(#p-add)'); },{passive:true});
   main.addEventListener('touchmove',e=>{ if(lock==='n'||!pg) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy;
     if(lock==null){ if(Math.abs(x)<10&&Math.abs(y)<10) return; lock=Math.abs(x)>Math.abs(y)*1.4?'h':'n'; if(lock==='h') pg.classList.add('dragging'); }
-    if(lock!=='h') return; const i=TABS.indexOf(curPage); dx=x; if(curPage==='sum'){ if(x<0) dx=x*0.25; } else if((i===0&&x>0)||(i===TABS.length-1&&x<0)) dx=x*0.25;
+    if(lock!=='h') return; const i=tabIdx(curPage); dx=x; if(curPage==='sum'){ if(x<0) dx=x*0.25; } else if((i===0&&x>0)||(i===TABS.length-1&&x<0)) dx=x*0.25;
     pg.style.transform='translate3d('+(dx*0.45)+'px,0,0)'; pg.style.opacity=String(1-Math.min(.35,Math.abs(dx)/600)); },{passive:true});
-  main.addEventListener('touchend',()=>{ if(lock!=='h'||!pg){ lock=null; return; } const i=TABS.indexOf(curPage); const p=pg; p.classList.remove('dragging');
+  main.addEventListener('touchend',()=>{ if(lock!=='h'||!pg){ lock=null; return; } const i=tabIdx(curPage); const p=pg; p.classList.remove('dragging');
     let to=null; if(curPage==='sum'){ if(dx>70){ p.style.transform=''; p.style.opacity=''; haptic(); closeSummit(); lock=null; pg=null; return; } }
     else if(dx<-70&&i<TABS.length-1) to=TABS[i+1]; else if(dx>70&&i>0) to=TABS[i-1];
     if(to){ p.style.transform=''; p.style.opacity=''; haptic(); show(to); }
