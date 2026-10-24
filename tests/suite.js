@@ -133,9 +133,9 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v22') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes('suivi-montagne-v23') && !keys.includes('suivi-montagne-v4')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
-    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v22'), 'anciens caches de l’appli supprimés, v22 créé', keys);
+    ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes('suivi-montagne-v23'), 'anciens caches de l’appli supprimés, v23 créé', keys);
     await ctx.close(); }
 
   // ---------- 6. Moteur de conseils ----------
@@ -811,6 +811,32 @@ function FIXTURE() {
     ok(dead.join() === 'undefined,undefined,undefined,true,4', 'code mort retiré (objSortMode, septSessions/octSessions) ; DATA_VERSION inchangé (4)', dead);
     const sri = await p.evaluate(async () => { try { await loadLeaflet(); } catch (e) { return 'err ' + e.message; } const s = [...document.scripts].find(x => /leaflet/.test(x.src)); return !!window.L && /^sha384-/.test(s.integrity) && s.crossOrigin === 'anonymous'; });
     ok(sri === true, 'Leaflet chargé avec vérification d’intégrité (SRI)', sri);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 22. v23 : bloc Jour J hors-ligne ----------
+  out.push('22. v23 : Jour J hors-ligne (soleil, heures, orage, matériel, GPX, carte préparée)');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const tl = await p.evaluate(() => OBJECTIFS.map(o => { const r = tileList(offPts(o.n)); return [o.n, r.tiles.length, r.zmax]; }));
+    ok(tl.every(([, n, z]) => n > 0 && n <= 180 && z >= 11 && z <= 15), 'carte hors-ligne : ≤ 180 tuiles, zoom 11–15, pour chaque objectif (même l’itinérance)', tl);
+    const dj = await p.evaluate(() => { const n = 3, tm = toISO(new Date(Date.now() + 864e5)); const hours = []; for (let h = 5; h <= 21; h++) hours.push([h, 10 + h / 2, h >= 15 ? 95 : 1, h >= 15 ? 70 : 5, 30]);
+      wxStore(n, {days:[{date:tm, code:95, tmin:2, tmax:12, pop:70, gust:40, hours}], fetchedAt:Date.now() - 5 * 3600e3, planned:''});
+      const a = JSON.parse(localStorage.getItem(KEY + '.wx')); a[n].t = Date.now() - 5 * 3600e3; localStorage.setItem(KEY + '.wx', JSON.stringify(a));
+      openSummit(n); const t = $('sumDayJ').innerText; return {t, strip: document.querySelectorAll('#sumDayJ .hstrip > div').length, st: document.querySelectorAll('#sumDayJ .hstrip .st').length}; });
+    ok(/🌅 \d\dh\d\d · 🌇 \d\dh\d\d/.test(dj.t) && /orage possible vers 15 h/.test(dj.t) && /orage possible l’après-midi \(dès 15 h\)/.test(dj.t) && /au plus tard \d\dh\d\d/.test(dj.t), 'Jour J : lever/coucher, risque d’orage l’après-midi, heure de départ conseillée', dj.t);
+    ok(dj.strip === 15 && dj.st === 6 && /Prévision du /.test(dj.t) && /Matériel\s+\d+\/\d+ prêts/.test(dj.t) && /Trace GPX/.test(dj.t), 'Jour J : heure par heure (6–20 h), horodatage du cache, matériel, GPX', dj);
+    await p.setOfflineMode(true);
+    const off = await p.evaluate(async () => { const a = JSON.parse(localStorage.getItem(KEY + '.wx')); a[3].t = Date.now() - 5 * 3600e3; localStorage.setItem(KEY + '.wx', JSON.stringify(a)); await loadSummitWeather(3, false); return $('sumWx').innerText; });
+    ok(/copie hors-ligne du/.test(off), 'hors-ligne : la dernière météo en cache est affichée avec sa date', off.slice(0, 200));
+    await p.setOfflineMode(false);
+    const pr = await p.evaluate(async () => { const of = window.fetch; let tiles = 0, wx = 0; window.fetch = async (u, o) => { u = String(u);
+        if (/tile\.openstreetmap\.org/.test(u)) { tiles++; return new Response(new Blob([new Uint8Array([137, 80, 78, 71])], {type:'image/png'}), {status:200}); }
+        if (/open-meteo/.test(u)) { wx++; return new Response(JSON.stringify({daily:{time:[todayISO()], weather_code:[1]}, hourly:{time:[todayISO() + 'T14:00'], temperature_2m:[9], weather_code:[1], precipitation_probability:[0], wind_gusts_10m:[10]}}), {status:200}); }
+        return of(u, o); };
+      await caches.delete(TILE_CACHE); await prepOffline(3); window.fetch = of; const c = await caches.open(TILE_CACHE), k = await c.keys(), m = offMeta(3);
+      return {tiles, wx, keys: k.length, m, t: $('sumDayJ').innerText, map: !!$('sumMap')._map}; });
+    ok(pr.wx === 1 && pr.tiles === pr.keys && pr.keys > 0 && pr.keys <= 180 && pr.m.tiles === pr.keys && /préparé le/.test(pr.t) && pr.map, '« Préparer hors-ligne » : météo + tuiles en cache, horodatage affiché, carte interactive sans GPX', pr);
+    const keys = await p.evaluate(async () => { await navigator.serviceWorker.ready; for (let i = 0; i < 20 && !(await caches.keys()).includes('suivi-montagne-v23'); i++) await new Promise(r => setTimeout(r, 250)); return caches.keys(); });
+    ok(keys.includes('suivi-montagne-tiles-v1') && keys.includes('suivi-montagne-v23'), 'cache des tuiles conservé par le service worker', keys);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ancienne version (v16) face à des données des objectifs 11/12

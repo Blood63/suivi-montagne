@@ -79,6 +79,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .mgrp>summary{list-style:none;cursor:pointer}.mgrp>summary::-webkit-details-marker{display:none}.mgrp>summary b::before{content:'▸ ';color:var(--mut);display:inline-block;transition:transform .2s}.mgrp[open]>summary b::before{content:'▾ '}
 .jflt{gap:6px;margin:4px 0 8px;flex-wrap:nowrap}.jflt input{flex:1;min-width:0;padding:7px 10px;font-size:14px}.jflt select{width:auto;padding:6px 8px;font-size:14px}
 .subnav{margin-bottom:12px}
+.hstrip{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}.hstrip>div{flex:0 0 auto;min-width:42px;text-align:center;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:4px 2px;display:flex;flex-direction:column;font-size:12px}.hstrip>div b{font-size:16px;font-weight:400}.hstrip>div.st{border-color:#f59e0b;background:rgba(245,158,11,.12)}
 .month{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 2px;padding-bottom:4px}
 .month b{font-size:15px;text-transform:capitalize}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -336,7 +337,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -1835,12 +1836,15 @@ function loadLeaflet(){ if(window.L) return Promise.resolve(window.L); if(leafle
   leafletP=new Promise((res,rej)=>{ const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'; css.integrity='sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H'; css.crossOrigin='anonymous'; document.head.appendChild(css);
     const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'; sc.integrity='sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH'; sc.crossOrigin='anonymous'; sc.onload=()=>res(window.L); sc.onerror=()=>{ leafletP=null; rej(new Error('leaflet')); }; document.head.appendChild(sc); });
   return leafletP; }
-async function initGpxMap(n){ const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n), g=sanGpx(st.gpx); const el=$('sumMap'); if(!o||!g||!el) return;
+async function initGpxMap(n){ const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n), g=sanGpx(st.gpx); const el=$('sumMap'); if(!o||!el||(!g&&!offMeta(n))) return;
+  if(el._map){ try{ el._map.remove(); }catch(e){} el._map=null; }
   try{ const L=await loadLeaflet(); if(curSum!==o.n||!document.body.contains(el)) return;
     const map=L.map(el,{scrollWheelZoom:false}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
-    const line=L.polyline(g.pts.map(x=>[x[0],x[1]]),{color:'#fb923c',weight:4}).addTo(map); map.fitBounds(line.getBounds(),{padding:[18,18]});
-    L.marker(g.pts[0]).addTo(map).bindPopup('Départ de la trace'); L.marker(g.pts[g.pts.length-1]).addTo(map).bindPopup('Fin de la trace');
-    const I=OBJ_INFO[o.n]; if(I&&I.sum) L.circleMarker(I.sum,{radius:6,color:'#7cc8ea',fillColor:'#7cc8ea',fillOpacity:.8}).addTo(map).bindPopup('Sommet : '+esc(o.sommet));
+    el._map=map; const I=OBJ_INFO[o.n];
+    if(g){ const line=L.polyline(g.pts.map(x=>[x[0],x[1]]),{color:'#fb923c',weight:4}).addTo(map); map.fitBounds(line.getBounds(),{padding:[18,18]});
+    L.marker(g.pts[0]).addTo(map).bindPopup('Départ de la trace'); L.marker(g.pts[g.pts.length-1]).addTo(map).bindPopup('Fin de la trace'); }
+    else { L.marker(I.start.ll).addTo(map).bindPopup('Départ : '+esc(I.start.nm)); map.fitBounds([I.sum,I.start.ll],{padding:[30,30],maxZoom:15}); }
+     if(I&&I.sum) L.circleMarker(I.sum,{radius:6,color:'#7cc8ea',fillColor:'#7cc8ea',fillOpacity:.8}).addTo(map).bindPopup('Sommet : '+esc(o.sommet));
     el.style.display=''; const sm=$('sumStaticMap'); if(sm) sm.style.display='none'; setTimeout(()=>map.invalidateSize(),60); }
   catch(e){ const note=$('sumMapNote'); if(note) note.textContent='Carte interactive indisponible (hors-ligne ?) : la carte classique ci-dessus et le profil ci-dessous restent utilisables.'; el.style.display='none'; } }
 function gpxProfileHTML(g){ const hasEle=g.pts.some(x=>x[2]!=null); if(!hasEle) return '<p class="small mut">Ce GPX ne contient pas d’altitudes : profil non disponible.</p>';
@@ -1858,28 +1862,75 @@ function gpxCardHTML(o,st){ const g=sanGpx(st.gpx);
   <div class="row" style="margin-top:10px"><label class="btn sec sm" for="sumGpxFile" style="cursor:pointer">Remplacer la trace GPX</label><button class="btn bad sm" type="button" data-gpx-del>Retirer la trace</button></div>`; }
 /* Météo Open-Meteo au sommet : aucun compte ni clé, cache 30 min sur l’appareil */
 const WX_CODES={0:'Ciel dégagé',1:'Plutôt dégagé',2:'Partiellement nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard givrant',51:'Bruine légère',53:'Bruine',55:'Bruine dense',56:'Bruine verglaçante',57:'Bruine verglaçante',61:'Pluie faible',63:'Pluie',65:'Pluie forte',66:'Pluie verglaçante',67:'Pluie verglaçante',71:'Neige faible',73:'Neige',75:'Neige forte',77:'Grésil',80:'Averses faibles',81:'Averses',82:'Averses violentes',85:'Averses de neige',86:'Averses de neige',95:'Orage',96:'Orage + grêle',99:'Orage + grêle'};
-function wxCache(n){ try{ const a=JSON.parse(localStorage.getItem(KEY+'.wx')||'{}'); const x=a[n]; return x&&Date.now()-x.t<30*60e3? x.data:null; }catch(e){ return null; } }
+function wxCache(n,any){ try{ const a=JSON.parse(localStorage.getItem(KEY+'.wx')||'{}'); const x=a[n]; return x&&(any||Date.now()-x.t<30*60e3)? x.data:null; }catch(e){ return null; } } // v23 : any = copie gardée pour le hors-ligne
 function wxStore(n,data){ try{ const a=JSON.parse(localStorage.getItem(KEY+'.wx')||'{}'); a[n]={t:Date.now(),data}; localStorage.setItem(KEY+'.wx',JSON.stringify(a)); }catch(e){} }
 function wxDayHTML(d){ const orage=d.code>=95, neige=(d.code>=71&&d.code<=77)||d.code===85||d.code===86, nz=v=>v==null?v:(Math.round(v)===0?0:v);
   return `<div class="wxday"><b>${dFR(d.date)}</b> · ${esc(WX_CODES[d.code]||'—')}${orage?' ⛈️':neige?' ❄️':''}<br>🌡️ ${f(nz(d.tmin),0)}° à ${f(nz(d.tmax),0)}°C${d.app!=null?' · ressenti '+f(nz(d.app),0)+'°C':''}<br>💨 vent ${f(d.wind,0)} km/h · rafales ${f(d.gust,0)} km/h<br>💧 pluie ${d.pop!=null?f(d.pop,0)+' %':'–'}${d.precip!=null?' · '+f(d.precip,1)+' mm':''}${orage?'<br><b>⚠ Risque d’orage</b>':''}</div>`; }
 function parseWx(j,o,st){ const days=[]; const D=j.daily||{}, H=j.hourly||{};
   const appAt={}; (H.time||[]).forEach((t,i)=>{ if(/T12:00/.test(t)) appAt[t.slice(0,10)]=H.apparent_temperature?H.apparent_temperature[i]:null; });
-  (D.time||[]).forEach((date,i)=>days.push({date,code:D.weather_code?D.weather_code[i]:null,tmin:D.temperature_2m_min?D.temperature_2m_min[i]:null,tmax:D.temperature_2m_max?D.temperature_2m_max[i]:null,pop:D.precipitation_probability_max?D.precipitation_probability_max[i]:null,precip:D.precipitation_sum?D.precipitation_sum[i]:null,wind:D.wind_speed_10m_max?D.wind_speed_10m_max[i]:null,gust:D.wind_gusts_10m_max?D.wind_gusts_10m_max[i]:null,app:appAt[date]!=null?appAt[date]:null}));
+  const hrs={}; (H.time||[]).forEach((t,i)=>{ const h=+t.slice(11,13); if(h<5||h>21) return; const d=t.slice(0,10); (hrs[d]=hrs[d]||[]).push([h,H.temperature_2m?H.temperature_2m[i]:null,H.weather_code?H.weather_code[i]:null,H.precipitation_probability?H.precipitation_probability[i]:null,H.wind_gusts_10m?H.wind_gusts_10m[i]:null]); });
+  (D.time||[]).forEach((date,i)=>days.push({date,code:D.weather_code?D.weather_code[i]:null,tmin:D.temperature_2m_min?D.temperature_2m_min[i]:null,tmax:D.temperature_2m_max?D.temperature_2m_max[i]:null,pop:D.precipitation_probability_max?D.precipitation_probability_max[i]:null,precip:D.precipitation_sum?D.precipitation_sum[i]:null,wind:D.wind_speed_10m_max?D.wind_speed_10m_max[i]:null,gust:D.wind_gusts_10m_max?D.wind_gusts_10m_max[i]:null,app:appAt[date]!=null?appAt[date]:null,hours:hrs[date]||null}));
   return {days, fetchedAt:Date.now(), planned:st.datePrevue||''}; }
-function wxRender(n,data){ const el=$('sumWx'); if(!el||curSum!==+n) return; const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n);
+function wxRender(n,data,stale){ const el=$('sumWx'); if(!el||curSum!==+n) return; const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n);
   const planned=data.planned&&data.days.find(d=>d.date===data.planned);
   const list=planned?[planned]:data.days.slice(0,4);
-  el.innerHTML=`<div class="small mut">À l’altitude du sommet (${f(o.altSom,0)} m) · source Open-Meteo · mis à jour à ${hhmm(new Date(data.fetchedAt))} <button class="btn sec sm" type="button" data-wx-refresh style="margin-left:6px">↻ Actualiser</button></div>
+  el.innerHTML=`<div class="small mut">À l’altitude du sommet (${f(o.altSom,0)} m) · source Open-Meteo · ${stale?'<b>copie hors-ligne du '+esc(fmtDT(data.fetchedAt))+'</b>':'mis à jour à '+hhmm(new Date(data.fetchedAt))} <button class="btn sec sm" type="button" data-wx-refresh style="margin-left:6px">↻ Actualiser</button></div>
   ${planned?`<p class="small" style="margin:8px 0 0">📅 Prévision pour ta date prévue (${dFR(data.planned)}) :</p>`:(data.planned?`<p class="small mut" style="margin:8px 0 0">Date prévue hors des 16 jours de prévision : voici les prochains jours.</p>`:'')}
   <div class="wxgrid">${list.map(wxDayHTML).join('')}</div><p class="small mut" style="margin-top:6px">Prévision indicative : vérifie un bulletin montagne la veille au soir.</p>`; }
 async function loadSummitWeather(n,force){ const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; const el=$('sumWx'); if(!o||!I||!I.sum||!el) return;
   if(!force){ const c=wxCache(n); if(c&&c.planned===(objState(n).datePrevue||'')){ wxRender(n,c); return; } }
+  const old=wxCache(n,true); const useOld=()=>{ if(!old||curSum!==+n) return false; old.planned=objState(n).datePrevue||''; wxRender(n,old,true); dayJRender(n); return true; };
   el.innerHTML='<p class="small mut">Chargement de la météo du sommet…</p>';
-  if(navigator.onLine===false){ el.innerHTML='<p class="small mut">📴 Hors-ligne : météo du sommet indisponible pour le moment. <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; return; }
-  try{ const [la,lo]=I.sum; const url='https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&elevation='+Math.round(o.altSom)+'&hourly=temperature_2m,apparent_temperature&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FParis&forecast_days=16';
-    const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status); const data=parseWx(await r.json(),o,objState(n)); wxStore(n,data); wxRender(n,data); }
-  catch(e){ if(curSum===+n) el.innerHTML='<p class="small mut">Météo du sommet indisponible pour le moment (connexion ?). <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; } }
+  if(navigator.onLine===false){ if(useOld()) return; el.innerHTML='<p class="small mut">📴 Hors-ligne : météo du sommet indisponible pour le moment. <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; return; }
+  try{ const [la,lo]=I.sum; const url='https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&elevation='+Math.round(o.altSom)+'&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FParis&forecast_days=16';
+    const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status); const data=parseWx(await r.json(),o,objState(n)); wxStore(n,data); wxRender(n,data); dayJRender(n); return true; }
+  catch(e){ if(useOld()) return false; if(curSum===+n) el.innerHTML='<p class="small mut">Météo du sommet indisponible pour le moment (connexion ?). <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; } }
 
+/* v23 : bloc « Jour J » utilisable hors-ligne (soleil, météo heure par heure en cache, matériel, GPX, carte préparée) */
+const TILE_CACHE='suivi-montagne-tiles-v1', OFF_KEY=KEY+'.offline', TILE_MAX=180, TILE_ZMIN=11, TILE_ZMAX=15;
+function offMeta(n){ try{ return (JSON.parse(localStorage.getItem(OFF_KEY)||'{}'))[n]||null; }catch(e){ return null; } }
+function offStore(n,m){ try{ const a=JSON.parse(localStorage.getItem(OFF_KEY)||'{}'); a[n]=m; localStorage.setItem(OFF_KEY,JSON.stringify(a)); }catch(e){} }
+function tileList(pts){ const la=pts.map(p=>p[0]), lo=pts.map(p=>p[1]); let s=Math.min(...la), nn=Math.max(...la), w=Math.min(...lo), e=Math.max(...lo);
+  const pad=Math.max(.004,(nn-s)*.08,(e-w)*.08); s-=pad; nn+=pad; w-=pad; e+=pad;
+  const tx=(x,z)=>Math.floor((x+180)/360*2**z), ty=(y,z)=>{ const r=y*Math.PI/180; return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*2**z); };
+  for(let zmax=TILE_ZMAX;zmax>=TILE_ZMIN;zmax--){ const out=[]; for(let z=TILE_ZMIN;z<=zmax;z++) for(let x=tx(w,z);x<=tx(e,z);x++) for(let y=ty(nn,z);y<=ty(s,z);y++) out.push(z+'/'+x+'/'+y);
+    if(out.length<=TILE_MAX) return {tiles:out,zmax}; }
+  return {tiles:[],zmax:0}; }
+function offPts(n){ const I=OBJ_INFO[+n], g=sanGpx(objState(n).gpx); return g? g.pts.concat([I.sum,I.start.ll]) : [I.sum,I.start.ll]; }
+async function prepOffline(n){ const I=OBJ_INFO[+n]; if(!I||!I.sum) return; const btn=$('offPrep'), msg=$('offMsg'); const say=t=>{ if(msg&&curSum===+n) msg.textContent=t; };
+  if(navigator.onLine===false){ say('📴 Connexion nécessaire pour préparer le hors-ligne.'); return; }
+  if(btn) btn.disabled=true; say('Météo…');
+  const wxOk=await loadSummitWeather(n,true);
+  say('Carte : moteur…'); let lf=true; try{ await loadLeaflet(); }catch(e){ lf=false; }
+  const {tiles,zmax}=tileList(offPts(n)); let ok=0;
+  if('caches' in window&&tiles.length){ const c=await caches.open(TILE_CACHE);
+    for(let i=0;i<tiles.length;i+=2){ await Promise.all(tiles.slice(i,i+2).map(async t=>{ const u='https://tile.openstreetmap.org/'+t+'.png';
+        try{ if(await c.match(u)){ ok++; return; } const r=await fetch(u,{mode:'cors'}); if(r.ok){ await c.put(u,r); ok++; } }catch(e){} }));
+      say('Carte : '+ok+'/'+tiles.length+' tuiles…'); } }
+  offStore(n,{t:Date.now(),tiles:ok,total:tiles.length,zmax,wx:!!wxOk,leaflet:lf});
+  if(btn) btn.disabled=false; if(curSum===+n){ dayJRender(n); initGpxMap(n); }
+  toast('Hors-ligne prêt : '+ok+' tuiles de carte'+(wxOk?', météo':'')+(sanGpx(objState(n).gpx)?', trace GPX':'')); }
+function dayJRender(n){ const el=$('sumDayJ'); if(!el||curSum!==+n) return; const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n], st=objState(n); if(!o||!I) return;
+  const wx=wxCache(n,true), T=todayISO(), tm=toISO(new Date(Date.now()+864e5));
+  const day=st.datePrevue&&st.datePrevue>=T? st.datePrevue : tm, dd=parseISO(day), sun=sunTimes(dd,I.start.ll[0],I.start.ll[1]);
+  const W=wx&&wx.days?wx.days.find(d=>d.date===day):null, H=W&&W.hours?W.hours:null, h=o.multi?o.h:(o.h||4);
+  let limit=sun?sun.set.getHours()+sun.set.getMinutes()/60-0.5:19, why='coucher du soleil − 30 min', storm=null;
+  if(H){ const bad=H.find(x=>x[0]>=11&&(x[2]>=95||(x[3]!=null&&x[3]>=60))); if(bad){ storm=bad; if(bad[0]-0.5<limit){ limit=bad[0]-0.5; why=bad[2]>=95?'orage possible vers '+bad[0]+' h':'averses probables ('+bad[3]+' %) vers '+bad[0]+' h'; } } }
+  const fh=x=>{ const m=Math.round(x*60); return String(Math.floor(m/60)).padStart(2,'0')+'h'+String(m%60).padStart(2,'0'); };
+  const dep=limit-h-0.5, rise=sun?sun.rise.getHours()+sun.rise.getMinutes()/60:6, depTxt=dep<rise-1? 'avant '+fh(rise)+' (frontale) — ou raccourcis la sortie' : 'au plus tard '+fh(dep);
+  const ic=c=>c==null?'·':c>=95?'⛈️':c>=71&&c<=86&&!(c>=80&&c<=82)?'❄️':c>=51?'🌧️':c===45||c===48?'🌫️':c>=3?'☁️':c>=1?'⛅':'☀️';
+  const strip=H? `<div class="hstrip">${H.filter(x=>x[0]>=6&&x[0]<=20).map(x=>`<div class="${x[2]>=95?'st':''}"><small>${x[0]}h</small><b>${ic(x[2])}</b><small>${x[1]!=null?f(x[1],0)+'°':''}</small><small class="mut">${x[3]!=null?x[3]+'%':''}</small></div>`).join('')}</div>` : '';
+  const g=gearStatus(o.n), miss=g.filter(x=>x.st!=='ok'), G=sanGpx(st.gpx), M=offMeta(n);
+  el.innerHTML=`<div class="kv"><b>Date</b><span>${dFR(day)}${st.datePrevue&&st.datePrevue>=T?' (date prévue)':' (demain — fixe une date prévue pour l’adapter)'}</span>
+   ${sun?`<b>Soleil</b><span>🌅 ${hhmm(sun.rise)} · 🌇 ${hhmm(sun.set)} (au départ)</span>`:''}
+   <b>Départ</b><span>${depTxt} pour être de retour vers ${fh(limit)} <span class="mut">(${esc(why)} ; ≈ ${fmtH(h)} de marche${o.multi?' par étape':''} + 30 min de marge)</span></span>
+   <b>Météo</b><span>${W?`${esc(WX_CODES[W.code]||'—')} · ${f(W.tmin,0)}° à ${f(W.tmax,0)}°C au sommet · rafales ${f(W.gust,0)} km/h${storm&&storm[2]>=95?` · <b>⛈️ orage possible l’après-midi (dès ${storm[0]} h)</b>`:''}`:(wx?'hors des 16 jours de prévision':'pas encore en cache')}${wx?`<br><span class="mut small">Prévision du ${esc(fmtDT(wx.fetchedAt))}</span>`:''}</span>
+   <b>Matériel</b><span>${g.length-miss.length}/${g.length} prêts${miss.length?' — à prévoir : '+miss.map(x=>esc(x.l)).join(', '):' ✔'}</span>
+   <b>Trace GPX</b><span>${G?'✔ enregistrée ('+f(G.dist,1)+' km, D+ '+f(G.dplus,0)+' m), disponible hors-ligne':'aucune (ajoute-la dans la carte ci-dessous)'}</span>
+   <b>Hors-ligne</b><span>${M?`préparé le ${esc(fmtDT(M.t))} · ${M.tiles}/${M.total} tuiles de carte (zoom ${TILE_ZMIN}–${M.zmax})${M.wx?' · météo':''}`:'pas encore préparé'}</span></div>
+   ${strip?`<h4 class="h4">⏱️ Heure par heure au sommet (${dFR(day)})</h4>${strip}`:''}
+   <div class="row" style="margin-top:10px"><button class="btn sec sm" type="button" id="offPrep" data-offprep>📥 Préparer hors-ligne</button><span class="small mut" id="offMsg"></span></div>
+   <p class="small mut" style="margin-top:6px">Télécharge la météo, la carte de la zone (au plus ${TILE_MAX} tuiles OpenStreetMap, zoom ≤ ${TILE_ZMAX}, à la demande uniquement) et le moteur de carte, pour consulter cette fiche sans réseau. Indicatif : vérifie le bulletin montagne la veille.</p>`; }
 function uncMark(t){ return esc(t).replace(/⚠︎|⚠️?/g,'<span class="unc" title="Information incertaine : à vérifier">⚠︎</span>'); }
 function renderSummit(n){
   const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I){ return false; }
@@ -1900,10 +1951,12 @@ function renderSummit(n){
     <div class="small mut" style="margin-top:6px"><span class="unc">⚠︎</span> = information incertaine ou variable, à vérifier avant de partir.</div>
   </div>
   ${ASC.card(o)}
+  <div class="card"><h3>🗓️ Jour J <span class="small mut">(disponible hors-ligne)</span></h3><div id="sumDayJ"></div></div>
   ${cl.filter(c=>c.to>=today).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> du ${dFR(c.from)} au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
   <div class="card"><h3>🗺️ Carte</h3><div class="mapf" id="sumStaticMap"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
     <div class="links">${mapLinks(o,I).map(([t,u])=>`<a class="btn sec sm" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
     <div class="small mut" style="margin-top:6px">Sommet : ${I.sum[0].toFixed(4)}, ${I.sum[1].toFixed(4)} · Départ : ${I.start.ll[0].toFixed(4)}, ${I.start.ll[1].toFixed(4)} (coordonnées OSM approximatives)</div>
+    ${sanGpx(st.gpx)?'':'<div id="sumMap" class="mapf leaf" style="display:none;margin-top:10px"></div><div class="small mut" id="sumMapNote" style="margin-top:6px"></div>'}
     <input type="file" id="sumGpxFile" accept=".gpx,application/gpx+xml,text/xml" hidden>
     ${gpxCardHTML(o,st)}</div>
   <div class="card"><h3>🌤️ Météo au sommet</h3><div id="sumWx"><p class="small mut">Chargement de la météo du sommet…</p></div></div>
@@ -1925,8 +1978,8 @@ function renderSummit(n){
     ${g.map(x=>`<div class="gear ${x.st}"><span class="gi">${x.st==='ok'?'✔':x.st==='buy'?'○':'＋'}</span><div class="nm"><b>${esc(x.l)}</b><div class="small mut">${x.st==='ok'?'coché dans « '+esc(x.cat.name)+' »':x.st==='buy'?'dans ta liste, pas encore acheté':'absent de ta liste d’équipement'}</div></div>${x.st==='missing'?`<button class="btn sm sec" data-gear-add="${x.k}">Ajouter</button>`:''}</div>`).join('')}</div>
   ${I.uncertain&&I.uncertain.length?`<div class="card"><h3>❓ À vérifier avant de partir</h3><ul class="steps">${I.uncertain.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
   <div class="card small"><h3>📚 Sources</h3>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}<p class="mut" style="margin:8px 0 0">Données issues de topos et sites officiels (consultés en octobre 2026) ; conditions, horaires et accès changent : vérifie toujours avant de partir.</p></div>`;
-  const _g=sanGpx(st.gpx); if(_g){ drawGpxProfile(_g); initGpxMap(o.n); }
-  loadSummitWeather(o.n,false);
+  const _g=sanGpx(st.gpx); if(_g){ drawGpxProfile(_g); initGpxMap(o.n); } else if(offMeta(o.n)) initGpxMap(o.n);
+  dayJRender(o.n); loadSummitWeather(o.n,false);
   return true;
 }
 function addGear(k){ const G=GEAR[k]; if(!G) return; const now=Date.now();
@@ -2906,7 +2959,7 @@ function init(){
   const sumClick=e=>{ if(e.target.closest('select,input,textarea,a,summary,label,details>div')) return; const t=e.target.closest('[data-sum]'); if(t){ openSummit(t.dataset.sum); } };
   ['objList','prepList','prepHero','jAdv'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
   $('objSort').addEventListener('click',e=>{ const b=e.target.closest('[data-osort]'); if(!b) return; try{ localStorage.setItem('sm-objsort',b.dataset.osort); }catch(_){} renderObj(); });
-  $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
+  $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-offprep]')){ prepOffline(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
   $('sumBody').addEventListener('change',e=>{ if(e.target.id==='sumGpxFile'){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) handleGpxFile(curSum,f); } });
   $('poidsBody').addEventListener('click',poidsClick);
   document.addEventListener('click',e=>{ if(e.target.closest('[data-w-new]')&&!e.target.closest('#poidsBody')){ IMP.manualWeigh(); } });

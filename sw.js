@@ -2,9 +2,10 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v22';            // fichiers de l'appli (renouvelé à chaque version)
+const CACHE = PREFIX + 'v23';            // fichiers de l'appli (renouvelé à chaque version)
 const EXT = PREFIX + 'ext-v2';          // polices + moteur OCR Tesseract + Leaflet (stables ; v2 : réponses CORS pour la vérification d'intégrité)
-const KEEP = [CACHE, EXT];
+const TILES = PREFIX + 'tiles-v1';       // v23 : tuiles OSM préparées à la demande (« Préparer hors-ligne »), remplies par la page
+const KEEP = [CACHE, EXT, TILES];
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './img/sommets/barrhorn.webp', './img/sommets/cabaliros.webp', './img/sommets/chaine-des-puys.webp', './img/sommets/grande-sassiere.webp', './img/sommets/pic-du-midi-artigues.webp', './img/sommets/pic-du-midi-tourmalet.webp', './img/sommets/puy-de-dome.webp', './img/sommets/rhune.webp', './img/sommets/sancy.webp', './img/sommets/sancy-cretes.webp', './img/sommets/taillon.webp'];
 const EXT_HOSTS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'];
@@ -25,6 +26,11 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url), origin = url.origin;
   // Polices et moteur OCR (versions figées dans l'URL) : cache d'abord, pour fonctionner hors-ligne
+  // Tuiles OSM : servies depuis le cache si la zone a été préparée, sinon réseau (aucun téléchargement automatique)
+  if (origin === 'https://tile.openstreetmap.org') {
+    e.respondWith(caches.open(TILES).then(c => c.match(e.request.url).then(hit => hit || fetch(e.request))));
+    return;
+  }
   if (EXT_HOSTS.includes(origin)) {
     if (origin === 'https://cdn.jsdelivr.net' && !/(tesseract|leaflet@1\.9\.4)/i.test(url.pathname)) return; // OCR + Leaflet figés : mis en cache ; le reste passe sans interception
     e.respondWith(caches.open(EXT).then(c => c.match(e.request).then(hit => hit || fetch(e.request).then(r => {
