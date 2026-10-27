@@ -15,7 +15,7 @@ const SDIR = process.env.SAMPLE_DIR || require('path').resolve('.');
 // v24 : versions anciennes commitées dans tests/fixtures (old.html = v4 sans données, commit fab7403 ; old16.html = v16, commit 2f57c2c ; v25 : old24.html = v24, commit 9153bb4),
 // copiées dans le dossier servi si elles manquent : plus besoin de l'historique git (clone neuf ou superficiel).
 { const fs = require('fs'), path = require('path'); const SERVE = process.env.SERVE_DIR || process.cwd();
-  for (const f of ['old.html', 'old16.html', 'old24.html']) { const fp = path.join(SERVE, f), src = path.join(__dirname, 'fixtures', f); if (fs.existsSync(fp)) continue;
+  for (const f of ['old.html', 'old16.html', 'old24.html', 'old28.html']) { const fp = path.join(SERVE, f), src = path.join(__dirname, 'fixtures', f); if (fs.existsSync(fp)) continue;
     try { fs.copyFileSync(src, fp); console.log('(' + f + ' copié depuis tests/fixtures)'); }
     catch (e) { console.error('Impossible de copier ' + src + ' : ' + e.message); process.exit(2); } }
   if (!process.env.OLD16) process.env.OLD16 = 'old16.html'; }
@@ -35,6 +35,8 @@ function FIXTURE() {
   const fresh = async (url) => { const ctx = await b.createBrowserContext(); const p = await ctx.newPage(); await p.setViewport({width:390,height:844});
     // un doigt touche ce qu'il voit : on centre l'élément avant le clic/la frappe (sinon la barre d'actions collante peut le recouvrir)
     for (const m of ['click','type']) { const o = p[m].bind(p); p[m] = async (sel, ...a) => { await p.evaluate(s => { const e = document.querySelector(s); if (e) e.scrollIntoView({block:'center'}); }, sel).catch(()=>{}); return o(sel, ...a); }; }
+    // v29 : init() attend l'ouverture d'IndexedDB (async) : après chaque navigation, on attend que les données soient chargées
+    for (const m of ['goto','reload']) { const o = p[m].bind(p); p[m] = async (...a) => { const r = await o(...a); await p.waitForFunction("typeof DB==='undefined'?!document.getElementById('p-journal'):!!DB&&(typeof appReady==='undefined'||appReady)", {timeout:6000}).catch(()=>{}); return r; }; }
     p.errs = []; p.on('pageerror', e => p.errs.push(e.message)); p.on('dialog', d => d.accept()); if (url) await p.goto(url, {waitUntil:'networkidle0'}); return [ctx, p]; };
 
   const withFix = async (p, idPrefix, wHeure) => { await p.evaluate((F, pre, h) => { if (h) F.weights[0].heure = h; const D = JSON.parse(JSON.stringify(DB));
@@ -790,7 +792,7 @@ function FIXTURE() {
       const orig = Storage.prototype.setItem; let msg = ''; const ot = window.toast; window.toast = m => { msg = m; };
       Storage.prototype.setItem = function (k, v) { if (k === KEY && JSON.parse(orig.call ? (localStorage.getItem(SNAP_KEY) || '[]') : '[]').length > 2) throw new DOMException('full', 'QuotaExceededError'); return orig.call(this, k, v); };
       DB.prefs.zz = 1; let err = null; try { save(); } catch (e) { err = e.message; } Storage.prototype.setItem = orig; window.toast = ot;
-      const s = snapshots(); return {n: s.length, first: s[0].reason, saved: JSON.parse(localStorage.getItem(KEY)).prefs.zz, msg, err}; });
+      const s = JSON.parse(localStorage.getItem(SNAP_KEY) || '[]'); return {n: s.length, first: s[0].reason, saved: JSON.parse(localStorage.getItem(KEY)).prefs.zz, msg, err}; });
     ok(q.n === 2 && q.first === 'r0' && q.saved === 1 && /la plus récente est gardée/.test(q.msg) && !q.err, 'stockage plein : copies anciennes supprimées une à une, la plus récente gardée, avertissement', q);
     const im = await p.evaluate(async () => { const base = {version:4, sessions:[{id:'a',date:'2026-01-01',type:'Marche',dist:1,updatedAt:5},{id:'b',date:'2026-01-02',type:'Marche',dist:2,updatedAt:5}], weights:[{id:'w1',date:'2026-01-01',kg:80,updatedAt:5}], daily:[], objectifs:{1:{statut:'Prêt',updatedAt:5}}, equip:defaultEquip(), prefs:{actMap:{}}, tomb:newTomb()};
       DB = normalizeDB(JSON.parse(JSON.stringify(base))); save(); const file = JSON.parse(JSON.stringify(base)); file.sessions = [file.sessions[0], {id:'c',date:'2026-01-03',type:'Vélo',dist:3,updatedAt:4}]; file.weights = [];
@@ -979,6 +981,7 @@ function FIXTURE() {
     ok(L1.z === 2 && L1.a === 3 && L1.b === 4, 'niveaux dérivés des statuts : prépa Vache « Prêt » → niveau 3 (Vache fermée passée), Dôme « Prêt » → 4, « Fait » → 5', L1);
     ok(L1.coh, 'chaque niveau = prépa ≥ 80 % / statut, ou sommet « Fait » (cohérence avec les données réelles)');
     ok(L1.c === 1 && L1.d === 0, 'Vache : bloque seulement quand la fermeture est levée (sinon « passé »)', L1);
+    await p.evaluate(() => { document.getAnimations().filter(a => !(a instanceof CSSAnimation) && a.effect && a.effect.getComputedTiming().iterations !== Infinity).forEach(a => a.finish()); }); await W(900); // v29 : montée de niveau jouée puis bandeau recentré
     const ce = await p.evaluate(() => { const st=$('jeuStrip'), S=JEU.scale, x=JEU.at[JEU.cur][0]*S; const hk=$('jeuHk').getBoundingClientRect(), sr=st.getBoundingClientRect();
       return {d:Math.abs(x-(st.scrollLeft+st.clientWidth/2)), clamp:x<st.clientWidth/2, hx:hk.left+hk.width*.62-sr.left+st.scrollLeft-x}; });
     ok((ce.d < 3 || ce.clamp) && Math.abs(ce.hx) < 3, 'ouverture centrée sur le niveau courant, randonneur posé sur sa pastille', ce);
@@ -1037,6 +1040,165 @@ function FIXTURE() {
     await p.setOfflineMode(false);
     ok(off.drawn === 11 && off.hk, 'hors-ligne : bandeau complet (11 décors + randonneur)', off);
     ok(p.errs.length === 0, 'bandeau : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 27. v29 : IndexedDB (migration vérifiée, repli, gist identique, compat v28), étape, plan, Jour J, montée de niveau ----------
+  out.push('27. v29 : IndexedDB, prochaine étape, plan, Jour J, montée de niveau');
+  { const GPX = (k, n) => { const pts = []; for (let i = 0; i < (n || 300); i++) pts.push([45 + k / 100 + i / 5000, 3 + i / 4000, 1000 + Math.round(300 * Math.sin(i / 20))]); return {pts, name:'t' + k}; };
+    const seedDoc = async (p, doc, extraLS) => p.evaluateOnNewDocument((d, x) => { if (!sessionStorage.s27) { localStorage.clear(); localStorage.setItem('suiviMontagne.v1', d); for (const k in (x || {})) localStorage.setItem(k, x[k]); sessionStorage.s27 = 1; } }, doc, extraLS || {});
+    const base = async () => { const [c, p] = await fresh(BASE + '/index.html'); const d = await p.evaluate(() => { localStorage.clear(); return JSON.stringify(seed()); }); await c.close(); return JSON.parse(d); };
+    const D0 = await base(); const F = FIXTURE(); D0.sessions = F.sessions; D0.weights = F.weights; D0.daily = [{date:'2026-10-20', steps:9000, updatedAt:1}];
+    D0.objectifs = {3:{statut:'À préparer', updatedAt:5, gpx:GPX(3)}, 7:{statut:'Prêt', updatedAt:6, gpx:GPX(7)}, 1:{statut:'À préparer', updatedAt:4}};
+    const OLDSN = JSON.stringify([1, 2, 3].map(i => ({t:Date.now() - i * 864e5, day:'2026-10-0' + i, auto:true, reason:'ancienne ' + i, n:1, w:0, d:0, noGpx:1, data:JSON.stringify({sessions:[{id:'o' + i, date:'2026-10-0' + i, type:'Marche'}]})})));
+    const st = p => p.evaluate(() => ({mode:STORE.mode, err:STORE.err, mark:localStorage.getItem(KEY + '.idb'), lsSn:localStorage.getItem(SNAP_KEY), raw:localStorage.getItem(KEY), sn:snapshots().map(x => x.reason),
+      c:[DB.sessions.length, DB.weights.length, DB.daily.length, DB.equip.length], g3:JSON.stringify(DB.objectifs[3].gpx), g7:JSON.stringify(DB.objectifs[7].gpx)}));
+    const E3 = (() => { const p = GPX(3).pts.map(x => [Math.round(x[0] * 1e5) / 1e5, Math.round(x[1] * 1e5) / 1e5, x[2]]); return p; })();
+    // a) migration depuis un état v28 (GPX inline + copies dans localStorage)
+    { const [ctx, p] = await fresh(); await seedDoc(p, JSON.stringify(D0), {'suiviMontagne.v1.snapshots':OLDSN}); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'}); await W(800);
+      const a = await st(p); const ls = JSON.parse(a.raw);
+      ok(a.mode === 'idb' && a.mark === '29' && !a.err, 'migration v29 : mode IndexedDB, marqueur posé', [a.mode, a.mark, a.err]);
+      ok(!ls.objectifs[3].gpx && ls.objectifs[3].gpxRef && ls.objectifs[3].gpxRef.h && !ls.objectifs[7].gpx && ls.objectifs[1].statut === 'À préparer', 'localStorage : GPX remplacés par gpxRef, autres champs intacts', ls.objectifs);
+      ok(a.lsSn === null && ['ancienne 1', 'ancienne 2', 'ancienne 3'].every(r => a.sn.includes(r)) && a.sn.includes('avant migration v29') && a.sn.includes('avant migration v29 (avec traces GPX)'), 'copies déplacées dans IndexedDB + copie complète avant migration', a.sn);
+      ok(a.c.join() === [F.sessions.length, 1, 1, D0.equip.length].join() && JSON.parse(a.g3).pts.length === 300, 'données identiques après migration (séances, pesées, activité, matériel, GPX)', a.c);
+      const pre = await p.evaluate(() => { const x = snapshots().find(s => s.pre); const d = JSON.parse(x.data); return {g:!!(d.objectifs[3].gpx && d.objectifs[7].gpx), n:d.sessions.length}; });
+      ok(pre.g && pre.n === F.sessions.length, 'copie « avant migration » complète, traces GPX comprises', pre);
+      await p.reload({waitUntil:'networkidle0'}); await W(500); const b2 = await st(p);
+      ok(b2.mode === 'idb' && b2.g3 === a.g3 && b2.g7 === a.g7 && b2.c.join() === a.c.join() && !/gpxRef/.test(JSON.stringify(await p.evaluate(() => DB.objectifs))), 'rechargement : GPX relus depuis IndexedDB, gpxRef jamais en mémoire', b2.mode);
+      // nouvelle trace et suppression
+      const g = await p.evaluate(async G => { DB.objectifs[5] = {statut:'À préparer', updatedAt:Date.now(), gpx:sanGpx(G)}; save(); await new Promise(r => setTimeout(r, 400)); const r1 = JSON.parse(localStorage.getItem(KEY)).objectifs[5];
+        delete DB.objectifs[7].gpx; save(); await new Promise(r => setTimeout(r, 300)); return {ref:!!(r1.gpxRef && !r1.gpx)}; }, GPX(5));
+      await p.reload({waitUntil:'networkidle0'}); await W(400);
+      const g2 = await p.evaluate(() => ({g5:!!(DB.objectifs[5] && DB.objectifs[5].gpx), g7:!!DB.objectifs[7].gpx}));
+      ok(g.ref && g2.g5 && !g2.g7, 'nouvelle trace : écrite, relue puis retirée de localStorage ; trace supprimée : reste supprimée', [g, g2]);
+      // copie de sécurité « avant migration » restaurable avec GPX
+      const rs = await p.evaluate(() => { DB.sessions = []; save(); const i = snapshots().findIndex(s => s.pre); restoreSnap(i); return {n:DB.sessions.length, g7:!!DB.objectifs[7].gpx}; });
+      ok(rs.n === F.sessions.length && rs.g7, 'restauration de la copie avant migration : séances et GPX revenus', rs);
+      // stockage plein en mode IndexedDB : on retire toutes les traces GPX de localStorage, l'enregistrement passe
+      const q = await p.evaluate(async () => { const orig = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === KEY && /"gpx":\{/.test(v)) throw new DOMException('full', 'QuotaExceededError'); return orig.call(this, k, v); };
+        DB.objectifs[9] = {statut:'À préparer', updatedAt:Date.now(), gpx:sanGpx({pts:[[45, 3, 1], [45.01, 3.01, 50], [45.02, 3.02, 90]]})}; let err = null; try { save(); } catch (e) { err = e.message; }
+        Storage.prototype.setItem = orig; await new Promise(r => setTimeout(r, 500)); return {err, ref:!!JSON.parse(localStorage.getItem(KEY)).objectifs[9].gpxRef}; });
+      ok(!q.err && q.ref, 'stockage plein : GPX retirés de localStorage (déjà dans IndexedDB), pas d’erreur', q);
+      ok(p.errs.length === 0, 'migration : aucune erreur JS', p.errs); await ctx.close(); }
+    // b) échec de la migration (écriture IndexedDB refusée) : rien n'est supprimé, mode v28
+    { const [ctx, p] = await fresh(); await seedDoc(p, JSON.stringify(D0), {'suiviMontagne.v1.snapshots':OLDSN});
+      await p.evaluateOnNewDocument(() => { const o = IDBObjectStore.prototype.put; IDBObjectStore.prototype.put = function (v, k) { if (k === 'pre29') throw new DOMException('disk', 'QuotaExceededError'); return o.call(this, v, k); }; });
+      await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'}); await W(800); const a = await st(p); const ls = JSON.parse(a.raw);
+      ok(a.mode === 'ls' && !a.mark && a.err && ls.objectifs[3].gpx && !ls.objectifs[3].gpxRef && JSON.parse(a.lsSn).some(x => x.reason === 'ancienne 2'), 'migration en échec : mode localStorage, GPX et copies conservés', [a.mode, a.err]);
+      await p.reload({waitUntil:'networkidle0'}); await W(800); const b2 = await st(p);
+      ok(b2.mode === 'ls' && b2.sn.filter(r => r === 'avant migration v29').length === 1 && b2.c.join() === a.c.join() && b2.g3 === a.g3, 'nouvel échec : pas de copie en plus (les anciennes ne sont pas poussées dehors), données intactes', b2.sn);
+      await ctx.close(); }
+    // c) pas d'IndexedDB du tout : comportement v28
+    { const [ctx, p] = await fresh(); await seedDoc(p, JSON.stringify(D0)); await p.evaluateOnNewDocument(() => { Object.defineProperty(window, 'indexedDB', {value:undefined, configurable:true}); });
+      await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'}); await W(500); const a = await st(p);
+      const s2 = await p.evaluate(() => { snapshot('t', true); DB.objectifs[1].statut = 'Prêt'; save(); return {sn:JSON.parse(localStorage.getItem(SNAP_KEY)).length, st:JSON.parse(localStorage.getItem(KEY)).objectifs[1].statut, g:!!JSON.parse(localStorage.getItem(KEY)).objectifs[3].gpx}; });
+      ok(a.mode === 'ls' && !a.mark && s2.sn >= 2 && s2.st === 'Prêt' && s2.g && p.errs.length === 0, 'sans IndexedDB : localStorage comme en v28, sans erreur', [a.mode, s2, p.errs]); await ctx.close(); }
+    // d) gist : contenu identique (GPX compris) et compatibilité v28 dans les deux sens
+    { const G = {content:null};
+      const dev = async (file, doc) => { const [ctx, p] = await fresh(); if (doc) await seedDoc(p, doc);
+        await p.exposeFunction('__gist', async (m, body) => { if (m === 'PATCH' || m === 'POST') G.content = JSON.parse(body).files['suivi-montagne-data.json'].content;
+          return {st:m === 'POST' ? 201 : 200, j:{id:'g2', files:G.content == null ? {} : {'suivi-montagne-data.json':{content:G.content, truncated:false}}}}; });
+        await p.evaluateOnNewDocument(() => { const of = window.fetch.bind(window); window.fetch = async (url, o = {}) => { const u = String(url); if (!/api\.github\.com/.test(u)) return of(url, o);
+          if (/\/gists\?/.test(u)) return new Response('[]', {status:200}); const r = await window.__gist(o.method || 'GET', o.body || null); return new Response(JSON.stringify(r.j), {status:r.st, headers:{'Content-Type':'application/json'}}); }; });
+        await p.goto(BASE + '/' + file, {waitUntil:'networkidle0'}); await W(600); await p.evaluate(() => saveSyncCfg({token:'ghp_test', gistId:'g2', lastSync:0, auto:false})); return [ctx, p]; };
+      const [c1, p1] = await dev('index.html', JSON.stringify(D0)); await p1.evaluate(() => syncNow({silent:true})); await W(500);
+      const mem = await p1.evaluate(() => JSON.stringify(DB.objectifs)); const gj = JSON.parse(G.content);
+      ok((await p1.evaluate(() => STORE.mode)) === 'idb' && JSON.stringify(gj.objectifs) === mem && gj.objectifs[3].gpx.pts.length === 300 && !/gpxRef/.test(G.content), 'gist envoyé en v29 : objectifs identiques à la mémoire, GPX inclus, aucun gpxRef', G.content && G.content.length);
+      const [c2, p2] = await dev('old28.html'); await p2.evaluate(() => syncNow({silent:true})); await W(500);
+      const o28 = await p2.evaluate(() => ({g:DB.objectifs[3] && DB.objectifs[3].gpx && DB.objectifs[3].gpx.pts.length, n:DB.sessions.length}));
+      ok(o28.g === 300 && o28.n === F.sessions.length, 'appareil resté en v28 : reçoit séances et GPX depuis le gist v29', o28);
+      await p2.evaluate(() => { DB.objectifs[3].statut = 'Prêt'; DB.objectifs[3].updatedAt = Date.now(); save(); return syncNow({silent:true}); }); await W(300);
+      await p1.evaluate(() => syncNow({silent:true})); await W(500);
+      const back = await p1.evaluate(() => ({s:DB.objectifs[3].statut, g:DB.objectifs[3].gpx && DB.objectifs[3].gpx.pts.length, ref:!!JSON.parse(localStorage.getItem(KEY)).objectifs[3].gpxRef}));
+      ok(back.s === 'Prêt' && back.g === 300 && back.ref, 'modif faite en v28 reçue en v29, GPX toujours en IndexedDB', back);
+      await c1.close(); await c2.close(); }
+    // e) trace introuvable (IndexedDB vidé entre deux ouvertures) : on la récupère du gist
+    { const [ctx, p] = await fresh(); await seedDoc(p, JSON.stringify(D0)); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'}); await W(800);
+      await p.evaluate(() => new Promise(r => { const q = indexedDB.open('suiviMontagne'); q.onsuccess = () => { const t = q.result.transaction('gpx', 'readwrite'); t.objectStore('gpx').delete('3'); t.oncomplete = r; }; }));
+      await p.reload({waitUntil:'networkidle0'}); await W(900);
+      const r = await p.evaluate(() => ({mode:STORE.mode, g3:!!DB.objectifs[3].gpx, u3:DB.objectifs[3].updatedAt, g7:!!DB.objectifs[7].gpx, toast:($('toast') || {}).textContent || ''}));
+      ok(r.mode === 'idb' && !r.g3 && r.u3 === 1 && r.g7 && /introuvable/.test(r.toast), 'trace absente d’IndexedDB : signalée, objectif laissé au gist (updatedAt=1), autres traces intactes', r); await ctx.close(); }
+    // f) 13 traces au maximum de points
+    { const [ctx, p] = await fresh(); const D = JSON.parse(JSON.stringify(D0)); D.objectifs = {}; for (let k = 1; k <= 13; k++) D.objectifs[k] = {statut:'À préparer', updatedAt:k, gpx:GPX(k, 2000)};
+      await seedDoc(p, JSON.stringify(D)); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'}); await W(1200);
+      const r = await p.evaluate(() => ({mode:STORE.mode, ls:localStorage.getItem(KEY).length, n:Object.values(DB.objectifs).filter(o => o.gpx && o.gpx.pts.length === GPX_MAX_PTS).length}));
+      await p.reload({waitUntil:'networkidle0'}); await W(600); const r2 = await p.evaluate(() => Object.values(DB.objectifs).filter(o => o.gpx && o.gpx.pts.length === GPX_MAX_PTS).length);
+      ok(r.mode === 'idb' && r.n === 13 && r2 === 13 && r.ls < 60000, '13 traces au maximum : toutes relues, localStorage allégé', [r, r2]); await ctx.close(); }
+    // g) Prochaine étape (Journal)
+    { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+      const a = await p.evaluate(() => { const o = nextObjective(), c = $('jStep'); return {first:document.querySelector('#p-journal').firstElementChild.id, nm:o.sommet, h:c.textContent, btn:[...c.querySelectorAll('[data-step]')].map(b => b.dataset.step), sumOnly:c.querySelectorAll('[data-sum]').length, ring:!!c.querySelector('svg'), n:o.n}; });
+      ok(a.first === 'jStep' && a.h.includes(a.nm) && a.ring && a.sumOnly === 1, 'Prochaine étape en tête du Journal : anneau + prochain sommet', a.first);
+      ok(/aucune date prévue/.test(a.h) && /Séance du jour/.test(a.h) && a.btn.join() === 'date,sum', 'ce qui manque + séance du jour + « Fixer la date » / « Voir la fiche »', a.btn);
+      await p.click('#jStep [data-step="date"]'); await W(400);
+      const f = await p.evaluate(n => ({pg:curPage, foc:document.activeElement && document.activeElement.dataset.k, on:document.activeElement && document.activeElement.dataset.obj}), a.n);
+      ok(f.pg === 'obj' && f.foc === 'datePrevue' && f.on === String(a.n), '« Fixer la date » : page Objectifs, champ date du bon sommet', f);
+      const j = await p.evaluate(n => { DB.objectifs[n] = Object.assign(objState(n), {datePrevue:todayISO(), updatedAt:Date.now()}); save(); renderAll(); show('journal'); return [...$('jStep').querySelectorAll('[data-step]')].map(b => b.dataset.step).join(); }, a.n);
+      await p.click('#jStep [data-step="jj"]'); await W(300);
+      ok(j === 'jj,sum' && await p.evaluate(() => !$('jjMode').hidden), 'date prévue aujourd’hui : « Mode Jour J » ouvre le plein écran', j);
+      await p.evaluate(() => jjClose()); await p.click('#jStep [data-step="sum"]'); await W(400);
+      ok(await p.evaluate(n => curPage === 'sum' && curSum === n, a.n), '« Voir la fiche » ouvre la fiche du sommet'); ok(p.errs.length === 0, 'étape : aucune erreur JS', p.errs); await ctx.close(); }
+    // h) Plan du sommet
+    { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+      const r = await p.evaluate(() => { const o = OBJECTIFS.find(x => x.n === 13) || OBJECTIFS[0]; openSummitNoPush ? openSummitNoPush(o.n) : openSummit(o.n);
+        const card = $('planCard'), safe = $('safeBlock'); const P0 = planStatus(o), R0 = readiness(o, trainStats(new Date()));
+        const after = safe && card && !!(safe.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const k = P0.items.find(x => !x.ok).k; card.querySelector(`[data-plan="${k}"]`).click(); const P1 = planStatus(o), R1 = readiness(o, trainStats(new Date()));
+        const stored = !!DB.objectifs[o.n].plan[k];
+        const T = P0.items[1]; DB.sessions.push({id:'pl1', date:todayISO(), type:'Marche', dist:10, dplus:String(Math.ceil((o.multi ? o.multi.dpJ : o.dplus))), dur:'40000', sac:'9', dminus:'5000', updatedAt:Date.now()}); DB.sessions.push({id:'pl2', date:todayISO(), type:'Tapis 6%', dist:2, dplus:'5000', dur:'600', updatedAt:Date.now()});
+        const P2 = planStatus(o); renderAll(); return {o:o.n, after, n:P0.items.length, d0:P0.done, d1:P1.done, d2:P2.done, dr:Math.round((R1.r - R0.r) * 1000) / 1000, stored, autoA:$('planCard').querySelectorAll('.ptk.auto').length, txt:$('planCard').textContent}; });
+      ok(r.after && r.n === 5, 'carte Plan : 5 séances, après le bloc Sécurité', r);
+      ok(r.d1 === r.d0 + 1 && r.stored && Math.abs(r.dr - 0.06) < 0.002, 'cochée à la main : enregistrée, +6 points de préparation (30 % ÷ 5)', r);
+      ok(r.d2 === 5 && r.autoA === 5 && /fait le/.test(r.txt), 'séance qui atteint les cibles (valeurs texte comprises) : tout coché automatiquement', r);
+      const u = await p.evaluate(n => { const o = OBJECTIFS.find(x => x.n === n); const k = planStatus(o).items[0].k; $('planCard').querySelector(`[data-plan="${k}"]`).click(); return planStatus(o).done; }, r.o);
+      ok(u === 5, 'case validée par une séance : non décochable', u);
+      const nz = await p.evaluate(() => normalizeDB({sessions:[], objectifs:{1:{plan:{p0:'x', p1:123, zz:5}}, 2:{plan:[1]}}}).objectifs);
+      ok(JSON.stringify(nz) === '{"1":{"plan":{"p1":123}},"2":{}}', 'plan importé nettoyé (clés et valeurs inconnues retirées)', nz);
+      ok(p.errs.length === 0, 'plan : aucune erreur JS', p.errs); await ctx.close(); }
+    // i) Mode Jour J
+    { const [ctx, p] = await fresh(); await p.evaluateOnNewDocument(() => { window.__sh = []; navigator.share = d => { window.__sh.push(d); return Promise.resolve(); };
+        navigator.geolocation.getCurrentPosition = ok => ok({coords:{latitude:42.123456, longitude:-0.654321, accuracy:12}}); });
+      await p.setRequestInterception(true); p.on('request', q => /open-meteo/.test(q.url()) ? q.abort() : q.continue());
+      await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'}); await withFix(p);
+      const r = await p.evaluate(async () => { const o = nextObjective(); openSummit(o.n); document.querySelector('[data-jjopen]').click(); const m = $('jjMode'), nav = getComputedStyle(document.querySelector('nav')).display;
+        const t0 = m.textContent; m.querySelector('[data-jj="start"]').click(); const s = jjState(), lim = jjLimit(s, o); const t1 = m.textContent;
+        m.querySelector('[data-jj="p15"]').click(); const lim2 = jjLimit(jjState(), o);
+        const g = m.querySelector('[data-jjbag]'); g && g.click(); const bag = g ? !!jjState().bag[g.dataset.jjbag] : true;
+        m.querySelector('[data-jj="share"]').click(); await new Promise(r => setTimeout(r, 100));
+        m.querySelector('[data-jj="sum"]').click(); const t2 = m.textContent;
+        return {open:!m.hidden, role:m.getAttribute('role'), nav, t0, t1, d:(lim2 - lim) / 60000, asc:(lim - s.start) / 3600e3, h:o.multi ? o.multi.hJ : o.h, bag, sh:window.__sh, tel:m.querySelector('a[href="tel:112"]') && m.querySelector('a[href="tel:112"]').textContent, t2, wx:m.textContent}; });
+      ok(r.open && r.role === 'dialog' && r.nav === 'none', 'Jour J : plein écran, barre de navigation masquée', r.nav);
+      ok(/Je pars maintenant/.test(r.t0) && /Demi-tour au plus tard à \d\dh\d\d/.test(r.t1) && /\d+ h \d\d|\d+ min/.test(r.t1) && Math.abs(r.asc - Math.round(r.h * (/boucle/i.test('') ? .55 : .6) * 4) / 4) < .26, 'départ : heure limite (≈ 60 % du temps total) + compte à rebours', [r.asc, r.h]);
+      ok(r.d === 15 && r.bag, '± 15 min et liste du sac', r.d);
+      ok(r.sh.length === 1 && /geo:42\.12346,-0\.65432/.test(r.sh[0].text) && /openstreetmap\.org\/\?mlat=42\.12346&mlon=-0\.65432/.test(r.sh[0].url), 'Partager ma position : Web Share avec lien geo: et OpenStreetMap', r.sh);
+      ok(/Secours 112/.test(r.tel || '') && /Sommet atteint/.test(r.t2) && /Terminer la sortie/.test(r.t2), 'bouton Secours 112 (tel:) + « Sommet atteint »', r.tel);
+      ok(/Météo indisponible|Hors ligne/.test(r.wx), 'météo injoignable sans cache : message clair', r.wx.slice(0, 120));
+      const nt = await p.evaluate(() => { const s = jjState(), sv = s.sum; s.sum = null; s.start = Date.now(); s.adj = 0; jjSave(s); const o = OBJECTIFS.find(x => x.n === s.n), I = OBJ_INFO[o.n], st = sunTimes(new Date(), I.start.ll[0], I.start.ll[1]);
+        const late = Date.now() + ((o.multi ? o.multi.hJ : o.h) || 3) * 3600e3 > +st.set; jjRender(); const t = $('jjMode').textContent; s.start = +st.set - 12 * 3600e3; jjSave(s); jjRender(); const early = $('jjMode').textContent; s.sum = sv; s.start = Date.now(); jjSave(s); jjRender();
+        return {late, warn:/après le coucher du soleil/.test(t), early:/après le coucher du soleil/.test(early)}; });
+      ok(nt.warn === nt.late && !nt.early, 'retour estimé après le coucher du soleil : avertissement lampe frontale (seulement dans ce cas)', nt);
+      await p.reload({waitUntil:'networkidle0'}); const k = await p.evaluate(() => { const s = jjState(); return !!(s && s.start && s.sum); });
+      ok(k, 'Jour J : départ et sommet gardés après rechargement (local à l’appareil)');
+      const sy = await p.evaluate(() => !/jourj/.test(JSON.stringify(DB)));
+      ok(sy && p.errs.length === 0, 'Jour J : rien dans les données synchronisées, aucune erreur JS', p.errs); await ctx.close(); }
+    // j) Montée de niveau
+    { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p); await p.evaluate(() => localStorage.removeItem(KEY + '.jeuSeen')); await p.reload({waitUntil:'networkidle0'}); await p.evaluate(() => { show('obj'); }); await W(600);
+      const s0 = await p.evaluate(() => ({seen:JSON.parse(localStorage.getItem(KEY + '.jeuSeen')), last:JEU.play.last}));
+      ok(s0.seen && typeof s0.seen.n === 'number' && !s0.last, 'première ouverture : état retenu, pas d’animation', s0);
+      const a = await p.evaluate(async () => { show('journal'); const o = OBJ_BY_DIFF[JEU.levels.findIndex(l => !l.done && l.t === 'prep') >> 1]; DB.objectifs[o.n] = Object.assign(objState(o.n), {statut:'Prêt', updatedAt:Date.now()}); save(); renderAll();
+        const hidden = !JEU.play.last; show('obj'); renderAll(); const anims = document.getAnimations().length; await new Promise(r => setTimeout(r, 1100)); const t = document.querySelector('#jeuIn .lvtoast');
+        return {hidden, last:JEU.play.last, toast:t && t.textContent, role:t && t.getAttribute('role'), anims}; });
+      ok(a.hidden && a.last && a.last.rm === 0 && (a.last.to > a.last.from || a.last.spot != null), 'niveau validé hors de la page : animation gardée pour l’ouverture du bandeau', a.last);
+      ok(a.toast === '★ NIVEAU VALIDÉ ! ★' && a.role === 'status' && a.anims >= 2, 'lueur, marche, éclat puis toast « ★ NIVEAU VALIDÉ ! ★ »', a);
+      await p.reload({waitUntil:'networkidle0'}); await p.evaluate(() => show('obj')); await W(400);
+      ok(await p.evaluate(() => !JEU.play.last && !document.querySelector('.lvtoast')), 'rechargement : pas rejouée');
+      await p.emulateMediaFeatures([{name:'prefers-reduced-motion', value:'reduce'}]);
+      const m = await p.evaluate(() => { const o = OBJ_BY_DIFF[JEU.levels.findIndex(l => !l.done && l.t === 'prep') >> 1]; DB.objectifs[o.n] = Object.assign(objState(o.n), {statut:'Fait', updatedAt:Date.now()}); save(); renderAll(); return {last:JEU.play.last, anims:document.getAnimations().filter(x => x.effect && x.effect.target && x.effect.target.id === 'jeuHk').length, t:!!document.querySelector('.lvtoast')}; });
+      ok(m.last && m.last.rm === 1 && m.anims === 0 && m.t, 'mouvement réduit : toast seul, aucun déplacement', m);
+      ok(p.errs.length === 0, 'montée de niveau : aucune erreur JS', p.errs); await ctx.close(); }
+    // k) hors ligne après installation du SW : l'app v29 s'affiche avec l'étape
+    { const [ctx, p] = await fresh(BASE + '/index.html'); await p.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; }); await W(1500);
+      await p.reload({waitUntil:'networkidle0'}); await p.setOfflineMode(true); await p.reload({waitUntil:'domcontentloaded'}); await W(1200);
+      const r = await p.evaluate(() => ({step:!!document.querySelector('#jStep .stepc'), mode:STORE.mode, n:DB.sessions.length}));
+      ok(r.step && r.mode === 'idb', 'hors ligne (SW v29) : Journal et Prochaine étape affichés, IndexedDB lu', r); await p.setOfflineMode(false); await ctx.close(); }
+  }
 
   // ---------- 26. v28 : indicateur de synchro, deux appareils hors ligne, mise à jour SW interrompue, imports invalides, bloc Sécurité ----------
   out.push('26. v28 : synchro visible, 2 appareils hors ligne, SW interrompu, imports, sécurité');

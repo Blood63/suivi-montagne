@@ -413,6 +413,27 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
 .jeu-hud{margin:6px 14px 0;background:#141f2e;border:2px solid #1a1420;box-shadow:0 0 0 2px #ffe14d;padding:8px 10px;font:bold 13px/1.35 'Courier New',monospace;color:#f3f7f6;overflow-wrap:anywhere}
 .jeu-hud .y{color:#ffe14d}.jeu-hud small{font-weight:normal;color:#c9d3d1}
 .jeu-bar{height:10px;border:2px solid #fff;background:#1a1420;margin-top:5px}.jeu-bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,#6cc24a 0 6px,#4fa33a 6px 8px)}
+/* v29 */
+.stepc .stmiss{display:flex;gap:8px;margin-top:10px;font-size:14px;line-height:1.4}.stepc .stsess{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.stepc .stsess h4{margin:2px 0}.stepc .stsess.ok h4{color:#4ade80}.stepc .strow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.stepc .strow .btn{min-height:44px;width:100%}
+.stepc .warnl{margin-top:8px;color:#fca5a5;font-size:13px}
+.pbar{height:8px;border-radius:5px;background:rgba(255,255,255,.08);margin:10px 0;overflow:hidden}.pbar i{display:block;height:100%;background:#4ade80;border-radius:5px}
+.ptk{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-top:1px solid rgba(255,255,255,.07);padding:10px 2px;color:inherit;font:inherit;cursor:pointer;min-height:44px}
+.ptk i{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;font-style:normal;font-weight:700;color:#06210f}
+.ptk.ok i{background:#4ade80;border-color:#4ade80}.ptk.auto{cursor:default}.ptk span{min-width:0;overflow-wrap:anywhere}.ptk b{display:block;font-size:14px}.ptk small{display:block;opacity:.7;font-size:12px;margin-top:2px}.ptk em{font-style:normal;color:#4ade80}
+.jjbig{width:100%;min-height:56px;font-size:17px;margin-top:10px;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.jjmode{position:fixed;inset:0;z-index:60;background:var(--bg,#0d1715);overflow-y:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 20px)}
+.jjmode[hidden]{display:none}.jjin{max-width:560px;margin:0 auto}body.jj-on{overflow:hidden}body.jj-on nav,body.jj-on .fab{display:none!important}
+.jjcd{font:800 52px/1.1 system-ui;text-align:center;margin:10px 0 2px;font-variant-numeric:tabular-nums;color:#4ade80}.jjcd.warn{color:#fb923c}.jjcd.over{color:#f87171;font-size:40px}.jjcd.ok{color:#4ade80}
+.jjpill{font-size:12px;color:#4ade80;white-space:nowrap;margin:4px 8px 0 auto}.jjadj{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.jjadj .btn{min-height:44px}
+.jjwx{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;font-size:11px;opacity:.95}.jjwx div{background:rgba(255,255,255,.05);border-radius:10px;padding:8px 2px;min-width:0;overflow-wrap:anywhere}.jjwx b{display:block;font-size:19px}
+.jjbag{display:flex;flex-wrap:wrap;gap:6px}.jjbag button{min-height:40px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:none;color:inherit;font:inherit;font-size:13px;padding:6px 12px;max-width:100%}.jjbag button.ok{background:rgba(74,222,128,.15);border-color:#4ade80}
+.jj112{background:#b91c1c!important;color:#fff!important;border-color:#b91c1c!important}
+.lvb{position:absolute;z-index:3;pointer-events:none;image-rendering:pixelated}
+.lvglow{width:40px;height:40px;margin:-20px 0 0 -20px;box-shadow:0 0 0 4px #ffe14d,0 0 0 8px #1a1420,0 0 0 12px rgba(255,225,77,.5)}
+.lvdust{width:4px;height:4px;background:#e8dcc0;box-shadow:-8px 4px 0 #e8dcc0,-16px 0 0 #cbbf9f,-22px 6px 0 #cbbf9f}
+.lvburst{width:6px;height:6px;margin:-3px 0 0 -3px;background:#fff;box-shadow:0 -18px #ffe14d,0 18px #ffe14d,-18px 0 #ffe14d,18px 0 #ffe14d,-13px -13px #f39c12,13px 13px #f39c12,-13px 13px #f39c12,13px -13px #f39c12,0 -30px #fff,0 30px #fff,-30px 0 #fff,30px 0 #fff}
+.lvtoast{font:bold 15px 'Courier New',monospace;color:#1a1420;background:#ffe14d;border:3px solid #1a1420;box-shadow:4px 4px 0 #1a1420;padding:8px 12px;white-space:nowrap;transform:translateX(-50%)}
 .jeu-cl{margin-top:5px;font-weight:normal;font-size:12px;color:#fca5a5}
 </style>
 </head>
@@ -445,6 +466,7 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
 
 <!-- JOURNAL -->
 <section class="page" id="p-journal">
+  <div id="jStep"></div>
   <div class="card">
     <div class="kpis" id="kpiMonth"><div class="hero"><div class="sk" style="width:120px;height:24px"></div></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div><div class="sk" style="height:70px"></div></div>
   </div>
@@ -638,6 +660,7 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
 </section>
 </main>
 
+<div id="jjMode" class="jjmode" hidden role="dialog" aria-modal="true" aria-label="Mode Jour J" tabindex="-1"></div>
 <nav>
   <span class="ind" aria-hidden="true"></span>
   <button class="fab" data-p="add" aria-label="Ajouter une séance"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -1055,14 +1078,16 @@ function normalizeDB(db){
     else if(typeof g==='number') db.prefs.chartWeeks={v:Math.round(v),updatedAt:1}; else { g.v=Math.round(v); if(typeof g.updatedAt!=='number') g.updatedAt=1; } }
   if(Array.isArray(db.equip)) db.equip.forEach(c=>(c.items||[]).forEach(i=>{ if(!i||typeof i!=='object') return; if('url' in i){ const u=safeUrl(i.url); if(u) i.url=u; else delete i.url; }
     if('wg' in i){ const v=+i.wg; if(!isFinite(v)||v<=0) delete i.wg; else i.wg=Math.min(100000,Math.round(v)); } }));
-  if(db.objectifs&&typeof db.objectifs==='object') for(const o of Object.values(db.objectifs)){ if(o&&typeof o==='object'&&'gpx' in o){ const g=sanGpx(o.gpx); if(g) o.gpx=g; else delete o.gpx; } }
+  if(db.objectifs&&typeof db.objectifs==='object') for(const o of Object.values(db.objectifs)){ if(o&&typeof o==='object'){ if('gpx' in o){ const g=sanGpx(o.gpx); if(g) o.gpx=g; else delete o.gpx; } delete o.gpxRef;
+    if('plan' in o){ const p={}; if(o.plan&&typeof o.plan==='object'&&!Array.isArray(o.plan)) for(const k of ['p0','p1','p2','p3','p4']){ const v=+o.plan[k]; if(isFinite(v)&&v>0) p[k]=Math.round(v); } if(Object.keys(p).length) o.plan=p; else delete o.plan; } } }
   return db; }
 /* Copies de sécurité locales (5 max) : une par jour à l'ouverture + avant import, restauration ou réinitialisation */
 const SNAP_KEY=KEY+'.snapshots';
 // v22 : les traces GPX (lourdes) ne sont plus copiées dans les 5 copies locales ; elles restent dans les données et dans le gist
 function snapData(db){ const o=JSON.parse(JSON.stringify(db)); for(const v of Object.values(o.objectifs||{})) if(v&&typeof v==='object') delete v.gpx; return JSON.stringify(o); }
-function snapshots(){ try{ const a=JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function snapshots(){ if(STORE.mode==='idb') return STORE.snaps(); try{ const a=JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function snapshot(reason,force){ const today=todayISO(); let a=snapshots(); if(!force&&a.some(x=>x.day===today&&x.auto)) return;
+  if(STORE.mode==='idb'){ a=a.filter(x=>!x.pre); a.unshift({t:Date.now(),day:today,auto:!force,reason,n:DB.sessions.length,w:(DB.weights||[]).length,d:(DB.daily||[]).length,noGpx:1,data:snapData(DB)}); STORE.setSnaps(a); return; }
   a.unshift({t:Date.now(),day:today,auto:!force,reason,n:DB.sessions.length,w:(DB.weights||[]).length,d:(DB.daily||[]).length,noGpx:1,data:snapData(DB)}); a=a.slice(0,5);
   for(;;){ try{ localStorage.setItem(SNAP_KEY,JSON.stringify(a)); return; }catch(e){ if(a.length<=1) return; a.pop(); } } }
 function renderSnaps(){ const a=snapshots(), el=$('snapList'); if(!el) return;
@@ -1219,9 +1244,83 @@ function toastUndo(m,undo){ const t=document.getElementById('toast'); t.textCont
 function undoDelete(kind,list,obj){ const now=Date.now(); delete DB.tomb[kind][obj.id]; obj.updatedAt=now; list.push(obj); save(); renderAll(); toast('Suppression annulée'); }
 function todayISO(){ return toISO(new Date()); }
 
+/* ---------- v29 : traces GPX et copies de sécurité dans IndexedDB, repli localStorage (v28) si indisponible ----------
+   Les données en mémoire (DB) et le format du gist ne changent pas : seule la persistance locale déplace le texte GPX (remplacé
+   dans localStorage par gpxRef:{h}) et les copies de sécurité. Migration vérifiée (relecture) avant toute suppression. */
+const STORE=(()=>{ const NAME='suiviMontagne', VER=1, MARK=KEY+'.idb', PRE_DAYS=30; let db=null, mode='ls', SN=[], PRE=null; const GP={};
+  const req=r=>new Promise((ok,ko)=>{ r.onsuccess=()=>ok(r.result); r.onerror=()=>ko(r.error); });
+  const done=t=>new Promise((ok,ko)=>{ t.oncomplete=()=>ok(); t.onerror=t.onabort=()=>ko(t.error||new Error('abort')); });
+  const os=(s,m)=>db.transaction(s,m).objectStore(s);
+  const hash=s=>{ let h=5381; for(let i=0;i<s.length;i++) h=((h*33)^s.charCodeAt(i))>>>0; return h.toString(36)+':'+s.length; };
+  const lsSnaps=()=>{ try{ const a=JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } };
+  function open(){ return new Promise((ok,ko)=>{ let r; const to=setTimeout(()=>ko(new Error('timeout')),3000);
+    try{ if(!window.indexedDB) throw new Error('indisponible'); r=indexedDB.open(NAME,VER); }catch(e){ clearTimeout(to); ko(e); return; }
+    r.onupgradeneeded=()=>{ const d=r.result; ['gpx','snapshots','meta'].forEach(s=>{ if(!d.objectStoreNames.contains(s)) d.createObjectStore(s); }); };
+    r.onsuccess=()=>{ clearTimeout(to); ok(r.result); }; r.onerror=()=>{ clearTimeout(to); ko(r.error); }; r.onblocked=()=>{ clearTimeout(to); ko(new Error('bloqué')); }; }); }
+  async function all(s){ const st=os(s,'readonly'); const [k,v]=await Promise.all([req(st.getAllKeys()),req(st.getAll())]); return k.map((x,i)=>[x,v[i]]); }
+  const sortSn=a=>a.filter(x=>x&&x.data).sort((a,b)=>b.t-a.t);
+  async function loadAll(){ for(const [n,v] of await all('gpx')) if(v&&v.h&&v.gpx) GP[n]={h:v.h,gpx:v.gpx};
+    const sn=(await all('snapshots')).map(([,v])=>v); PRE=sn.find(x=>x&&x.pre)||null; SN=sortSn(sn.filter(x=>x&&!x.pre)).slice(0,5);
+    if(PRE&&Date.now()-PRE.t>PRE_DAYS*864e5){ try{ await req(os('snapshots','readwrite').delete('pre29')); }catch(e){} PRE=null; } }
+  async function boot(){ try{ db=await open(); }catch(e){ db=null; mode='ls'; return; }
+    try{ const m=await req(os('meta','readonly').get('migrated'));
+      if(m&&m.v>=29&&localStorage.getItem(MARK)){ await loadAll(); mode='idb';
+        const left=lsSnaps(); if(left.length){ // copies écrites entre-temps par une ancienne version : rangées dans IndexedDB, puis retirées
+          const t=db.transaction('snapshots','readwrite'), L=left.map((x,i)=>Object.assign({},x,{id:x.id||('s'+x.t+'-'+i)})); L.forEach(x=>t.objectStore('snapshots').put(x,x.id)); await done(t);
+          SN=sortSn(SN.concat(L)).slice(0,5); localStorage.removeItem(SNAP_KEY); } }
+      else if(localStorage.getItem(MARK)){ localStorage.removeItem(MARK); mode='ls'; } // IndexedDB vidé par le navigateur : retour au mode v28
+    }catch(e){ mode='ls'; } }
+  // au chargement : remet le texte GPX depuis IndexedDB ; s'il manque, l'objectif cède la priorité au gist (updatedAt minimal) pour récupérer la trace
+  let lost=0;
+  function fill(d){ if(!d||typeof d!=='object'||!d.objectifs||typeof d.objectifs!=='object') return d;
+    for(const [n,o] of Object.entries(d.objectifs)){ if(!o||typeof o!=='object'||!o.gpxRef) continue; const g=GP[n];
+      if(!o.gpx){ if(g&&g.h===o.gpxRef.h) o.gpx=g.gpx; else { o.updatedAt=1; lost++; } } delete o.gpxRef; }
+    if(lost) setTimeout(()=>toast(lost+' trace(s) GPX introuvable(s) sur cet appareil : elles seront récupérées du gist à la prochaine synchro'),600);
+    return d; }
+  const queue={};
+  function put(n,gpx,h){ if(queue[n]===h) return; queue[n]=h;
+    (async()=>{ try{ const t=db.transaction('gpx','readwrite'); t.objectStore('gpx').put({h,gpx,size:h.split(':')[1]|0},String(n)); await done(t);
+        const back=await req(os('gpx','readonly').get(String(n))); if(!back||hash(JSON.stringify(back.gpx))!==h) throw new Error('relecture');
+        GP[n]={h,gpx}; try{ localStorage.setItem(KEY,lsString(DB)); }catch(e){} }
+      catch(e){ /* la trace reste dans localStorage (inline) */ } finally{ if(queue[n]===h) delete queue[n]; } })(); }
+  function drop(n){ delete GP[n]; try{ const t=db.transaction('gpx','readwrite'); t.objectStore('gpx').delete(String(n)); }catch(e){} }
+  // texte écrit dans localStorage : identique à v28 en mode ls ; en mode idb, GPX confirmés remplacés par gpxRef (force : tous, si le stockage est plein)
+  function lsString(d,force){ if(mode!=='idb'||!d||!d.objectifs) return JSON.stringify(d);
+    const ob={}, has={};
+    for(const [n,v] of Object.entries(d.objectifs)){ if(!v||typeof v!=='object'||!v.gpx){ ob[n]=v; continue; } has[n]=1;
+      const s=JSON.stringify(v.gpx), h=hash(s); if(GP[n]&&GP[n].h===h){ const c=Object.assign({},v); delete c.gpx; c.gpxRef={h}; ob[n]=c; }
+      else { put(n,v.gpx,h); if(force){ const c=Object.assign({},v); delete c.gpx; c.gpxRef={h}; ob[n]=c; } else ob[n]=v; } }
+    const j=JSON.stringify(Object.assign({},d,{objectifs:ob}));
+    for(const n of Object.keys(GP)) if(!has[n]&&!queue[n]) drop(n);
+    return j; }
+  function snaps(){ return SN.slice().concat(PRE?[PRE]:[]); }
+  function setSnaps(a){ const keep=new Set(); a.forEach((x,i)=>{ if(!x.id) x.id='s'+x.t+'-'+Math.random().toString(36).slice(2,6); keep.add(x.id); });
+    const old=SN; SN=a.slice(0,5);
+    try{ const t=db.transaction('snapshots','readwrite'), st=t.objectStore('snapshots'); SN.forEach(x=>{ if(!old.includes(x)) st.put(x,x.id); }); old.forEach(x=>{ if(!keep.has(x.id)) st.delete(x.id); }); }catch(e){} }
+  async function migrate(){ if(!db||mode==='idb'||!DB) return false;
+    try{ const full=JSON.stringify(DB), empty=!DB.sessions.length&&!(DB.weights||[]).length&&!(DB.daily||[]).length&&!Object.values(DB.objectifs||{}).some(v=>v&&v.gpx); // première ouverture sans données : rien à protéger
+      if(!empty&&!lsSnaps().some(x=>x.reason==='avant migration v29')) snapshot('avant migration v29',true); // copie habituelle (sans GPX), une seule fois même si la migration échoue
+      const pre={id:'pre29',pre:1,t:Date.now(),day:todayISO(),auto:false,reason:'avant migration v29 (avec traces GPX)',n:DB.sessions.length,w:(DB.weights||[]).length,d:(DB.daily||[]).length,data:full};
+      const L=lsSnaps().map((x,i)=>Object.assign({},x,{id:x.id||('s'+x.t+'-'+i)})), G={};
+      const had=await req(os('snapshots','readonly').get('pre29')), keepPre=!!(had&&had.data&&Date.now()-had.t<PRE_DAYS*864e5); // jamais écrasée par une seconde migration
+      const t=db.transaction(['gpx','snapshots'],'readwrite');
+      for(const [n,v] of Object.entries(DB.objectifs||{})) if(v&&v.gpx){ G[n]={h:hash(JSON.stringify(v.gpx)),gpx:v.gpx}; t.objectStore('gpx').put({h:G[n].h,gpx:v.gpx,size:G[n].h.split(':')[1]|0},String(n)); }
+      if(!keepPre&&!empty) t.objectStore('snapshots').put(pre,'pre29'); L.forEach(x=>t.objectStore('snapshots').put(x,x.id)); await done(t);
+      const g2=Object.fromEntries(await all('gpx')), s2=Object.fromEntries(await all('snapshots'));
+      for(const n in G) if(!g2[n]||hash(JSON.stringify(g2[n].gpx))!==G[n].h) throw new Error('vérification GPX '+n);
+      if(!empty&&(!s2.pre29||(keepPre?!s2.pre29.data:s2.pre29.data!==full))) throw new Error('vérification copie avant migration');
+      for(const x of L) if(!s2[x.id]||s2[x.id].data!==x.data) throw new Error('vérification copies');
+      await req(os('meta','readwrite').put({v:29,t:Date.now()},'migrated'));
+      Object.assign(GP,G); PRE=keepPre?had:empty?null:pre; SN=sortSn(L).slice(0,5); mode='idb';
+      localStorage.setItem(MARK,'29'); localStorage.setItem(KEY,lsString(DB)); localStorage.removeItem(SNAP_KEY);
+      return true; }
+    catch(e){ mode='ls'; try{ localStorage.removeItem(MARK); }catch(_){} STORE.err=String(e&&e.message||e); return false; } }
+  return {boot,fill,lsString,snaps,setSnaps,migrate,hash,get mode(){ return mode; },get ready(){ return !!db; },err:null};
+})();
+
 /* ---------- Store ---------- */
 let DB;
-function load(){ let r=null; try{ r=localStorage.getItem(KEY); DB = r? JSON.parse(r) : null; }catch(e){ DB=null; }
+function load(){ let r=null; try{ r=localStorage.getItem(KEY); DB = r? STORE.fill(JSON.parse(r)) : null; }catch(e){ DB=null; }
   if(!DB||typeof DB!=='object'||!Array.isArray(DB.sessions)){
     if(r){ // données présentes mais illisibles : on les met de côté (jamais effacées) et on repart de la dernière copie de sécurité
       try{ localStorage.setItem(KEY+'.corrupt.'+Date.now(), r); }catch(e){}
@@ -1236,11 +1335,13 @@ function load(){ let r=null; try{ r=localStorage.getItem(KEY); DB = r? JSON.pars
   }
   normalizeDB(DB); if(dedupeBivouac(DB)|dedupeRef(DB)|ensureRoadtrip(DB)) save();
   snapshot('copie automatique du jour'); }
-function save(){ const j=JSON.stringify(DB); if(typeof sbSoon==='function') sbSoon();
+function save(){ const j=STORE.lsString(DB); if(typeof sbSoon==='function') sbSoon();
   if(typeof scheduleSync==='function'){ if(syncing){ if(!syncSaving) syncPending=true; } else scheduleSync(); }
   try{ localStorage.setItem(KEY, j); }
-  catch(e){ // v22 : stockage plein → on libère les copies de sécurité les plus anciennes une par une, en gardant la plus récente
-    const a=snapshots(); for(let k=a.length-1;k>=1;k--){ try{ localStorage.setItem(SNAP_KEY,JSON.stringify(a.slice(0,k))); localStorage.setItem(KEY,j); toast('Stockage presque plein : '+(a.length-k)+' copie(s) de sécurité ancienne(s) supprimée(s), la plus récente est gardée. Pense à exporter tes données.'); return; }catch(e2){} }
+  catch(e){ if(STORE.mode==='idb'){ try{ localStorage.setItem(KEY,STORE.lsString(DB,true)); return; }catch(e4){} } // v29 : copies dans IndexedDB ; on retire toutes les traces GPX de localStorage
+    // v22 : stockage plein → on libère les copies de sécurité les plus anciennes une par une, en gardant la plus récente
+    const a=(()=>{ try{ const x=JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); return Array.isArray(x)?x:[]; }catch(_){ return []; } })(); // v29 : seulement les copies écrites dans localStorage
+    for(let k=a.length-1;k>=1;k--){ try{ localStorage.setItem(SNAP_KEY,JSON.stringify(a.slice(0,k))); localStorage.setItem(KEY,j); toast('Stockage presque plein : '+(a.length-k)+' copie(s) de sécurité ancienne(s) supprimée(s), la plus récente est gardée. Pense à exporter tes données.'); return; }catch(e2){} }
     if(a.length&&confirm('Stockage du navigateur plein. Pour enregistrer, il faut supprimer la dernière copie de sécurité locale (du '+fmtDT(a[0].t)+'). La supprimer ? (sinon, exporte tes données : Données → Exporter JSON)')){
       try{ localStorage.removeItem(SNAP_KEY); localStorage.setItem(KEY,j); toast('Copie de sécurité locale supprimée pour libérer de la place'); return; }catch(e3){} }
     alert('Stockage du navigateur plein : cette modification n’est pas enregistrée sur l’appareil. Exporte tes données (Données → Exporter JSON).'); throw e; } }
@@ -1339,6 +1440,7 @@ function renderJournal(){
   const sumLine=`<div class="small kline" style="grid-column:1/-1"><div><span class="mut">Cette semaine :</span> <b>${wkA.n}</b> séance${wkA.n>1?'s':''} · <b>${f(wkA.dplus,0)}</b>${wkT?` / ${f(wkT,0)}`:''} m D+ · ${f(wkA.dist,1)} km</div>${wkT?`<div class="bar" style="margin:6px 0 3px"><i style="--v:${wkP.toFixed(3)};background:linear-gradient(90deg,#4aa8d4,#7cc8ea)"></i></div><div class="mut">D+ hebdo visé pour ${esc(nxO.sommet)}${wkA.dplus>=wkT?' : atteint ✔':''}</div>`:''}${pa.n?`<div class="mut" style="margin-top:4px">${MOIS[pd.getMonth()].replace(/^./,c=>c.toUpperCase())} ${pd.getFullYear()} : ${pa.n} séance${pa.n>1?'s':''} · ${f(pa.dist,1)} km · ${f(pa.dplus,0)} m D+</div>`:''}</div>`;
   document.getElementById('kpiMonth').innerHTML=`<div class="hero"><h2>${MOIS[+mm-1]} ${yy}</h2><span class="tag">${ma.n??0} séances</span></div>`+
     [['km',f(ma.dist,1),'k-dist',ma.dist,1],['D+ m',f(ma.dplus,0),'k-dplus',ma.dplus,0],['durée',fmtDur(ma.dur),''],['km/h moy.',f(ma.speed,2),'',ma.speed,2],['BPM moy.',f(ma.bpm,0),'',ma.bpm,0],['sauts',f(ma.sauts,0),'',ma.sauts,0]].map(([k,v,c,n,d])=>`<div class="kpi ${c}"><b${(n!=null&&isFinite(n))?` data-count="${n}" data-dec="${d}"`:''}>${v}</b><small>${k}</small></div>`).join('')+sumLine;
+  const js=$('jStep'); if(js) js.innerHTML=stepCardHTML();
   const nx=nextObjective(); $('jAdv').innerHTML= nx? adviceCard(advise(nx),{compact:true}) : '';
   const jd=$('jDaily'); if(jd) jd.innerHTML=dailyCardHTML();
   renderJList(); }
@@ -1505,9 +1607,135 @@ const JEU=(()=>{ const H=450,OV=60,HKH=78,PREP_OK=0.8;
   function render(){ const root=$('jeu'); if(!root) return; if(!built) build(root); const prev=JSON.stringify([lv.map(x=>[x.done,!!x.closed]),CUR]);
     [lv,CUR]=levels(); if(JSON.stringify([lv.map(x=>[x.done,!!x.closed]),CUR])!==prev) for(const k in drawn) drawn[k]=0;
     layout(false); hud(); $('jeuIn').querySelectorAll('canvas').forEach(c=>{ const k=+c.dataset.k, r=c.getBoundingClientRect(), sr=$('jeuStrip').getBoundingClientRect(); if(drawn[k]===0||(sr.width&&r.right>sr.left-700&&r.left<sr.right+700)) draw(k); });
-    if(!centred) centre(); }
-  return {render,centre,get cur(){ return CUR; },get levels(){ return lv; },get at(){ return AT; },get all(){ return ALL; },get scale(){ return S; }};
+    if(!centred) centre(); try{ celebrate(); }catch(e){} }
+  // v29 : montée de niveau animée (lueur → le randonneur marche → éclat de pixels → toast), une seule fois par appareil et par niveau validé
+  const SEEN=KEY+'.jeuSeen';
+  function celebrate(){ const n=lv.filter(x=>x.done).length, d=lv.map((x,i)=>x.done?i:-1).filter(i=>i>=0), now={n,cur:CUR,d}; let seen=null; try{ seen=JSON.parse(localStorage.getItem(SEEN)||'null'); }catch(e){}
+    const put=()=>{ try{ localStorage.setItem(SEEN,JSON.stringify(now)); }catch(e){} };
+    if(!seen||typeof seen.n!=='number'){ put(); return; }   // première fois sur cet appareil : on retient l'état, sans animation
+    if(n<=seen.n){ if(n!==seen.n||CUR!==seen.cur) put(); return; }
+    const st=$('jeuStrip'); if(typeof curPage!=='undefined'&&curPage!=='obj'||document.hidden||!st||!st.clientWidth) return; // rejouée quand le bandeau sera visible
+    const fr=Math.max(0,Math.min(AT.length-1,+seen.cur||0)), nw=Array.isArray(seen.d)?d.find(i=>!seen.d.includes(i)):undefined;
+    put(); play(fr, CUR!==fr? null : (nw!=null?nw:Math.max(0,CUR-1))); }
+  function play(from,spot){ const inn=$('jeuIn'), hk=$('jeuHk'), st=$('jeuStrip'); inn.querySelectorAll('.lvb').forEach(e=>e.remove());
+    const [ax,ay]=AT[spot!=null?spot:from], [bx,by]=AT[spot!=null?spot:CUR], P=(c,x,y,t)=>{ inn.insertAdjacentHTML('beforeend',`<div class="lvb ${c}" style="left:${Math.round(x*S)}px;top:${Math.round(y*S)}px"${c==='lvtoast'?' role="status"':''}>${t||''}</div>`); return inn.lastElementChild; };
+    const tx=Math.max(110,Math.min(TOT-110,bx));
+    st.scrollLeft=Math.max(0,((ax+bx)/2)*S-st.clientWidth/2);
+    if(RM()){ const t=P('lvtoast',tx,by-150,'★ NIVEAU VALIDÉ ! ★'); setTimeout(()=>t.remove(),2500); st.scrollLeft=Math.max(0,AT[CUR][0]*S-st.clientWidth/2); play.last={rm:1,from,to:CUR,spot}; return; }
+    play.last={rm:0,from,to:CUR,spot}; hk.style.transition='none';
+    const g=P('lvglow',ax,ay); g.animate([{opacity:1},{opacity:.2},{opacity:1},{opacity:.2},{opacity:1}],{duration:600,easing:'steps(4)'}).onfinish=()=>g.remove();
+    const dx=(ax-bx)*S, dy=(ay-by)*S;
+    const w=spot!=null? g.animate([{opacity:1},{opacity:1}],{duration:600}) : hk.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:`translate(${dx}px,${dy}px)`,offset:.33},{transform:'translate(0,0)'}],{duration:900,easing:'steps(12)'});
+    const du=P('lvdust',(ax+bx)/2-10,(ay+by)/2-4); du.animate([{opacity:0},{opacity:1},{opacity:0}],{duration:900}).onfinish=()=>du.remove();
+    w.onfinish=()=>{ const b=P('lvburst',bx,by-30); b.animate([{transform:'scale(.3)',opacity:1},{transform:'scale(1)',opacity:1},{transform:'scale(1.4)',opacity:0}],{duration:300,easing:'steps(3)',fill:'forwards'}).onfinish=()=>b.remove();
+      const t=P('lvtoast',tx,by-150,'★ NIVEAU VALIDÉ ! ★'); setTimeout(()=>t.remove(),2400); st.scrollTo({left:Math.max(0,AT[CUR][0]*S-st.clientWidth/2),behavior:'smooth'}); }; } // fin : bandeau recentré sur le niveau courant
+  return {render,centre,play,celebrate,get cur(){ return CUR; },get levels(){ return lv; },get at(){ return AT; },get all(){ return ALL; },get scale(){ return S; }};
 })();
+
+/* ---------- v29 : plan d'entraînement par sommet — cibles tirées du D+, de la distance et de la durée du sommet ;
+   coché automatiquement par une séance des 90 derniers jours, ou à la main (DB.objectifs[n].plan, synchronisé). Compte pour 30 % de la préparation. ---------- */
+const PLAN_W=0.3, PLAN_DAYS=90;
+const fmtHm=h=>h<1? Math.round(h*60)+' min' : fmtH(h);
+function trainPlan(o){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3, D=M?o.dist/M.jours:o.dist;
+  const r10=x=>Math.max(10,Math.round(x/10)*10), q=x=>Math.max(.25,Math.round(x*4)/4);
+  const a=r10(.4*T), ah=q(.4*H), b=r10(.65*T), c=q(.6*H), d=r10(.8*T), e=r10(.5*T);
+  return [
+    {k:'p0',t:`${f(a,0)} m D+ en moins de ${fmtHm(ah)}`,d:'côte ou tapis incliné, allure « je peux parler »',m:s=>s.dplus>=a&&s.dur>0&&s.dur<=ah*3600},
+    {k:'p1',t:`${f(b,0)} m D+ en une sortie`,d:'la « grosse séance » de la préparation',m:s=>s.dplus>=b},
+    {k:'p2',t:`Sortie longue de ${fmtHm(c)}`,d:`≈ ${f(Math.max(1,Math.round(.6*D)),0)} km avec du dénivelé`,m:s=>s.dur>=c*3600},
+    {k:'p3',t:`${f(d,0)} m D+ avec un sac de 6–8 kg`,d:'test du matériel complet',m:s=>s.dplus>=d&&s.sac>=6},
+    {k:'p4',t:`${f(e,0)} m de descente continue`,d:'quadriceps : fentes et step-downs avant',m:s=>s.dminus>=e}]; }
+function planStatus(o){ const P=trainPlan(o), st=objState(o.n), man=st.plan&&typeof st.plan==='object'?st.plan:{}, from=toISO(new Date(Date.now()-PLAN_DAYS*864e5));
+  const ss=(DB.sessions||[]).filter(s=>s&&typeof s.date==='string'&&s.date>=from).map(s=>({date:s.date,dplus:+s.dplus||0,dur:+s.dur||0,sac:+s.sac||0,dminus:+s.dminus||0}));
+  let n=0; P.forEach(x=>{ let hit=null; for(const s of ss) if(x.m(s)&&(!hit||s.date>hit.date)) hit=s; x.auto=hit; x.man=!!man[x.k]; x.ok=!!(hit||x.man); if(x.ok) n++; });
+  return {items:P,done:n,pct:n/P.length}; }
+function planToggle(n,k){ const st=objState(n), p=Object.assign({},st.plan&&typeof st.plan==='object'?st.plan:{}); if(p[k]) delete p[k]; else p[k]=Date.now();
+  st.plan=p; st.updatedAt=Date.now(); DB.objectifs[n]=st; save(); }
+function planHTML(o){ const P=planStatus(o), R=readiness(o,trainStats(new Date())), M=o.multi;
+  return `<div class="card" id="planCard"><div class="row" style="justify-content:space-between"><h3 style="margin:0">🏋️ Plan pour ce sommet</h3><span class="tag">${P.done}/${P.items.length}</span></div>
+  <div class="small mut">Cibles tirées du sommet : ${f(M?M.dpJ:o.dplus,0)} m D+ · ${f(M?o.dist/M.jours:o.dist,1)} km · ≈ ${fmtH(M?M.hJ:o.h)}${M?' par jour':''}</div>
+  <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="${P.items.length}" aria-valuenow="${P.done}" aria-label="Plan d’entraînement"><i style="width:${Math.round(P.pct*100)}%"></i></div>
+  ${P.items.map(x=>`<button type="button" class="ptk${x.ok?' ok':''}${x.auto?' auto':''}" data-plan="${x.k}" aria-pressed="${x.ok}"><i aria-hidden="true">${x.ok?'✓':''}</i><span><b>${esc(x.t)}</b><small>${esc(x.d)}${x.auto?` · <em>fait le ${dFR(x.auto.date)} (séance)</em>`:x.man?' · coché à la main':''}</small></span></button>`).join('')}
+  <div class="small" style="margin-top:8px">Le plan compte pour 30 % de la préparation : <b>${Math.round(Math.min(1,R.r)*100)} %</b> aujourd’hui. Une séance qui atteint la cible coche la case toute seule.</div></div>`; }
+function planClick(e){ const b=e.target.closest('[data-plan]'); if(!b||!curSum) return; const o=OBJECTIFS.find(x=>x.n===curSum), x=planStatus(o).items.find(i=>i.k===b.dataset.plan); if(!x) return;
+  if(x.auto){ toast('Déjà validé par ta séance du '+dFR(x.auto.date)); return; }
+  const y=scrollY; planToggle(curSum,x.k); renderAll(); scrollTo(0,y); toast(x.man?'Séance décochée':'Séance cochée : préparation mise à jour'); }
+
+/* ---------- v29 : « Ta prochaine étape » en tête du Journal (prochain sommet, ce qui manque, séance du jour, 2 actions) ---------- */
+function stepCardHTML(){ const o=nextObjective(); if(!o) return ''; const A=advise(o), R=A.R, S=objState(o.n), P=planStatus(o), today=todayISO();
+  const gaps=A.gaps||[], miss=[], isJ=S.datePrevue===today, dated=S.datePrevue&&S.datePrevue>=today;
+  if(gaps.length) miss.push(`<b>${gaps.slice(0,2).map(g=>esc(g.l)).join(', ')}</b>${gaps.length>2?` <span class="mut">+ ${gaps.length-2}</span>`:''}`);
+  if(!dated) miss.push('<b>aucune date prévue</b>');
+  const nx=P.items.find(x=>!x.ok), cl=closuresFor(o,today,today).find(c=>c.block);
+  const sess=nx? `<div class="stsess"><div class="eyebrow2">Séance du jour</div><h4>${esc(nx.t)}</h4><div class="small mut">${esc(nx.d)} · plan ${P.done}/${P.items.length}</div></div>`
+    : `<div class="stsess ok"><div class="eyebrow2">Séance du jour</div><h4>Plan complet ✓</h4><div class="small mut">Entretien : 2–3 séances faciles par semaine${dated?' jusqu’au '+dFR(S.datePrevue):''}.</div></div>`;
+  const b1= isJ? `<button class="btn" type="button" data-step="jj">🚀 Mode Jour J</button>` : !dated? `<button class="btn" type="button" data-step="date">📅 Fixer la date</button>` : `<button class="btn" type="button" data-step="add">➕ Noter une séance</button>`;
+  return `<div class="card hero-card adv stepc"><div class="row" style="justify-content:space-between"><div class="eyebrow2">Ta prochaine étape</div>${dated?`<span class="tag">📅 ${isJ?'aujourd’hui':dFR(S.datePrevue)}</span>`:''}</div>
+    <div class="prep" style="margin-top:6px" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche ${esc(o.sommet)}">${ringSVG(R.r,78)}<div style="flex:1;min-width:0"><h2 style="margin:0">${esc(o.sommet)}</h2><div class="small mut">${esc(o.iti)}</div><span class="tag" style="margin-top:6px">${rLabel(R.r)}</span></div></div>
+    ${cl?`<div class="warnl">⛔ ${esc(cl.txt)}</div>`:''}${miss.length?`<div class="stmiss">🎒 <div>Il te manque : ${miss.join(' · ')}</div></div>`:`<div class="stmiss">✅ <div>Rien ne manque : matériel complet et date fixée.</div></div>`}
+    ${sess}<div class="strow">${b1}<button class="btn sec" type="button" data-step="sum">Voir la fiche</button></div></div>`; }
+function stepClick(e){ const b=e.target.closest('[data-step]'); if(!b) return; e.stopPropagation(); const o=nextObjective(); if(!o) return; const k=b.dataset.step;
+  if(k==='sum') openSummit(o.n);
+  else if(k==='jj') jjOpen(o.n);
+  else if(k==='add'){ fillForm(null); show('add'); }
+  else if(k==='date'){ show('obj'); setTimeout(()=>{ const i=document.querySelector(`#objList [data-obj="${o.n}"][data-k="datePrevue"]`); if(!i) return; const d=i.closest('details'); if(d) d.open=true; i.scrollIntoView({block:'center'}); i.focus(); try{ i.showPicker&&i.showPicker(); }catch(_){} },120); } }
+
+/* ---------- v29 : mode « Jour J » (départ, heure limite de demi-tour avec compte à rebours, météo, sac, partage de position) — état local à l'appareil ---------- */
+const JJ_KEY=KEY+'.jourj';
+function jjState(){ try{ const s=JSON.parse(localStorage.getItem(JJ_KEY)||'null'); return s&&typeof s==='object'&&OBJECTIFS.some(o=>o.n===s.n)? s : null; }catch(e){ return null; } }
+function jjSave(s){ try{ if(s) localStorage.setItem(JJ_KEY,JSON.stringify(s)); else localStorage.removeItem(JJ_KEY); }catch(e){} }
+function jjAscentH(o){ const M=o.multi, h=(M?M.hJ:o.h)||3, I=OBJ_INFO[o.n]||{}; return Math.round((/boucle/i.test(I.type||'')?.55:.6)*h*4)/4; }
+function jjLimit(s,o){ return s.start? s.start+jjAscentH(o)*3600e3+(s.adj||0)*60e3 : null; }
+const jjDur=ms=>{ const m=Math.max(0,Math.round(ms/60000)); return m>=60? Math.floor(m/60)+' h '+String(m%60).padStart(2,'0') : m+' min'; };
+function jjWxHTML(n){ const wx=wxCache(n,true); if(!wx||!wx.days) return `<div class="small mut">${navigator.onLine===false?'📴 Hors ligne : pas de météo en cache pour ce sommet.':jjWx.fail?'Météo indisponible (connexion ?) : regarde le ciel et garde ton heure limite.':'Chargement de la météo…'}</div>`;
+  const T=todayISO(), d=wx.days.find(x=>x.date===T), hNow=+PARIS_HM(new Date())[0], H=d&&d.hours? d.hours.filter(r=>r[0]>=hNow&&r[0]<hNow+4) : [];
+  const age=Date.now()-wx.fetchedAt, stale=age>WX_STALE_MS, off=navigator.onLine===false;
+  if(!d) return `<div class="small mut">Pas de prévision pour aujourd’hui dans la copie du ${esc(fmtDT(wx.fetchedAt))}.</div>`;
+  const now=H[0], mx=(i)=>H.reduce((a,r)=>r[i]!=null&&(a==null||r[i]>a)?r[i]:a,null), orage=H.some(r=>r[2]>=95)||d.code>=95;
+  return `<div class="jjwx"><div><b>${now&&now[1]!=null?f(now[1],0):f(d.tmax,0)}°</b>au sommet</div><div><b>${f(mx(4)!=null?mx(4):d.gust,0)}</b>rafales km/h</div><div><b>${mx(3)!=null?f(mx(3),0):(d.pop!=null?f(d.pop,0):'–')} %</b>pluie 4 h</div><div><b>${orage?'⛈️':(now&&now[2]!=null?wxEmo(now[2]):wxEmo(d.code))}</b>${esc(WX_CODES[now&&now[2]!=null?now[2]:d.code]||'—')}</div></div>
+    <div class="small ${stale||off?'':'mut'}" style="margin-top:6px">Météo mise à jour à ${hhmm(new Date(wx.fetchedAt))}${stale?' · <b>⚠ ancienne</b>':''}${off?' · 📴 hors ligne':''}${orage?' · <b>⚠ orage prévu : redescends tôt</b>':''}</div>`; }
+const wxEmo=c=>c==null?'–':c>=95?'⛈️':(c>=71&&c<=77)||c===85||c===86?'❄️':c>=51?'🌧️':c>=45?'🌫️':c>=3?'☁️':c>=1?'⛅':'☀️';
+function jjRender(){ const el=$('jjMode'); if(!el||el.hidden) return; const s=jjState(); if(!s){ jjClose(); return; } const o=OBJECTIFS.find(x=>x.n===s.n), now=Date.now();
+  const lim=jjLimit(s,o), rem=lim?lim-now:null, gear=gearStatus(o.n), bag=s.bag||{}, nb=gear.filter(g=>bag[g.k]).length, asc=jjAscentH(o);
+  const cd= s.sum? `<div class="jjcd ok">✓ ${hhmm(new Date(s.sum))}</div><div class="small" style="text-align:center">Sommet atteint · redescends tranquillement, garde de la marge sur le soleil</div>`
+    : !s.start? `<div class="small mut" style="text-align:center">Montée prévue ≈ ${fmtH(asc)} · demi-tour au plus tard à <b>${hhmm(new Date(now+asc*3600e3+(s.adj||0)*60e3))}</b> si tu pars maintenant</div><button class="btn jjbig" type="button" data-jj="start">▶ Je pars maintenant</button>`
+    : rem>0? `<div class="small mut" style="text-align:center">Demi-tour au plus tard à <b>${hhmm(new Date(lim))}</b> (montée prévue ≈ ${fmtH(asc)})</div><div class="jjcd${rem<30*60e3?' warn':''}" role="timer" aria-live="off">${jjDur(rem)}</div><div class="small mut" style="text-align:center">avant l’heure limite · sommet non atteint = on redescend</div>`
+    : `<div class="jjcd over">Demi-tour</div><div class="small" style="text-align:center"><b>Heure limite dépassée (${hhmm(new Date(lim))}) : redescends maintenant.</b></div>`;
+  const I=OBJ_INFO[o.n]||{}, sun=I.start?sunTimes(new Date(),I.start.ll[0],I.start.ll[1]):null, back=(lim||now+asc*3600e3)+(((o.multi?o.multi.hJ:o.h)||3)-asc)*3600e3;
+  const night=sun&&sun.set&&!s.sum&&back>+sun.set? `<div class="small" style="color:#fb923c;text-align:center;margin-top:6px">🌙 Retour estimé vers ${hhmm(new Date(back))}, après le coucher du soleil (${hhmm(sun.set)}) : lampe frontale obligatoire, ou avance l’heure limite.</div>` : '';
+  el.innerHTML=`<div class="jjin"><div class="card hero-card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow2">Jour J${s.start?' · en cours':''}</div><h2 style="margin:2px 0">${esc(o.sommet)}</h2><div class="small mut">${esc(o.iti)}</div></div>
+      ${s.start?`<span class="jjpill">● parti ${hhmm(new Date(s.start))}</span>`:''}<button class="xbtn" type="button" data-jj="close" aria-label="Fermer le mode Jour J">✕</button></div>
+      ${cd}${night}${s.start&&!s.sum?`<div class="jjadj"><button class="btn sec" type="button" data-jj="m15">− 15 min</button><button class="btn sec" type="button" data-jj="p15">+ 15 min</button></div>`:''}</div>
+    <div class="card"><h3 style="margin:0 0 8px">🌦️ Météo au sommet</h3>${jjWxHTML(o.n)}</div>
+    <div class="card"><h3 style="margin:0 0 8px">🎒 Sac (${nb}/${gear.length})</h3><div class="jjbag">${gear.map(g=>`<button type="button" class="${bag[g.k]?'ok':''}" data-jjbag="${g.k}" aria-pressed="${!!bag[g.k]}">${bag[g.k]?'✓':'☐'} ${esc(g.l.split(' (')[0])}</button>`).join('')||'<span class="small mut">Pas de liste pour ce sommet.</span>'}</div></div>
+    <button class="btn jjbig" type="button" data-jj="share">📍 Partager ma position</button>
+    ${s.sum?`<button class="btn sec jjbig" type="button" data-jj="end">🏠 Terminer la sortie</button>`:`<button class="btn sec jjbig" type="button" data-jj="sum">🏁 Sommet atteint</button>`}
+    <a class="btn sec jjbig jj112" href="tel:112">📞 Secours 112</a>
+    <p class="small mut" style="text-align:center">Le partage ouvre le menu du téléphone (SMS, messagerie…) avec un lien geo: et OpenStreetMap ; rien ne passe par un serveur.</p></div>`; }
+function jjOpen(n){ let s=jjState(); if(!s||s.n!==+n) s={n:+n,start:null,sum:null,adj:0,bag:{}}; jjSave(s); const el=$('jjMode'); el.hidden=false; document.body.classList.add('jj-on');
+  jjRender(); el.focus(); clearInterval(jjOpen._t); jjOpen._t=setInterval(jjRender,15000); jjWx(+n); }
+function jjClose(){ const el=$('jjMode'); if(el) el.hidden=true; document.body.classList.remove('jj-on'); clearInterval(jjOpen._t); }
+async function jjWx(n){ jjWx.fail=false; if(navigator.onLine===false) return; const c=wxCache(n,true); if(c&&Date.now()-c.fetchedAt<20*60e3) return;
+  const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I||!I.sum) return;
+  try{ const r=await fetch(wxURL(o,I)); if(!r.ok) throw 0; wxStore(n,parseWx(await r.json(),o,objState(n))); jjRender(); safeWxUpdate(n); }catch(e){ jjWx.fail=true; jjRender(); } }
+function jjShare(){ const s=jjState(), o=s&&OBJECTIFS.find(x=>x.n===s.n);
+  if(!navigator.geolocation){ toast('Position indisponible sur cet appareil'); return; } toast('Recherche de ta position…');
+  navigator.geolocation.getCurrentPosition(async p=>{ const la=p.coords.latitude.toFixed(5), lo=p.coords.longitude.toFixed(5), acc=Math.round(p.coords.accuracy||0);
+    const url=`https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=16/${la}/${lo}`, text=`📍 Ma position${o?' ('+o.sommet+')':''} à ${hhmm(new Date())}${acc?', précision ± '+acc+' m':''} : geo:${la},${lo}`;
+    jjShare.last={text,url};
+    if(navigator.share){ try{ await navigator.share({title:'Ma position',text,url}); }catch(e){} return; }
+    try{ await navigator.clipboard.writeText(text+' '+url); toast('Position copiée : colle-la dans un SMS ou un message'); }catch(e){ prompt('Copie ta position :',text+' '+url); } },
+    e=>toast(e&&e.code===1?'Position refusée : autorise la localisation pour la partager':'Position introuvable (signal GPS faible ?) : réessaie à découvert'),{enableHighAccuracy:true,timeout:15000,maximumAge:60000}); }
+function jjClick(e){ const b=e.target.closest('[data-jj],[data-jjbag]'); if(!b) return; const s=jjState(); if(!s) return;
+  if(b.dataset.jjbag){ s.bag=s.bag||{}; s.bag[b.dataset.jjbag]=!s.bag[b.dataset.jjbag]; jjSave(s); jjRender(); return; }
+  const k=b.dataset.jj;
+  if(k==='close'){ jjClose(); return; }
+  if(k==='start'){ s.start=Date.now(); s.sum=null; jjSave(s); haptic(); }
+  else if(k==='m15'||k==='p15'){ s.adj=(s.adj||0)+(k==='p15'?15:-15); jjSave(s); }
+  else if(k==='sum'){ s.sum=Date.now(); jjSave(s); haptic(); toast('Bravo ! Pense à marquer l’objectif « Fait » au retour'); }
+  else if(k==='end'){ if(!confirm('Terminer la sortie ? (le minuteur et la liste du sac sont remis à zéro)')) return; jjSave(null); jjClose(); return; }
+  else if(k==='share'){ jjShare(); return; }
+  jjRender(); }
 
 /* ---------- Préparation ---------- */
 function readinessWindow(){ const end=new Date(); const start=new Date(end.getFullYear(),end.getMonth(),end.getDate()-27); return [toISO(start),toISO(end)]; }
@@ -1848,7 +2076,8 @@ function trainStats(ref){
 // Indice de préparation : A grosse séance (35 %), B volume hebdo (30 %), C endurance (20 %), D régularité (15 %)
 function readiness(o,st){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3;
   const a=Math.min(1,st.maxD/(0.65*T)), b=Math.min(1,st.wk/(M?1.5*T:T)), c=Math.min(1,st.longest/(0.6*H*3600)), d=Math.min(1,st.n28/12);
-  return {a,b,c,d,r:0.35*a+0.3*b+0.2*c+0.15*d,T,H}; }
+  const r0=0.35*a+0.3*b+0.2*c+0.15*d, P=planStatus(o); // v29 : le plan du sommet compte pour 30 %
+  return {a,b,c,d,r0,plan:P.pct,r:(1-PLAN_W)*r0+PLAN_W*P.pct,T,H}; }
 const rCls=r=>r>=0.8?'green':r>=0.5?'orange':'red', rCol=r=>r>=0.8?'#4ade80':r>=0.5?'#fb923c':'#f87171';
 const rLabel=r=>r>=0.8?'Prêt':r>=0.6?'Presque prêt':r>=0.4?'En progression':'Début de préparation';
 function gearStatus(n){
@@ -2096,9 +2325,11 @@ async function loadSummitWeather(n,force){ const o=OBJECTIFS.find(x=>x.n===+n), 
   const old=wxCache(n,true); const useOld=()=>{ if(!old||curSum!==+n) return false; old.planned=objState(n).datePrevue||''; wxRender(n,old,true); dayJRender(n); return true; };
   el.innerHTML='<p class="small mut">Chargement de la météo du sommet…</p>';
   if(navigator.onLine===false){ if(useOld()) return; el.innerHTML='<p class="small mut">📴 Hors-ligne : météo du sommet indisponible pour le moment. <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; return; }
-  try{ const [la,lo]=I.sum; const url='https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&elevation='+Math.round(o.altSom)+'&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FParis&forecast_days=16';
+  try{ const url=wxURL(o,I);
     const r=await fetch(url); if(!r.ok) throw new Error('http '+r.status); const data=parseWx(await r.json(),o,objState(n)); wxStore(n,data); wxRender(n,data); dayJRender(n); return true; }
   catch(e){ if(useOld()) return false; if(curSum===+n) el.innerHTML='<p class="small mut">Météo du sommet indisponible pour le moment (connexion ?). <button class="btn sec sm" type="button" data-wx-refresh>Réessayer</button></p>'; } }
+function wxURL(o,I){ const [la,lo]=I.sum; const url='https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&elevation='+Math.round(o.altSom)+'&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FParis&forecast_days=16';
+  return url; }
 
 /* v23 : bloc « Jour J » utilisable hors-ligne (soleil, météo heure par heure en cache, matériel, GPX, carte préparée) */
 const TILE_CACHE='suivi-montagne-tiles-v1', OFF_KEY=KEY+'.offline', TILE_MAX=180, TILE_ZMIN=11, TILE_ZMAX=15;
@@ -2202,8 +2433,9 @@ function renderSummit(n){
     <div class="small mut" style="margin-top:6px"><span class="unc">⚠︎</span> = information incertaine ou variable, à vérifier avant de partir.</div>
   </div>
   ${safetyHTML(o,I)}
+  ${planHTML(o)}
   ${ASC.card(o)}
-  <div class="card"><h3>🗓️ Jour J <span class="small mut">(disponible hors-ligne)</span></h3><div id="sumDayJ"></div></div>
+  <div class="card"><h3>🗓️ Jour J <span class="small mut">(disponible hors-ligne)</span></h3><button class="btn jjbig" type="button" data-jjopen="${o.n}">🚀 Mode Jour J (plein écran)</button><div id="sumDayJ"></div></div>
   ${cl.filter(c=>c.to>=today).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> du ${dFR(c.from)} au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
   <div class="card"><h3>🗺️ Carte</h3><div class="mapf" id="sumStaticMap"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
     <div class="links">${mapLinks(o,I).map(([t,u])=>`<a class="btn sec sm" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
@@ -3281,7 +3513,9 @@ function init(){
   ['f_dist','f_incline'].forEach(id=>$(id).addEventListener('input',()=>{ autoTapisDplus(); updAuto(); }));
   // fiches sommet : cartes Objectifs, Prépa, conseil du Journal
   const sumClick=e=>{ if(e.target.closest('select,input,textarea,a,summary,label,details>div')) return; const t=e.target.closest('[data-sum]'); if(t){ openSummit(t.dataset.sum); } };
-  ['objList','prepList','prepHero','jAdv'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
+  $('jStep').addEventListener('click',stepClick,true); $('jjMode').addEventListener('click',jjClick); $('jjMode').addEventListener('keydown',e=>{ if(e.key==='Escape') jjClose(); });
+  $('sumBody').addEventListener('click',e=>{ const j=e.target.closest('[data-jjopen]'); if(j){ jjOpen(+j.dataset.jjopen); return; } planClick(e); });
+  ['objList','prepList','prepHero','jAdv','jStep'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
   $('objSort').addEventListener('click',e=>{ const b=e.target.closest('[data-osort]'); if(!b) return; try{ localStorage.setItem('sm-objsort',b.dataset.osort); }catch(_){} renderObj(); });
   $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-offprep]')){ prepOffline(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
   $('sumBody').addEventListener('change',e=>{ if(e.target.id==='sumGpxFile'){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) handleGpxFile(curSum,f); } });
@@ -3359,7 +3593,7 @@ function init(){
       if(busy){ toast('Nouvelle version installée : elle s’appliquera à la prochaine ouverture'); return; } reloaded=true; location.reload(); });
   }
 }
-document.addEventListener('DOMContentLoaded',init);
+document.addEventListener('DOMContentLoaded',()=>{ STORE.boot().catch(()=>{}).finally(()=>{ init(); STORE.migrate().then(ok=>{ if(ok) renderSnaps&&renderSnaps(); }).catch(()=>{}); }); }); // v29 : IndexedDB ouvert (3 s max) avant le chargement
 </script>
 </body>
 </html>
