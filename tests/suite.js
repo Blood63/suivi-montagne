@@ -979,7 +979,7 @@ function FIXTURE() {
     ok(L1.z === 2 && L1.a === 3 && L1.b === 4, 'niveaux dérivés des statuts : prépa Vache « Prêt » → niveau 3 (Vache fermée passée), Dôme « Prêt » → 4, « Fait » → 5', L1);
     ok(L1.coh, 'chaque niveau = prépa ≥ 80 % / statut, ou sommet « Fait » (cohérence avec les données réelles)');
     ok(L1.c === 1 && L1.d === 0, 'Vache : bloque seulement quand la fermeture est levée (sinon « passé »)', L1);
-    const ce = await p.evaluate(() => { const st=$('jeuStrip'), S=st.clientHeight/300, x=JEU.at[JEU.cur][0]*S; const hk=$('jeuHk').getBoundingClientRect(), sr=st.getBoundingClientRect();
+    const ce = await p.evaluate(() => { const st=$('jeuStrip'), S=JEU.scale, x=JEU.at[JEU.cur][0]*S; const hk=$('jeuHk').getBoundingClientRect(), sr=st.getBoundingClientRect();
       return {d:Math.abs(x-(st.scrollLeft+st.clientWidth/2)), clamp:x<st.clientWidth/2, hx:hk.left+hk.width*.62-sr.left+st.scrollLeft-x}; });
     ok((ce.d < 3 || ce.clamp) && Math.abs(ce.hx) < 3, 'ouverture centrée sur le niveau courant, randonneur posé sur sa pastille', ce);
     // balayage horizontal sur le bandeau : défile le bandeau, ne change pas d'onglet
@@ -992,10 +992,10 @@ function FIXTURE() {
     await p.touchscreen.touchStart(hb.x, hb.y); for (let i = 1; i <= 10; i++) await p.touchscreen.touchMove(hb.x - i * 20, hb.y + 1); await p.touchscreen.touchEnd(); await W(700);
     ok(await p.evaluate(() => curPage) === 'prep', 'balayage hors du bandeau : change toujours d’onglet (Objectifs → Prépa)');
     await p.evaluate(() => show('obj')); await W(500);
-    const ce2 = await p.evaluate(() => { const st=$('jeuStrip'), x=JEU.at[JEU.cur][0]*st.clientHeight/300; return Math.abs(x-(st.scrollLeft+st.clientWidth/2)) < 3 || x < st.clientWidth/2; });
+    const ce2 = await p.evaluate(() => { const st=$('jeuStrip'), x=JEU.at[JEU.cur][0]*JEU.scale; return Math.abs(x-(st.scrollLeft+st.clientWidth/2)) < 3 || x < st.clientWidth/2; });
     ok(ce2, 'retour sur Objectifs : recentré sur le niveau courant');
     // appui sur une pastille : fiche du bon sommet
-    const tp = await p.evaluate(() => { const st=$('jeuStrip'), S=st.clientHeight/300, i=JEU.cur, [x,y]=JEU.at[i]; st.scrollLeft=x*S-st.clientWidth/2; const r=st.getBoundingClientRect(); return {x:r.left+x*S-st.scrollLeft, y:r.top+y*S, n:JEU.levels[i].n}; });
+    const tp = await p.evaluate(() => { const st=$('jeuStrip'), S=JEU.scale, i=JEU.cur, [x,y]=JEU.at[i]; st.scrollLeft=x*S-st.clientWidth/2; const r=st.getBoundingClientRect(); return {x:r.left+x*S-st.scrollLeft, y:r.top+y*S, n:JEU.levels[i].n}; });
     await p.touchscreen.tap(tp.x, tp.y); await W(600);
     const ts = await p.evaluate(() => ({pg:curPage, s:String(curSum)})); ok(ts.pg === 'sum' && ts.s === String(tp.n), 'appui sur une pastille : fiche détaillée du sommet', {tp, ts});
     await p.goBack(); await W(500);
@@ -1007,13 +1007,25 @@ function FIXTURE() {
     ok(fl.drawn === 11, 'défilement jusqu’au bout : les 11 décors sont chargés et dessinés', fl);
     ok(fl.worst < 120, 'défilement fluide (CPU ×4) : aucune image > 120 ms', fl);
     // redimensionnement / rotation
-    const pre = await p.evaluate(() => { const st=$('jeuStrip'); st.scrollLeft=3000; return (st.scrollLeft+st.clientWidth/2)/(st.clientHeight/300); });
+    const pre = await p.evaluate(() => { const st=$('jeuStrip'); st.scrollLeft=3000; return (st.scrollLeft+st.clientWidth/2)/(JEU.scale); });
     await p.setViewport({width:844, height:390, isMobile:true, hasTouch:true}); await W(700);
-    const ro = await p.evaluate(() => { const st=$('jeuStrip'); return {h:st.clientHeight, mid:(st.scrollLeft+st.clientWidth/2)/(st.clientHeight/300), ow:document.documentElement.scrollWidth>innerWidth+1, iw:$('jeuIn').offsetWidth}; });
-    ok(ro.h < 300 && ro.h >= 209 && Math.abs(ro.mid - pre) < 8 && !ro.ow, 'rotation en paysage : bandeau réduit, même endroit au centre, pas de débordement', {pre, ...ro});
+    const ro = await p.evaluate(() => { const st=$('jeuStrip'); return {h:st.clientHeight, mid:(st.scrollLeft+st.clientWidth/2)/(JEU.scale), ow:document.documentElement.scrollWidth>innerWidth+1, iw:$('jeuIn').offsetWidth}; });
+    ok(ro.h < 450 && ro.h >= 314 && Math.abs(ro.mid - pre) < 8 && !ro.ow, 'rotation en paysage : bandeau réduit, même endroit au centre, pas de débordement', {pre, ...ro});
     for (const w of [360, 430, 390]) { await p.setViewport({width:w, height:800, isMobile:true, hasTouch:true}); await W(400);
       const r = await p.evaluate(() => { const h=$('jeuHud').getBoundingClientRect(), s=$('jeuStrip').getBoundingClientRect(); return {ow:document.documentElement.scrollWidth>innerWidth+1, hud:h.right<=innerWidth&&h.left>=0, s:Math.round(s.width)}; });
       ok(!r.ow && r.hud && r.s === w, 'bandeau en ' + w + ' px : pleine largeur, sans débordement', r); }
+    // v27 : superposition sous l'en-tête (Objectifs uniquement), en-tête lisible, autres onglets inchangés
+    await p.evaluate(() => { show('obj'); window.scrollTo(0,0); }); await W(500);
+    const ov = await p.evaluate(() => { const h=document.querySelector('header'), cs=getComputedStyle(h), s=$('jeuStrip').getBoundingClientRect(), hr=h.getBoundingClientRect(), t=getComputedStyle(h.querySelector('h1'));
+      return {top:Math.round(s.top), hb:Math.round(hr.bottom), bg:cs.backgroundImage, bd:cs.backdropFilter||cs.webkitBackdropFilter, sh:t.textShadow, col:t.color, sky:Math.round(150*JEU.scale), z:+cs.zIndex}; });
+    ok(ov.top === 0 && ov.hb > 0 && ov.hb <= ov.sky, 'v27 Objectifs : bandeau collé en haut (top 0), en-tête entièrement sur le ciel ajouté', ov);
+    ok(/rgba\(5, 12, 11, 0\.8\)/.test(ov.bg) && ov.sh !== 'none' && ov.z >= 5, 'v27 en-tête lisible : dégradé sombre translucide + ombre du texte, au-dessus du bandeau', ov);
+    for (const tb of ['journal','prep','evo','data']) { const o = await p.evaluate(async tb => { show(tb); await new Promise(r=>setTimeout(r,450)); const h=document.querySelector('header'), cs=getComputedStyle(h), pg=$('p-'+tb).getBoundingClientRect(); return {bg:cs.backgroundImage, bd:cs.borderBottomColor, top:Math.round(pg.top), hb:Math.round(h.getBoundingClientRect().bottom)}; }, tb);
+      ok(/rgba\(14, 33, 30, 0\.92\)/.test(o.bg) && o.top >= o.hb - 1, 'v27 onglet ' + tb + ' : en-tête et mise en page inchangés (pas de superposition)', o); }
+    const fl2 = await p.evaluate(async () => { show('journal'); await new Promise(r=>setTimeout(r,300)); const seen=new Set(); let bad=0; show('obj'); for (let i=0;i<30;i++){ await new Promise(r=>requestAnimationFrame(r)); const s=$('jeuStrip').getBoundingClientRect(), b=getComputedStyle(document.querySelector('header')).backgroundImage; seen.add(b.slice(0,40)); if(/0\.92/.test(b)) bad++; } return {seen:[...seen], bad}; });
+    ok(fl2.bad === 0 && fl2.seen.length === 1, 'v27 transition vers Objectifs : en-tête superposé dès la 1re image (pas de clignotement)', fl2);
+    const sc = await p.evaluate(async () => { window.scrollTo(0,400); await new Promise(r=>setTimeout(r,400)); const b=getComputedStyle(document.querySelector('header')).backgroundImage; window.scrollTo(0,0); await new Promise(r=>setTimeout(r,400)); return {sc:b, top:getComputedStyle(document.querySelector('header')).backgroundImage}; });
+    ok(/0\.97/.test(sc.sc) && /0\.8\)/.test(sc.top), 'v27 défilement : en-tête opaque une fois défilé, superposé en haut', sc);
     ok(await p.evaluate(() => localStorage.getItem(KEY)) === before, 'bandeau : données inchangées (stockage identique octet pour octet)');
     // hors-ligne : décors et randonneur précachés
     await p.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });

@@ -381,7 +381,13 @@ body.day-open{overflow:hidden}
 @media (prefers-reduced-motion:reduce){#dayDlg,#dayDlg .dsh{transition:none}}
 /* v26 : bandeau « Le chemin des sommets » */
 .jeu{margin:-16px -14px 12px}
-.jeu-strip{position:relative;height:300px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;scrollbar-width:none;background:#1b2a4a;-webkit-overflow-scrolling:touch;outline-offset:-3px}
+/* v27 : sur Objectifs, le bandeau passe sous l'en-tête (superposition) pour ne couper aucun sommet */
+body.pg-obj .jeu{margin-top:calc(-1 * var(--hdrH,72px) - 16px)}
+body.pg-obj header:not(.scrolled){background:linear-gradient(180deg,rgba(5,12,11,.80) 0%,rgba(5,12,11,.55) 60%,rgba(5,12,11,0) 100%);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom-color:transparent;box-shadow:none}
+body.pg-obj header:not(.scrolled) .ridge{opacity:0}
+body.pg-obj header:not(.scrolled) h1,body.pg-obj header:not(.scrolled) small{text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.6)}
+body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
+.jeu-strip{position:relative;height:450px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;scrollbar-width:none;background:#1b2a4a;-webkit-overflow-scrolling:touch;outline-offset:-3px}
 .jeu-strip::-webkit-scrollbar{display:none}
 .jeu-in{position:relative;height:100%}
 .jeu-in canvas{position:absolute;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;cursor:pointer}
@@ -1406,8 +1412,8 @@ function renderObj(){ try{ JEU.render(); }catch(e){ console.warn('bandeau',e); }
    Décors pixel art fournis (img/jeu/*.webp, 300 px de haut), un canevas par décor, chargé seulement à l'approche (IntersectionObserver).
    Niveaux dérivés des vraies données : prépa validée si préparation ≥ 80 % (ou statut « Prêt »/« Fait »), sommet validé si statut « Fait ».
    Un sommet fermé par arrêté (CLOSURES[n] avec block, ex. Puy de la Vache 2026–2028) est « passé » : il ne bloque pas la progression. */
-const JEU=(()=>{ const H=300,OV=60,HKH=78,PREP_OK=0.8;
-  const GS=[{"n":"auvergne","w":978,"pp":[[183,249],[277,256],[368,245],[459,256],[551,246],[646,259],[738,255],[827,268]],"lv":[[0,"p",277,256],[0,"s",370,245],[1,"p",459,256],[1,"s",551,246],[2,"p",646,259],[2,"s",738,255]],"ca":[183,249],"cb":[827,268]},{"n":"rhune","w":800,"pp":[[148,222],[258,216],[328,211],[404,206],[469,217]],"lv":[[3,"p",258,216],[3,"s",404,206]],"ca":[148,222],"cb":[469,217]},{"n":"sancy-val-enfer","w":853,"pp":[[0,248],[167,247],[427,246],[667,248],[853,244]],"lv":[[4,"p",250,246],[4,"s",427,246]],"ca":[130,247],"cb":[723,247]},{"n":"cabaliros","w":997,"pp":[[0,208],[58,204],[195,225],[341,242],[487,244],[633,251],[779,252],[925,217],[997,215]],"lv":[[5,"p",307,238],[5,"s",538,246]],"ca":[130,215],"cb":[867,231]},{"n":"sancy-cretes","w":957,"pp":[[0,212],[56,208],[187,228],[327,245],[467,246],[608,253],[748,254],[888,221],[957,219]],"lv":[[6,"p",280,239],[6,"s",516,248]],"ca":[130,219],"cb":[827,235]},{"n":"midi-tourmalet","w":957,"pp":[[0,212],[56,208],[187,228],[327,245],[467,246],[608,253],[748,254],[888,221],[957,219]],"lv":[[7,"p",280,239],[7,"s",516,248]],"ca":[130,219],"cb":[827,235]},{"n":"taillon","w":957,"pp":[[0,212],[56,208],[187,228],[327,245],[467,246],[608,253],[748,254],[888,221],[957,219]],"lv":[[8,"p",280,239],[8,"s",516,248]],"ca":[130,219],"cb":[827,235]},{"n":"gr441","w":969,"pp":[[38,209],[189,228],[331,244],[473,245],[615,254],[757,251],[899,220],[937,216]],"lv":[[9,"p",284,239],[9,"s",522,248]],"ca":[130,221],"cb":[839,233]},{"n":"midi-artigues","w":969,"pp":[[38,209],[189,228],[331,244],[473,245],[615,254],[757,251],[899,220],[937,216]],"lv":[[10,"p",284,239],[10,"s",522,248]],"ca":[130,221],"cb":[839,233]},{"n":"barrhorn","w":917,"pp":[[54,240],[179,249],[313,258],[458,261],[582,261],[716,260],[909,237]],"lv":[[11,"p",269,255],[11,"s",458,261]],"ca":[130,245],"cb":[787,251]},{"n":"grande-sassiere","w":957,"pp":[[103,294],[187,271],[327,245],[467,245],[561,248],[654,243],[665,226],[645,210],[561,198],[561,173],[589,159],[608,133],[598,105],[619,75],[615,47]],"lv":[[12,"p",467,245],[12,"s",615,47]],"ca":[130,287],"cb":[615,47]}];
+const JEU=(()=>{ const H=450,OV=60,HKH=78,PREP_OK=0.8;
+  const GS=[{"n":"auvergne","w":978,"pp":[[183,399],[277,406],[368,395],[459,406],[551,396],[646,409],[738,405],[827,418]],"lv":[[0,"p",277,406],[0,"s",370,395],[1,"p",459,406],[1,"s",551,396],[2,"p",646,409],[2,"s",738,405]],"ca":[183,399],"cb":[827,418]},{"n":"rhune","w":800,"pp":[[148,372],[258,366],[328,361],[404,356],[469,367]],"lv":[[3,"p",258,366],[3,"s",404,356]],"ca":[148,372],"cb":[469,367]},{"n":"sancy-val-enfer","w":853,"pp":[[0,398],[167,397],[427,396],[667,398],[853,394]],"lv":[[4,"p",250,396],[4,"s",427,396]],"ca":[130,397],"cb":[723,397]},{"n":"cabaliros","w":997,"pp":[[0,358],[58,354],[195,375],[341,392],[487,394],[633,401],[779,402],[925,367],[997,365]],"lv":[[5,"p",307,388],[5,"s",538,396]],"ca":[130,365],"cb":[867,381]},{"n":"sancy-cretes","w":957,"pp":[[0,362],[56,358],[187,378],[327,395],[467,396],[608,403],[748,404],[888,371],[957,369]],"lv":[[6,"p",280,389],[6,"s",516,398]],"ca":[130,369],"cb":[827,385]},{"n":"midi-tourmalet","w":957,"pp":[[0,362],[56,358],[187,378],[327,395],[467,396],[608,403],[748,404],[888,371],[957,369]],"lv":[[7,"p",280,389],[7,"s",516,398]],"ca":[130,369],"cb":[827,385]},{"n":"taillon","w":957,"pp":[[0,362],[56,358],[187,378],[327,395],[467,396],[608,403],[748,404],[888,371],[957,369]],"lv":[[8,"p",280,389],[8,"s",516,398]],"ca":[130,369],"cb":[827,385]},{"n":"gr441","w":969,"pp":[[38,359],[189,378],[331,394],[473,395],[615,404],[757,401],[899,370],[937,366]],"lv":[[9,"p",284,389],[9,"s",522,398]],"ca":[130,371],"cb":[839,383]},{"n":"midi-artigues","w":969,"pp":[[38,359],[189,378],[331,394],[473,395],[615,404],[757,401],[899,370],[937,366]],"lv":[[10,"p",284,389],[10,"s",522,398]],"ca":[130,371],"cb":[839,383]},{"n":"barrhorn","w":917,"pp":[[54,390],[179,399],[313,408],[458,411],[582,411],[716,410],[909,387]],"lv":[[11,"p",269,405],[11,"s",458,411]],"ca":[130,395],"cb":[787,401]},{"n":"grande-sassiere","w":957,"pp":[[103,444],[187,421],[327,395],[467,395],[561,398],[654,393],[665,376],[645,360],[561,348],[561,323],[589,309],[608,283],[598,255],[619,225],[615,197]],"lv":[[12,"p",467,395],[12,"s",615,197]],"ca":[130,437],"cb":[615,197]}];
   const COL=['#f1c40f','#1abc9c','#9b59b6','#e84393','#e67e22','#e74c3c','#3498db'];
   const F={0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001111001111',4:'101101111001001',5:'111100111001111',6:'111100111101111',7:'111001001001001',8:'111101111101111',9:'111101111001111'};
   let X=0; const L=GS.map(s=>{ const o={x:X,w:s.w,s}; X+=s.w-OV; return o; }); const TOT=X+OV;
@@ -1460,7 +1466,7 @@ const JEU=(()=>{ const H=300,OV=60,HKH=78,PREP_OK=0.8;
     addEventListener('orientationchange',()=>setTimeout(()=>layout(true),250));
     built=true; }
   function layout(keep){ const st=$('jeuStrip'); if(!st) return; const w=st.clientWidth, mid=w&&lastW?(st.scrollLeft+lastW/2)/S:null;
-    S=Math.max(.7,Math.min(1,(innerHeight*0.42)/H)); st.style.height=Math.round(H*S)+'px'; const inn=$('jeuIn'); inn.style.width=Math.round(TOT*S)+'px'; inn.style.height=Math.round(H*S)+'px';
+    S=Math.max(.7,Math.min(1,(innerHeight*0.6)/H)); st.style.height=Math.round(H*S)+'px'; const inn=$('jeuIn'); inn.style.width=Math.round(TOT*S)+'px'; inn.style.height=Math.round(H*S)+'px';
     L.forEach((o,k)=>{ const c=inn.querySelector('canvas[data-k="'+k+'"]'); c.style.left=Math.round(o.x*S)+'px'; c.style.width=Math.round(o.w*S)+'px'; c.style.height=Math.round(H*S)+'px'; });
     const hk=$('jeuHk'), [hx,hy]=AT[CUR], hh=Math.round(HKH*S), hw=Math.round(46*HKH/79*S); hk.style.width=hw+'px'; hk.style.height=hh+'px';
     hk.style.left=Math.round(hx*S-hw*.62)+'px'; hk.style.top=Math.round(hy*S-hh+(lv[CUR]&&lv[CUR].t==='som'?-8:2)*S)+'px';
@@ -1477,7 +1483,7 @@ const JEU=(()=>{ const H=300,OV=60,HKH=78,PREP_OK=0.8;
     [lv,CUR]=levels(); if(JSON.stringify([lv.map(x=>[x.done,!!x.closed]),CUR])!==prev) for(const k in drawn) drawn[k]=0;
     layout(false); hud(); $('jeuIn').querySelectorAll('canvas').forEach(c=>{ const k=+c.dataset.k, r=c.getBoundingClientRect(), sr=$('jeuStrip').getBoundingClientRect(); if(drawn[k]===0||(sr.width&&r.right>sr.left-700&&r.left<sr.right+700)) draw(k); });
     if(!centred) centre(); }
-  return {render,centre,get cur(){ return CUR; },get levels(){ return lv; },get at(){ return AT; },get all(){ return ALL; }};
+  return {render,centre,get cur(){ return CUR; },get levels(){ return lv; },get at(){ return AT; },get all(){ return ALL; },get scale(){ return S; }};
 })();
 
 /* ---------- Préparation ---------- */
@@ -3117,6 +3123,7 @@ function animateIn(root){
 function initUI(){
   // en-tête : ombre au défilement
   const hdr=document.querySelector('header'); let tick=false;
+  { const setH=()=>document.documentElement.style.setProperty('--hdrH',hdr.offsetHeight+'px'); setH(); if(window.ResizeObserver) new ResizeObserver(setH).observe(hdr); else addEventListener('resize',setH); } // v27 : hauteur de l'en-tête pour la superposition du bandeau
   let lastY=scrollY; addEventListener('scroll',()=>{ if(tick) return; tick=true; requestAnimationFrame(()=>{ const y=scrollY; hdr.classList.toggle('scrolled',y>8); if(Math.abs(y-lastY)>6){ document.body.classList.toggle('fab-hide',y>lastY&&y>120); lastY=y; } tick=false; }); },{passive:true});
   // feuille : fond, croix, glisser vers le bas, Échap
   $('sheetBg').addEventListener('click',()=>{ if(IMP.isOpen()){ IMP.close(); return; } fillForm(null); show(curPage); });
