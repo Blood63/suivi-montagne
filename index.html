@@ -337,7 +337,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v25 : Puy de la Vache ajouté (n° 1 affiché, clé interne 13 ; site en travaux signalé), Barrhorn en 2 jours sans escalade (n° 12) et Grande Sassière la plus difficile (n° 13), vue détaillée de l’activité quotidienne (appui sur la carte du Journal : période, indicateur, moyennes, graphiques interactifs, jour par jour), animations des graphiques plafonnées pour les longues périodes (cache v25) ; v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -363,6 +363,22 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 #ascDlg.on{display:flex}#ascDlg .box{background:#183430;border-top:1px solid rgba(124,200,234,.25);box-shadow:0 -10px 40px rgba(0,0,0,.5);width:100%;max-width:520px;max-height:86vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 #ascDlg .box .btn{width:100%;margin-top:8px}
 .imp-obj{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(52,179,138,.1)}
+
+/* v25 : vue détaillée de l'activité quotidienne (feuille plein écran, animée en transform uniquement) */
+#dayDlg{position:fixed;inset:0;z-index:85;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);transition:background .3s}
+#dayDlg[hidden]{display:none}#dayDlg.on{background:rgba(0,0,0,.55)}
+#dayDlg .dsh{background:#10231f;border-top:1px solid rgba(124,200,234,.25);box-shadow:0 -10px 40px rgba(0,0,0,.5);width:100%;max-width:560px;height:94vh;height:94dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px 18px 0 0;padding:0 14px calc(18px + env(safe-area-inset-bottom));transform:translate3d(0,100%,0);transition:transform .34s cubic-bezier(.2,.8,.2,1);will-change:transform;contain:layout paint}
+#dayDlg.on .dsh{transform:translate3d(0,0,0)}
+#dayDlg .dhd{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 0 10px;background:linear-gradient(180deg,#10231f 80%,rgba(16,35,31,0))}
+#dayDlg .dhd h2{margin:0;font-size:19px;flex:1}
+#dayDlg .seg{margin-bottom:10px}#dayDlg .seg button{flex:1}
+#dayDlg .kpi small{display:block}#dayDlg .kpi .dv{font-size:11.5px;margin-top:2px}
+#dayDlg .dv.up{color:#4ade80}#dayDlg .dv.dn{color:#fca5a5}
+#dayDlg .dtbl td,#dayDlg .dtbl th{text-align:right;white-space:nowrap}#dayDlg .dtbl td:first-child,#dayDlg .dtbl th:first-child{text-align:left}
+#dailyCard.tap{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .18s cubic-bezier(.3,1.4,.5,1)}
+#dailyCard.tap:active{transform:scale(.985)}#dailyCard .go{font-size:13px;color:var(--mut);margin-left:6px;white-space:nowrap}
+body.day-open{overflow:hidden}
+@media (prefers-reduced-motion:reduce){#dayDlg,#dayDlg .dsh{transition:none}}
 </style>
 </head>
 <body>
@@ -604,6 +620,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
   <div id="impList"></div>
   <div class="row sheet-actions" style="margin:6px -14px 0!important"><button class="btn" id="btnImpAll" style="display:none">Tout enregistrer</button><button class="btn sec" id="btnImpDone" onclick="IMP.close()">Fermer</button></div>
 </section>
+<div id="dayDlg" role="dialog" aria-modal="true" aria-labelledby="dayDlgT" hidden><div class="dsh" id="dayBox"></div></div>
 <div id="ascDlg" role="dialog" aria-modal="true" aria-labelledby="ascDlgT"><div class="box" id="ascBox"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -655,8 +672,8 @@ const OBJECTIFS = [
  {n:7,sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',h:7,diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
   note:'Topos : 1 600–1 700 m D+, 19–20 km A/R. Certains départs (virage des Arizes) sont à ≈ 1 280 m.',
   src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21'],['Ma petite rando – sentier des Muletiers','https://mapetiterando.fr/randonnee/ce-sentier-historique-mene-au-sommet-du-pic-du-midi-1700-m-de-denivele-et-une-vue-a-couper-le-souffle/']]},
- {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'≈ 8 h 30–10 h (ou 2 jours via la cabane)',h:9,diff:'Difficile (T3, très physique, altitude)',conf:'Moyenne',
-  note:'Longtemps présenté comme le plus haut sommet randonnable des Alpes (un sentier vers le Gross Bigerhorn, 3 625 m, existe depuis 2024). Sources : 1 660–1 980 m D+, 18,6–21,2 km. Nuit à la Turtmannhütte (2 519 m) conseillée.',
+ {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'2 jours : J1 Sänntum → Turtmannhütte ≈ 2 h 30–3 h (+650 m) · J2 sommet et retour ≈ 8 h (+1 100 m / −1 700 m)',h:8,multi:{jours:2,dpJ:1100,distJ:16,hJ:8,txt:'En 2 jours avec nuit à la Turtmannhütte (2 519 m) : J1 ≈ 4,5 km et +650 m jusqu’à la cabane ; J2 ≈ 15,5 km, +1 100 m jusqu’au sommet puis −1 700 m jusqu’à Sänntum. Cible de préparation : la journée 2 (≈ 1 100 m D+, ≈ 8 h).'},diff:'Difficile (T3 sans escalade, mains courantes au Gässi ; très physique, altitude)',conf:'Moyenne',
+  note:'Longtemps présenté comme le plus haut sommet randonnable des Alpes (un sentier vers le Gross Bigerhorn, 3 625 m, existe depuis 2024). Sources : 1 660–1 980 m D+, 18,6–21,2 km. Prévu en 2 jours avec nuit à la Turtmannhütte (2 519 m) : aucune escalade nécessaire, acclimatation et journée du sommet raccourcie.',
   src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097'],['Novo-monde – Monter au Barrhorn','https://www.novo-monde.com/ascension-barrhorn-valais-suisse/'],['CAS – Turtmannhütte','https://www.sac-cas.ch/fr/cabanes-et-courses/portail-des-courses-du-cas/turtmannhuette-sac-2147000281/']]},
  {n:9,sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',h:7.5,diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
   note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable.',
@@ -671,17 +688,22 @@ const OBJECTIFS = [
   src:[['Rando Vallées de Gavarnie – Le pic du Cabaliros depuis Sireix','https://rando.valleesdegavarnie.com/trek/29148-Le-pic-du-Cabaliros%2C-depuis-Sireix'],['Visorando – Pic du Cabaliros depuis Sireix','https://www.visorando.com/randonnee-pic-du-cabaliros-depuis-sireix/'],['Randozone – Randonnée au pic de Cabaliros','https://www.randozone.com/topos/randonnee/57/randonnee-au-pic-de-cabaliros'],['Iris-Pyrénées – Cabaliros depuis Estaing','https://iris-py.fr/randonnee-pyrenees/le-pic-du-cabaliros-depuis-estaing/'],['Rando Vallées de Gavarnie – Cabaliros depuis Cauterets','https://rando.valleesdegavarnie.com/trek/29275-Le-pic-du-Cabaliros%2C-depuis-Cauterets'],['Topos Pyrénées (Mariano) – Cabaliros par Cauterets','https://www.topopyrenees.com/randonnee-cabaliros-2334m-par-cauterets/']]},
  {n:12,sommet:'Pic du Taillon',iti:'Voie normale par le port de Boucharo et la Brèche de Roland',depart:'Col des Tentes (Gavarnie)',altDep:2208,altSom:3144,dplus:1000,dist:15,duree:'≈ 3 h 30–4 h montée · 6 h 30–7 h A/R',h:6.5,diff:'Moyenne à difficile (T3, haute montagne, névés en début de saison)',conf:'Élevée',
   note:'Camptocamp : +950 m, 16 km, T3, crampons en début de saison, passages à 35° ; Toporandosmontagne : +1 000 m, 14,5 km, 3 h 30 montée + 3 h descente ; Randozone : 4 h + 3 h. D+ réel ≈ 950–1 050 m (contre-pentes).',
-  src:[['Camptocamp – Taillon, voie normale depuis le col des Tentes','https://www.camptocamp.org/routes/56592/fr/taillon-voie-normale-depuis-le-col-des-tentes'],['Toporandosmontagne – Le Taillon par la Brèche de Roland','https://www.toporandosmontagne.com/65/vallees-gaves/le-taillon/le-taillon.php'],['Randozone – Pic du Taillon depuis le col des Tentes','https://www.randozone.com/topos/randonnee/76/pic-du-taillon-depuis-le-col-de-tentes'],['Imag’In Pyrénées – Taillon (voies et conseils)','https://www.imag-in-pyrenees.com/taillon.htm'],['Refuge de la Brèche de Roland (FFCAM) – réservation et infos 2026','https://refugebrechederoland.ffcam.fr/reservation.html'],['Parc national des Pyrénées – refuges de Luz-Gavarnie','https://www.pyrenees-parcnational.fr/fr/des-decouvertes/sejourner-dans-le-parc-national/ou-dormir-en-montagne/refuges/vallee-de-luz-gavarnie'],['Hautes-Pyrénées Tourisme – col des Tentes (route, réseau)','https://cdt65.media.tourinsoft.eu/upload/CL-00357-CDHP-FicheRando-Col-des-tentes-OK.pdf'],['InfoRoute65 – état des routes','https://inforoute.ha-py.fr/']]}
+  src:[['Camptocamp – Taillon, voie normale depuis le col des Tentes','https://www.camptocamp.org/routes/56592/fr/taillon-voie-normale-depuis-le-col-des-tentes'],['Toporandosmontagne – Le Taillon par la Brèche de Roland','https://www.toporandosmontagne.com/65/vallees-gaves/le-taillon/le-taillon.php'],['Randozone – Pic du Taillon depuis le col des Tentes','https://www.randozone.com/topos/randonnee/76/pic-du-taillon-depuis-le-col-de-tentes'],['Imag’In Pyrénées – Taillon (voies et conseils)','https://www.imag-in-pyrenees.com/taillon.htm'],['Refuge de la Brèche de Roland (FFCAM) – réservation et infos 2026','https://refugebrechederoland.ffcam.fr/reservation.html'],['Parc national des Pyrénées – refuges de Luz-Gavarnie','https://www.pyrenees-parcnational.fr/fr/des-decouvertes/sejourner-dans-le-parc-national/ou-dormir-en-montagne/refuges/vallee-de-luz-gavarnie'],['Hautes-Pyrénées Tourisme – col des Tentes (route, réseau)','https://cdt65.media.tourinsoft.eu/upload/CL-00357-CDHP-FicheRando-Col-des-tentes-OK.pdf'],['InfoRoute65 – état des routes','https://inforoute.ha-py.fr/']]},
+ // v25 : Puy de la Vache (n° 13 interne, affiché n° 1 = le plus facile). Clés 1–12 inchangées.
+ {n:13,sommet:'Puy de la Vache',iti:'Boucle des puys de Lassolas et de la Vache (PDIPR)',depart:'Parking « Puy de la Vache et puy de Lassolas » (D5, Saint-Genès-Champanelle)',altDep:990,altSom:1167,dplus:285,dist:4,duree:'≈ 2 h (boucle)',h:2,diff:'Facile (court, escaliers et pouzzolane)',conf:'Élevée',
+  note:'⛔ Site en travaux (2026–2028) : montée aux puys de la Vache et de Lassolas interdite par arrêté municipal depuis le 13/05/2026, parking fermé depuis le 20/04/2026 (vérifié le 27/10/2026, sans date de réouverture). Boucle officielle : 4 km, 285 m D+, 2 h (Département du Puy-de-Dôme). Cônes égueulés de ≈ 8 400 ans, coulée de la cheire d’Aydat.',
+  src:[['Parc des Volcans d’Auvergne – infos puys et travaux','https://www.decouvrir.parcdesvolcans.fr/chaine-des-puys-faille-de-limagne/infos-puys-et-travaux'],['Département du Puy-de-Dôme – communiqué travaux (17/04/2026)','https://www.puy-de-dome.fr/fileadmin/user_upload/CP_Travaux_La_Vache_et_Lassolas_-_compresse.pdf'],['Mairie de Saint-Genès-Champanelle – fermeture','https://saint-genes-champanelle.fr/fermeture-des-puys-de-la-vache-et-de-lassolas/'],['Puy-de-Dôme Tourisme – état des chemins','https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'],['Guide Auvergne – boucle Lassolas et Vache (données PDIPR, tracé)','https://guide-auvergne.fr/randonnees-auvergne/les-puys-de-lassolas-et-de-la-vache-iti0560/']]},
 ];
 // Saison : 0 = déconseillé, 1 = possible selon conditions, 2 = idéal (janv. → déc.) — indicatif, d'après les sources ci-dessus.
 const SEASON = {
  1:[1,1,1,2,2,2,2,2,2,2,1,1], 2:[1,1,1,2,2,2,2,2,2,2,1,1], 3:[0,0,0,0,1,2,2,2,2,2,1,0], 4:[1,1,2,2,2,1,1,1,2,2,2,1],
  5:[0,0,0,0,1,2,2,2,2,2,1,0], 6:[0,0,0,0,0,1,2,2,2,1,0,0], 7:[0,0,0,0,0,1,2,2,2,1,0,0], 8:[0,0,0,0,0,0,2,2,2,0,0,0],
  9:[0,0,0,0,0,0,2,2,2,0,0,0], 10:[0,0,0,1,2,2,2,2,2,2,1,0],
- 11:[0,0,0,0,1,2,2,2,2,2,1,0], 12:[0,0,0,0,0,1,2,2,2,1,0,0]
+ 11:[0,0,0,0,1,2,2,2,2,2,1,0], 12:[0,0,0,0,0,1,2,2,2,1,0,0], 13:[1,1,1,2,2,2,2,2,2,2,1,1]
 };
 // Fermetures connues (dates incluses)
 const CLOSURES = {
+ 13:[{from:'2026-03-02',to:'2028-02-29',block:true,txt:'Travaux de restauration des puys de la Vache et de Lassolas (≈ 2 ans) : montée aux deux puys interdite par arrêté municipal depuis le 13/05/2026 (sommet de la Vache fermé depuis le 02/03/2026), parking du D5 fermé depuis le 20/04/2026 — réouverture non annoncée (fin indicative). Restent ouverts : le GR au pied des volcans et la carrière de la Vache. Se garer aux parkings de la Ventouse ou le long de la RD 2089 (Département). Vérifier avant de partir.'}],
  1:[{from:'2026-10-05',to:'2026-10-16',txt:'Chemin des Muletiers fermé pour travaux (parking du col de Ceyssat inaccessible) — la fiche Puy-de-Dôme Tourisme indique 6–17/10. Montée possible par le chemin des Chèvres.'},
     {from:'2026-03-16',to:'2026-03-27',txt:'Chemin des Muletiers fermé pour travaux.'}],
  10:[{from:'2026-10-05',to:'2026-10-16',txt:'Tronçon col de Ceyssat → sommet du puy de Dôme (chemin des Muletiers) fermé pour travaux : variante par le chemin des Chèvres.'}],
@@ -700,6 +722,7 @@ const OBJ_GEAR = {
  9:['chaussRig','veste','polaire','doudoune','eau','batons','glacier','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','crampons','piolet','casque'],
  10:['chauss','veste','polaire','eau','batons','frontale','trousse','couverture','carte','creme','sac45','tente','duvet','matelas','rechaud','filtre'],
  11:['chauss','veste','polaire','eau','batons','lunettes','creme','bonnet','frontale','trousse','couverture','carte','sac'],
+ 13:['chauss','veste','polaire','eau','frontale','trousse','couverture','bonnet'],
  12:['chauss','veste','polaire','doudoune','eau','batons','lunettes','creme','bonnet','gantsChauds','frontale','trousse','couverture','carte','sac','crampons','piolet','casque','assurance']
 };
 const GEAR = {
@@ -804,7 +827,7 @@ const OBJ_INFO = {
   winter:'Enneigé de novembre à mai/juin : non praticable en randonnée.',
   seasonTxt:'Juillet à septembre.',
   uncertain:['Parking d’Artigues','Eau des ruisseaux']},
- 8:{type:'Aller-retour (1 ou 2 jours)',sum:[46.1564,7.7354],start:{nm:'Parking de Sänntum (Turtmanntal)',ll:[46.1858,7.6966],q:'Sänntum, Gruben, Turtmanntal'},
+ 8:{type:'Aller-retour en 2 jours (nuit à la Turtmannhütte)',sum:[46.1564,7.7354],start:{nm:'Parking de Sänntum (Turtmanntal)',ll:[46.1858,7.6966],q:'Sänntum, Gruben, Turtmanntal'},
   parking:'Parking de Sänntum (≈ 1 900 m), au bout de la route du Turtmanntal (≈ 22 km depuis Tourtemagne) ; payant (≈ 4 CHF / 12 h selon un récit ⚠︎).',
   access:'Route du Turtmanntal depuis Turtmann (vallée du Rhône). Transports publics quasi inexistants ⚠︎ (car postal estival jusqu’à Gruben à vérifier).',
   route:['De Sänntum, monter au lac et au barrage de Tourtemagne (gorges ou sentier panoramique).','Rejoindre la Turtmannhütte (2 519 m) par le Steinmannliweg (moins raide) ou le Sommerweg.','Passer le couloir du Gässi (vires équipées de mains courantes, T3), puis la longue moraine du vallon de Barr (≈ 2 km).','Pentes d’éboulis puis montée finale très raide (> 40 %) jusqu’à l’Üssers Barrhorn (3 610 m). Retour possible par le Schöllijoch, puis même chemin.'],
@@ -867,6 +890,21 @@ OBJ_INFO[12]={type:'Aller-retour (1 jour, ou 2 avec nuit au refuge)',sum:[42.693
   tips:['« Le plus facile des 3 000 » de Gavarnie : un excellent premier 3 000, à faire après le Pic du Midi.','Départ 6 h–7 h : parking plein tôt et foule au retour entre la Brèche et le torrent.','Pique-nique du refuge à réserver au plus tard la veille par téléphone.','Vue sur le cirque de Gavarnie, le Mont Perdu et le canyon d’Ordesa ; isards et marmottes fréquents.'],
   secours:'112 (PGHM des Hautes-Pyrénées ; 112 aussi côté espagnol). Pas de réseau au col des Tentes.',
   uncertain:['Gardiennage du refuge en 2027 (pénurie d’eau en 2026)','Taille du névé de la Brèche selon l’année','Stationnement au col des Tentes (gratuit ou payant)']};
+OBJ_INFO[13]={type:'Boucle',sum:[45.7054,2.9633],start:{nm:'Parking « Puy de la Vache et puy de Lassolas » (D5)',ll:[45.7014,2.9674],q:'Parking puy de la Vache et puy de Lassolas, Saint-Genès-Champanelle'},
+  parking:'⛔ Parking du D5 fermé pour le chantier depuis le 20/04/2026 (Google Maps « fermé temporairement » : confirmé par le Parc des Volcans, vérifié le 27/10/2026). Le Département conseille les parkings de la Ventouse ou ceux le long de la RD 2089 ; une dépose-minute est maintenue sur place selon le communiqué.',
+  access:'Depuis Clermont-Ferrand : D2089 (direction Le Mont-Dore) puis D5 vers Aydat (≈ 25 min). Pas de transport en commun pratique ⚠︎.',
+  route:['Du parking, suivre le sentier vers la carrière au pied des deux cratères.','Monter au puy de Lassolas (1 187 m) puis redescendre au col entre les deux puys.','Monter au puy de la Vache (1 167 m), vue dans le cratère égueulé et sur la cheire d’Aydat.','Redescendre par l’intérieur du cratère et la coulée jusqu’au parking (boucle de 4 km). ⛔ Montée aux deux puys interdite pendant les travaux.'],
+  variants:['Pendant les travaux : sentier GR au pied des volcans et carrière de la Vache (restés ouverts).','Alternative proche : puy de Vichatel (≈ 3,5 km, 187 m D+, 1 h 15, tour d’un cratère boisé).','Ensuite : puy de Dôme par les Muletiers (objectif suivant).'],
+  tech:'Aucun passage technique : escaliers et sentier en pouzzolane (scories) qui roule sous le pied, surtout en descente.',
+  ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',
+  water:'Aucun point d’eau : 1 L suffit.',
+  refuges:'Aucun (sortie de 2 h). Aire d’accueil en cours d’aménagement (2026–2028).',
+  dangers:['Site fermé pendant les travaux : respecter l’arrêté et le balisage temporaire.','Pouzzolane glissante en descente : bâtons utiles.','Brouillard et vent sur les crêtes des cratères en hiver.'],
+  winter:'Praticable toute l’année hors neige ou verglas (quand le site est rouvert).',
+  seasonTxt:'Toute l’année ; idéal d’avril à octobre (quand le site sera rouvert).',
+  tips:['Premier objectif : court, ≈ 2 h, pour se mettre en jambes avant le puy de Dôme.','Très fréquenté (≈ 100 000 passages en 2024) : partir tôt le week-end.','Vérifier la page « infos puys et travaux » du Parc avant de partir.'],
+  secours:'112.',
+  uncertain:['Date de réouverture des sentiers et du parking','Emplacement exact des parkings conseillés (Ventouse / RD 2089)']};
 // v17 : compléments pour les fiches 1–10 (technique, carte IGN, variantes, conseils, secours). ⚠︎ = à vérifier.
 [[1,{tech:'Sentier large, raide et régulier, sans passage technique.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',variants:['Chemin des Chèvres depuis la Maison de site (objectif 2), plus long et plus doux.','Descente en train à crémaillère (payant).'],tips:['Bon test d’allure : la montée se fait en ≈ 50 min.','Partir avant 9 h le week-end : parking du col de Ceyssat vite saturé.','Vérifier l’état des chemins (Puy-de-Dôme Tourisme) avant de partir.']}],
  [2,{tech:'Sentier forestier puis escaliers et route de service, sans passage technique.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',variants:['Montée par le chemin des Muletiers (objectif 1), plus court et plus raide.','Descente en train à crémaillère (payant).'],tips:['Seule montée à pied quand les Muletiers sont fermés pour travaux.']}],
@@ -875,15 +913,15 @@ OBJ_INFO[12]={type:'Aller-retour (1 jour, ou 2 avec nuit au refuge)',sum:[42.693
  [5,{tech:'Sentier de crête balisé (GR 4 / GR 30), sans passage technique ; la difficulté est la longueur.',ign:'IGN TOP 25 2432 ET Massif du Sancy ⚠︎',variants:['Boucle plus courte du Val d’Enfer / Val de Courre (objectif 3).'],tips:['Prévoir 2–3 L d’eau : rien sur les crêtes.','Renoncer par brouillard ou orage : crêtes très exposées.']}],
  [6,{tech:'Piste puis sentier en lacets, éboulis sur les 100 derniers mètres ; aucun passage d’escalade.',ign:'IGN TOP 25 1748 ET Néouvielle – Vallée d’Aure ⚠︎',variants:['Départ de la cabane de Toue (1 940 m, au-dessus de Barèges).','Voie d’Artigues par le chemin des Muletiers (objectif 7), bien plus longue.'],tips:['Bon test d’altitude (2 877 m) avant le Taillon et les 3 000 alpins.','Vérifier l’accès piéton Sencours → sommet (travaux) avant de partir.']}],
  [7,{tech:'T3 : sentier historique, sans passage technique ; difficulté = longueur et ≈ 1 700 m de D+.',ign:'IGN TOP 25 1748 ET Néouvielle – Vallée d’Aure ⚠︎',variants:['Départ au virage des Arizes (≈ 1 280 m) pour gagner ≈ 100 m.','Voie du Tourmalet (objectif 6), deux fois moins de D+.'],tips:['Le meilleur entraînement « gros D+ » des Pyrénées avant le Barrhorn.','Bâtons indispensables pour la longue descente.']}],
- [8,{tech:'T3 : vires du Gässi équipées de mains courantes, éboulis et moraine, pente finale > 40 %.',ign:'Carte nationale suisse 1:25 000 (map.geo.admin.ch)',variants:['En 2 jours avec nuit à la Turtmannhütte (2 519 m), conseillé pour l’acclimatation.','Retour par le Schöllijoch puis même chemin.'],tips:['Réserver la cabane tôt (gardiennée de juin à septembre).','Assurance secours indispensable : interventions héliportées payantes en Suisse.'],secours:'144 (urgences, Suisse) ou 112 ; REGA 1414.'}],
- [9,{tech:'Pente finale raide (éboulis, parfois neige ou glace) puis courte arête ; piolet et crampons si enneigé ou gelé.',variants:['Bivouac sur l’aire dédiée au barrage du Saut (juin–août, 19 h – 7 h) pour partir à l’aube.'],tips:['Le plus haut des objectifs (3 747 m) : à faire après le Taillon, une fois l’altitude et les névés apprivoisés.','Être redescendu en début d’après-midi (orages).']}],
+ [8,{tech:'T3 : vires du Gässi équipées de mains courantes, éboulis et moraine, pente finale > 40 %.',ign:'Carte nationale suisse 1:25 000 (map.geo.admin.ch)',variants:['En 1 jour (≈ 1 800 m D+, 8 h 30–10 h) : seulement pour randonneur très entraîné et acclimaté — non retenu ici.','Retour par le Schöllijoch puis même chemin.'],tips:['Organisation retenue : J1 montée tranquille à la cabane (après-midi), nuit et dîner ; J2 départ à la frontale vers 5 h, sommet vers 9 h, retour à Sänntum l’après-midi.','Pas d’escalade : le Gässi est une vire équipée de mains courantes (pied sûr, pas de vertige) ; renoncer par pluie, neige ou verglas.','Réserver la cabane tôt (gardiennée de juin à septembre).','Assurance secours indispensable : interventions héliportées payantes en Suisse.'],secours:'144 (urgences, Suisse) ou 112 ; REGA 1414.'}],
+ [9,{tech:'Pente finale raide (éboulis, parfois neige ou glace) puis courte arête ; piolet et crampons si enneigé ou gelé.',variants:['Bivouac sur l’aire dédiée au barrage du Saut (juin–août, 19 h – 7 h) pour partir à l’aube.'],tips:['Le plus haut et le plus difficile des objectifs (3 747 m, pente finale raide, crampons/piolet possibles) : à faire en dernier, après le Taillon et le Barrhorn.','Être redescendu en début d’après-midi (orages).']}],
  [10,{tech:'Aucune difficulté technique ; la difficulté est la répétition de 6 étapes de 15 à 23 km.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',tips:['Faire au préalable 2 jours de randonnée d’affilée avec le sac chargé.','Réserver les hébergements en saison ; feux interdits, réchaud à gaz seulement.']}]
 ].forEach(([n,x])=>Object.assign(OBJ_INFO[n],x));
 
 /* v17 : classement par difficulté (calculé, n’affecte pas les numéros ni les données synchronisées).
    Score = D+ ÷ 100 + distance ÷ 2 + (altitude du sommet − 1 500 m) ÷ 200 + 3 × technicité + 4 par jour d’itinérance supplémentaire.
    Itinérance : D+ et distance pris par étape (moyenne). Technicité 0–2,5 d’après les topos (TECH_TXT). */
-const TECH={1:0,2:0,3:1,4:.5,5:.5,6:1,7:1,8:2,9:2.5,10:0,11:.5,12:2};
+const TECH={1:0,2:0,3:1,4:.5,5:.5,6:1,7:1,8:2,9:2.5,10:0,11:.5,12:2,13:0};
 const TECH_TXT={0:'aucun passage technique',0.5:'sentier raide ou rocailleux',1:'éboulis / terrain instable',2:'haute montagne : névés ou passages équipés, T3',2.5:'pente finale raide, crampons et piolet si neige'};
 function diffScore(o){ const M=o.multi, dp=M?M.dpJ:o.dplus, km=M?o.dist/M.jours:o.dist, t=TECH[o.n]||0;
   const p={dp:dp/100, km:km/2, alt:Math.max(0,o.altSom-1500)/200, tech:3*t, multi:M?4*(M.jours-1):0};
@@ -897,6 +935,7 @@ function diffWhy(o){ const D=diffScore(o), M=o.multi;
 
 // v19 : photos des sommets (Wikimedia Commons, licences libres ; crédit affiché sous chaque photo). Fichiers locaux, précachés par le service worker.
 const PHOTO_FILES={
+ 'puy-de-la-vache':{w:800,h:600,a:"Gegeours",l:"CC BY-SA 3.0",lu:"https://creativecommons.org/licenses/by-sa/3.0",p:"https://commons.wikimedia.org/wiki/File:Puy_de_la_Vache_et_Lassolas.jpg",t:"Puy de la Vache et puy de Lassolas"},
  'barrhorn':{w:800,h:600,a:"Whgler",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:%C3%9Cssers_Barrhorn_2019.jpg",t:"Üssers Barrhorn"},
  'cabaliros':{w:800,h:597,a:"Sotos",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Pic_du_Cabaliros_1.jpg",t:"Pic du Cabaliros"},
  'chaine-des-puys':{w:800,h:600,a:"Anthony Baratier",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Panorama_de_la_cha%C3%AEne_des_Puys.jpg",t:"Panorama de la chaîne des Puys depuis le belvédère de l'aire des volcans d'Auvergne"},
@@ -909,7 +948,7 @@ const PHOTO_FILES={
  'sancy-cretes':{w:800,h:600,a:"PIERRE ANDRE LECLERCQ",l:"CC BY-SA 3.0",lu:"https://creativecommons.org/licenses/by-sa/3.0",p:"https://commons.wikimedia.org/wiki/File:Le_Puy_de_Sancy_(2014).jpg",t:"Randonnée sur les Hauts Plateaux du Puy de Sancy (GR4 )"},
  'taillon':{w:800,h:600,a:"Tigerente",l:"CC BY-SA 4.0",lu:"https://creativecommons.org/licenses/by-sa/4.0",p:"https://commons.wikimedia.org/wiki/File:Pic_du_Taillon_Pyrenees_20060820a.jpg",t:"Pic du Taillon, Pyrenees, France"},
 };
-const PHOTOS={1:'puy-de-dome',2:'puy-de-dome',3:'sancy',4:'rhune',5:'sancy-cretes',6:'pic-du-midi-tourmalet',7:'pic-du-midi-artigues',8:'barrhorn',9:'grande-sassiere',10:'chaine-des-puys',11:'cabaliros',12:'taillon'};
+const PHOTOS={1:'puy-de-dome',2:'puy-de-dome',3:'sancy',4:'rhune',5:'sancy-cretes',6:'pic-du-midi-tourmalet',7:'pic-du-midi-artigues',8:'barrhorn',9:'grande-sassiere',10:'chaine-des-puys',11:'cabaliros',12:'taillon',13:'puy-de-la-vache'};
 function photoHTML(o,cls){ const k=PHOTOS[o.n], P=k&&PHOTO_FILES[k]; if(!P) return '';
   return `<figure class="sphoto ${cls||''}"><img src="img/sommets/${k}.webp" alt="${esc(o.sommet)} — ${esc(P.t)}" width="${P.w}" height="${P.h}" loading="lazy" decoding="async" onerror="this.closest('figure').remove()"><figcaption>📷 <a href="${P.p}" target="_blank" rel="noopener">${esc(P.a)}</a> · <a href="${P.lu}" target="_blank" rel="noopener">${esc(P.l)}</a> · Wikimedia Commons</figcaption></figure>`; }
 
@@ -1229,11 +1268,11 @@ function chart(el, labels, series, opt={}){
   const gid='cg'+(el.id||'x'); g+='<defs>'+series.map((s,k)=>`<linearGradient id="${gid}${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}"/><stop offset="1" stop-color="${s.color}" stop-opacity=".35"/></linearGradient>`).join('')+'</defs>';
   const bars=series.filter(s=>s.type==='bar'); const bw=Math.min(28,iw/n*0.7)/Math.max(1,bars.length);
   bars.forEach((s,bi)=>{ s.values.forEach((v,i)=>{ if(v==null||!v) return; const ax=s.axis||'left'; const x=xc(i)-bw*bars.length/2+bi*bw; const yy=y(v,ax);
-    g+=`<rect class="b" style="animation-delay:${(i*35+bi*60)}ms" x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${(bw-1).toFixed(1)}" height="${(T+ih-yy).toFixed(1)}" rx="4" fill="url(#${gid}${series.indexOf(s)})"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></rect>`; }); });
+    g+=`<rect class="b" style="animation-delay:${Math.round(i*Math.min(35,700/n)+bi*60)}ms" x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${(bw-1).toFixed(1)}" height="${(T+ih-yy).toFixed(1)}" rx="4" fill="url(#${gid}${series.indexOf(s)})"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></rect>`; }); });
   series.filter(s=>s.type==='line').forEach(s=>{ const ax=s.axis||'left'; let d='',pen=false;
     s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)){pen=false;return;} d+=(pen?'L':'M')+xc(i).toFixed(1)+' '+y(v,ax).toFixed(1); pen=true; });
     g+=`<path class="l" pathLength="1" d="${d}" fill="none" stroke="${s.color}" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>`;
-    s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)) return; g+=`<circle class="p" style="animation-delay:${300+i*40}ms" cx="${xc(i).toFixed(1)}" cy="${y(v,ax).toFixed(1)}" r="3.8" fill="#0a1715" stroke="${s.color}" stroke-width="2.2"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></circle>`; }); });
+    s.values.forEach((v,i)=>{ if(v==null||!isFinite(v)) return; g+=`<circle class="p" style="animation-delay:${Math.round(300+i*Math.min(40,800/n))}ms" cx="${xc(i).toFixed(1)}" cy="${y(v,ax).toFixed(1)}" r="3.8" fill="#0a1715" stroke="${s.color}" stroke-width="2.2"><title>${esc(labels[i])} – ${esc(s.name)} : ${f(v)}</title></circle>`; }); });
   const step=Math.ceil(n/12);
   labels.forEach((lb,i)=>{ if(i%step) return; g+=`<text x="${xc(i).toFixed(1)}" y="${H-B+16}" text-anchor="end" transform="rotate(-35 ${xc(i).toFixed(1)} ${H-B+16})" fill="#c9d6d3">${esc(lb)}</text>`; });
   const yFn=(v,ax)=>y(v,ax);
@@ -1652,7 +1691,9 @@ function gearStatus(n){
 // prochaine ascension : celle dont la date prévue (à venir) est la plus proche ; sinon la plus facile non faite (ordre de difficulté, v17)
 function nextObjective(){ const today=todayISO(), open=OBJ_BY_DIFF.filter(o=>objState(o.n).statut!=='Fait');
   const planned=open.filter(o=>objState(o.n).datePrevue>=today).sort((a,b)=>objState(a.n).datePrevue.localeCompare(objState(b.n).datePrevue));
-  return planned[0]||open[0]||null; }
+  // v25 : un objectif fermé aujourd'hui (travaux, arrêté) n'est pas proposé comme prochaine ascension, sauf s'il est le seul restant
+  const avail=open.filter(o=>!closuresFor(o,today,today).some(c=>c.block));
+  return planned[0]||avail[0]||open[0]||null; }
 function closuresFor(o, fromISO, toISO_){ return (CLOSURES[o.n]||[]).filter(c=>c.to>=fromISO && c.from<=toISO_); }
 // Conseils concrets pour un objectif
 function advise(o, ref){
@@ -1949,7 +1990,7 @@ function renderSummit(n){
     <div class="eyebrow2">Objectif ${diffRank(o.n)} sur ${OBJECTIFS.length} · ${esc(I.type)}</div><h2 style="margin:4px 0 2px">${esc(o.sommet)}</h2><div class="small">${esc(o.iti)}</div>
     <div class="row" style="margin-top:8px"><span class="tag">${esc(st.statut)}</span>${st.datePrevue?`<span class="tag">📅 prévu le ${dFR(st.datePrevue)}</span>`:''}${st.dateRealisee?`<span class="tag">✔ fait le ${dFR(st.dateRealisee)}</span>`:''}${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}</div>
     <div class="kpis" style="margin-top:12px">${kp.map(([v,l])=>`<div class="kpi"><b style="font-size:${String(v).length>9?14:19}px">${esc(v)}</b><small>${l}</small></div>`).join('')}</div>
-    ${M?`<div class="small" style="margin-top:8px">Itinérance : <b>${M.jours} jours</b>, ≈ ${f(o.dist/M.jours,0)} km par jour en moyenne (étapes jusqu’à ${f(M.distJ,0)} km) et ≈ ${f(M.dpJ,0)} m de D+ par jour (cible de préparation).</div>`:''}
+    ${M&&M.txt?`<div class="small" style="margin-top:8px"><b>${M.jours} jours</b> — ${esc(M.txt)}</div>`:M?`<div class="small" style="margin-top:8px">Itinérance : <b>${M.jours} jours</b>, ≈ ${f(o.dist/M.jours,0)} km par jour en moyenne (étapes jusqu’à ${f(M.distJ,0)} km) et ≈ ${f(M.dpJ,0)} m de D+ par jour (cible de préparation).</div>`:''}
     <div class="small" style="margin-top:8px"><span class="dtag d${Math.min(4,Math.floor(diffScore(o).s/10))}">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${diffLabel(diffScore(o).s)}</span> <span class="mut">${esc(diffWhy(o))}</span></div>
     <div class="small" style="margin-top:8px"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Durée :</span> ${esc(o.duree)} · <span class="mut">Fiabilité des données :</span> ${esc(o.conf)}</div>
     ${o.note?`<div class="small mut" style="margin-top:4px">${uncMark(o.note)}</div>`:''}
@@ -2129,7 +2170,7 @@ function dailyCardHTML(){ const S=dailyStats(), y=S.yesterday;
     <p class="small mut" style="margin:6px 0 10px">Chaque matin, partage la carte « Statistiques » de la veille depuis Mi Fitness puis importe-la ici : pas, calories et minutes d’activité, pour suivre ta régularité entre les séances.</p>
     <div class="row"><button class="btn sm" data-imp-open>📷 Importer la carte d’hier</button><button class="btn sm sec" data-d-new>Saisir à la main</button></div></div>`;
   const hint=needDailyHint()? `<div class="dhint" id="dHint"><span>☀️</span><div>Les statistiques d’hier (${dayLbl(S.Y)}) ne sont pas encore importées.</div><div class="row"><button class="btn sm" data-imp-open>📷 Importer</button><button class="btn sm sec" data-dhint-x aria-label="Me le rappeler demain">Plus tard</button></div></div>`:'';
-  return `<div class="card" id="dailyCard"><div class="row" style="justify-content:space-between"><h3 style="margin:0">👣 Activité quotidienne</h3><span class="tag">${S.streak?'🔥 '+S.streak+' j actif'+(S.streak>1?'s':'')+' d’affilée':'objectif '+f(S.goal,0)+' pas'}</span></div>
+  return `<div class="card tap" id="dailyCard" role="button" tabindex="0" aria-label="Activité quotidienne : ouvrir la vue détaillée" data-day-open><div class="row" style="justify-content:space-between"><h3 style="margin:0">👣 Activité quotidienne<span class="go">détails ›</span></h3><span class="tag">${S.streak?'🔥 '+S.streak+' j actif'+(S.streak>1?'s':'')+' d’affilée':'objectif '+f(S.goal,0)+' pas'}</span></div>
     <div class="small" style="margin-top:6px">${y?`<span class="mut">Hier :</span> <b>${f(y.pas,0)}</b> pas · <b>${f(y.kcal,0)}</b> kcal · ${y.actMin==null&&y.pausesActives!=null?'<b>'+dayThird(y)+'</b>':'<b>'+f(y.actMin,0)+'</b> min d’activité'}`:`<span class="mut">Hier : pas encore de données</span>`}</div>
     <div class="small mut" style="margin-top:2px">7 derniers jours : ${S.days7?`<b>${f(S.pas7,0)}</b> pas/jour en moyenne (objectif ${f(S.goal,0)}) · `:''}${S.active7} jour${S.active7>1?'s':''} actif${S.active7>1?'s':''} · ${S.rest7} de repos${S.known7<7?' · '+(7-S.known7)+' sans données':''}</div>
     ${weekColsHTML(S)}${hint}</div>`; }
@@ -2159,9 +2200,79 @@ function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats
   const wkS=wk.slice(-userChartWeeks());
   chart($('chD2'),wkS.map(w=>'S'+isoWeek(parseISO(w.mon))),[{name:'Pas / jour',type:'bar',color:'#34b38a',values:wkS.map(w=>w.pas)},{name:'kcal / jour',type:'line',axis:'right',color:'#fda4af',values:wkS.map(w=>w.kcal)}],{details:wkS.map(w=>`<b>Semaine du ${dFR(w.mon)}</b><br>${w.n} jour${w.n>1?'s':''} avec données · <b>${f(w.pas,0)} pas/jour</b> · ${f(w.kcal,0)} kcal/jour${w.min!=null?' · '+f(w.min,0)+' min/jour':''}`)});
 }
+/* v25 : vue détaillée « Activité quotidienne » (lecture seule : DB.daily n'est jamais modifié ici).
+   Période et indicateur choisis = préférence locale à l'appareil (jamais synchronisée). */
+const DAYV={ P:[['7','7 j'],['28','4 sem.'],['84','12 sem.'],['182','26 sem.'],['all','Tout']], M:[['pas','Pas','pas','#7cc8ea'],['kcal','Calories','kcal','#fda4af'],['min','Minutes','min','#fb923c']],
+  key:KEY+'.dayView', open_:false, gen:0,
+  pref(){ let v={}; try{ v=JSON.parse(localStorage.getItem(this.key)||'{}')||{}; }catch(e){} if(!this.P.some(x=>x[0]===v.p)) v.p='28'; if(!this.M.some(x=>x[0]===v.m)) v.m='pas'; return v; },
+  setPref(k,val){ const v=this.pref(); v[k]=val; try{ localStorage.setItem(this.key,JSON.stringify(v)); }catch(e){} },
+  val(x,m){ if(!x) return null; const v=m==='min'?x.actMin:x[m]; return v!=null&&isFinite(v)?+v:null; },
+  range(p){ const T=todayISO(), all=(DB.daily||[]).map(x=>x.date).filter(d=>d<=T).sort(), last=dayOf(T)?T:addDays(T,-1);
+    let n=p==='all'? (all.length? Math.round((parseISO(last)-parseISO(all[0]))/864e5)+1 : 7) : +p; n=Math.max(1,Math.min(n,3660));
+    const days=[...Array(n)].map((_,i)=>addDays(last,-n+1+i)); return {days,last,n}; },
+  stats(days,m){ const L=days.map(dayOf).filter(Boolean), v=L.map(x=>this.val(x,m)).filter(v=>v!=null);
+    let best=null; L.forEach(x=>{ const y=this.val(x,m); if(y!=null&&(!best||y>this.val(best,m))) best=x; });
+    return {nd:L.length, nv:v.length, avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:null, tot:v.reduce((a,b)=>a+b,0), best}; },
+  isOpen(){ return this.open_; },
+  open(){ if(this.open_) return; if(!(DB.daily||[]).length) return; this.open_=true; const d=$('dayDlg');
+    this.render(true); d.hidden=false; document.body.classList.add('day-open'); void d.offsetWidth; d.classList.add('on');
+    try{ history.pushState({day:1},''); }catch(e){}
+    const g=++this.gen, draw=()=>{ if(g===this.gen&&this.open_) this.drawCharts(); };
+    // graphiques dessinés après l'animation d'ouverture : ouverture fluide même avec beaucoup de jours
+    const box=$('dayBox'); let done=false; const fin=()=>{ if(done) return; done=true; box.removeEventListener('transitionend',fin); requestAnimationFrame(draw); };
+    box.addEventListener('transitionend',fin); setTimeout(fin,matchMedia('(prefers-reduced-motion:reduce)').matches?0:380);
+    setTimeout(()=>{ const x=$('dayX'); if(x) try{ x.focus({preventScroll:true}); }catch(e){} },60); },
+  close(fromPop){ if(!this.open_) return; this.open_=false; this.gen++; const d=$('dayDlg'); d.classList.remove('on'); document.body.classList.remove('day-open');
+    const hide=()=>{ if(!this.open_){ d.hidden=true; $('dayBox').innerHTML=''; } };
+    setTimeout(hide,matchMedia('(prefers-reduced-motion:reduce)').matches?0:360);
+    if(!fromPop&&history.state&&history.state.day){ try{ history.back(); }catch(e){} }
+    const c=$('dailyCard'); if(c) try{ c.focus({preventScroll:true}); }catch(e){} },
+  render(first){ const P=this.pref(), R=this.range(P.p), MM=this.M.find(x=>x[0]===P.m), goal=stepGoal();
+    const prevDays=R.days.map(d=>addDays(d,-R.n)), k=(v,l,dv)=>`<div class="kpi"><b>${v}</b><small>${l}</small>${dv||''}</div>`;
+    const cmp=(a,b)=>{ if(a==null||b==null||!b) return ''; const pc=(a-b)/b*100; if(Math.abs(pc)<0.5) return '<div class="dv mut">= période préc.</div>'; return `<div class="dv ${pc>0?'up':'dn'}">${pc>0?'▲':'▼'} ${f(Math.abs(pc),0)} % vs période préc.</div>`; };
+    const S={}, Sp={}; this.M.forEach(([m])=>{ S[m]=this.stats(R.days,m); Sp[m]=this.stats(prevDays,m); });
+    const goalDays=R.days.filter(d=>((dayOf(d)||{}).pas||0)>=goal).length, minNote=S.pas.nd&&S.min.nv<S.pas.nd;
+    const rows=R.days.slice().reverse().map(d=>{ const x=dayOf(d); if(!x) return ''; return `<tr><td>${dayLbl(d)}</td><td>${f(x.pas,0)}${(x.pas||0)>=goal?' ✓':''}</td><td>${f(x.kcal,0)}</td><td>${x.actMin!=null?f(x.actMin,0):x.pausesActives!=null?'<span class="mut" title="pauses actives">'+f(x.pausesActives,0)+' p.</span>':'–'}</td></tr>`; }).join('');
+    const wd=[1,2,3,4,5,6,0].map(j=>{ const v=R.days.filter(d=>parseISO(d).getDay()===j).map(d=>this.val(dayOf(d),P.m)).filter(v=>v!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; });
+    const per=this.P.find(x=>x[0]===P.p)[1];
+    $('dayBox').innerHTML=`<div class="dhd"><h2 id="dayDlgT">👣 Activité quotidienne</h2><button class="iconbtn" id="dayX" data-day-x aria-label="Fermer la vue détaillée">✕</button></div>
+      <div class="seg" role="tablist" aria-label="Période">${this.P.map(([v,l])=>`<button data-day-p="${v}" role="tab" aria-selected="${v===P.p}" class="${v===P.p?'on':''}">${l}</button>`).join('')}</div>
+      <div class="small mut" style="margin:-4px 0 10px">Du ${dFR(R.days[0])} au ${dFR(R.last)} · ${S.pas.nd} jour${S.pas.nd>1?'s':''} avec données sur ${R.n}</div>
+      <div class="card"><div class="kpis">
+        ${k(S.pas.avg!=null?f(S.pas.avg,0):'–','pas / jour',cmp(S.pas.avg,Sp.pas.avg))}${k(S.kcal.avg!=null?f(S.kcal.avg,0):'–','kcal / jour',cmp(S.kcal.avg,Sp.kcal.avg))}${k(S.min.avg!=null?f(S.min.avg,0):'–','min act. / jour',cmp(S.min.avg,Sp.min.avg))}
+        ${k(S.pas.nv?f(S.pas.tot,0):'–','pas au total')}${k(S.pas.best?f(S.pas.best.pas,0):'–','record'+(S.pas.best?' ('+dayLbl(S.pas.best.date)+')':''))}${k(goalDays+' / '+S.pas.nd,'jours ≥ '+f(goal,0)+' pas')}</div>
+        ${minNote?`<div class="small mut" style="margin-top:8px">Minutes d’activité connues ${S.min.nv} jour${S.min.nv>1?'s':''} sur ${S.pas.nd} : les cartes plus anciennes ne donnent que des « pauses actives » (notées « p. »).</div>`:''}</div>
+      <div class="seg" role="tablist" aria-label="Indicateur">${this.M.map(([m,l])=>`<button data-day-m="${m}" role="tab" aria-selected="${m===P.m}" class="${m===P.m?'on':''}">${l}</button>`).join('')}</div>
+      <div class="card"><h3 style="margin-top:0">${MM[1]} ${R.n>45?'— moyenne par semaine':'par jour'} (${per})</h3><div class="chart" id="chDV1">${first?'<div class="sk" style="height:200px;border-radius:12px"></div>':''}</div>
+        <div class="small mut">${R.n>45?'Colonnes : moyenne par jour de chaque semaine ; ligne : moyenne glissante sur 4 semaines.':'Colonnes : chaque jour ; ligne : moyenne glissante sur 7 jours.'} Glisse le doigt sur le graphique pour lire chaque valeur.</div></div>
+      <div class="card"><h3 style="margin-top:0">${MM[1]} : moyenne par jour de la semaine (${per})</h3><div class="chart" id="chDV2">${first?'<div class="sk" style="height:200px;border-radius:12px"></div>':''}</div></div>
+      <div class="card"><h3 style="margin-top:0">Détail par jour</h3><div class="scroll"><table class="tbl dtbl"><tr><th>Jour</th><th>Pas</th><th>kcal</th><th>min</th></tr>${rows||'<tr><td colspan="4" class="mut">Aucune donnée sur cette période</td></tr>'}</table></div>
+        <div class="small mut" style="margin-top:6px">✓ = objectif de ${f(goal,0)} pas atteint. Pour corriger une journée : Évolution › Quotidien.</div></div>`;
+    this._R=R; this._P=P; this._wd=wd;
+    if(!first) this.drawCharts(); },
+  drawCharts(){ const R=this._R, P=this._P, MM=this.M.find(x=>x[0]===P.m), e1=$('chDV1'), e2=$('chDV2'); if(!R||!e1||!e2) return;
+    const fx=x=>`${f(x.pas,0)} pas · ${f(x.kcal,0)} kcal · ${dayThird(x)}`;
+    if(R.n<=45){ const v=R.days.map(d=>this.val(dayOf(d),P.m));
+      const mm=v.map((y,i)=>{ if(y==null) return null; const w=v.slice(Math.max(0,i-6),i+1).filter(x=>x!=null); return w.length?w.reduce((a,b)=>a+b,0)/w.length:null; });
+      chart(e1,R.days.map(d=>dayLbl(d).slice(5)),[{name:MM[1],type:'bar',color:MM[3],values:v},{name:'Moyenne 7 j',type:'line',color:'#f3f7f6',values:mm}],
+        {details:R.days.map((d,i)=>{ const x=dayOf(d); return `<b>${dayLbl(d)}</b><br>${x?fx(x):'pas de données'}${mm[i]!=null?' · moy. 7 j : '+f(mm[i],0)+' '+MM[2]:''}`; })}); }
+    else { const W=[]; for(let i=R.days.length-1;i>=0;i-=7){ const ds=R.days.slice(Math.max(0,i-6),i+1); W.unshift(ds); }
+      const st=W.map(ds=>this.stats(ds,P.m)), v=st.map(s=>s.avg), mm=v.map((_,i)=>{ const w=v.slice(Math.max(0,i-3),i+1).filter(x=>x!=null); return w.length?w.reduce((a,b)=>a+b,0)/w.length:null; });
+      chart(e1,W.map(ds=>'S'+isoWeek(parseISO(ds[ds.length-1]))),[{name:MM[1]+' / jour',type:'bar',color:MM[3],values:v},{name:'Moyenne 4 sem.',type:'line',color:'#f3f7f6',values:mm}],
+        {details:W.map((ds,i)=>`<b>Du ${dFR(ds[0])} au ${dFR(ds[ds.length-1])}</b><br>${st[i].nd} jour${st[i].nd>1?'s':''} avec données${v[i]!=null?' · <b>'+f(v[i],0)+' '+MM[2]+'/jour</b>':''}`)}); }
+    chart(e2,['lun.','mar.','mer.','jeu.','ven.','sam.','dim.'],[{name:MM[1]+' (moyenne)',type:'bar',color:MM[3],values:this._wd}]); },
+  click(e){ const t=e.target;
+    if(t.closest('[data-day-x]')){ this.close(); return true; }
+    const p=t.closest('[data-day-p]'); if(p){ this.setPref('p',p.dataset.dayP); this.rerender(); return true; }
+    const m=t.closest('[data-day-m]'); if(m){ this.setPref('m',m.dataset.dayM); this.rerender(); return true; }
+    if(t===$('dayDlg')){ this.close(); return true; } return false; },
+  rerender(){ const b=$('dayBox'), y=b.scrollTop; this.render(false); b.scrollTop=y; }
+};
 function dailyCSV(){ const L=(DB.daily||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
   return '\ufeff'+['Date','Pas','Calories (kcal)','Durée de l’activité (min)','Pauses actives','Source'].join(';')+'\n'+L.map(x=>[dFR(x.date),csvN(x.pas),csvN(x.kcal),csvN(x.actMin),csvN(x.pausesActives),csvS(x.src)].join(';')).join('\n'); }
-function dailyClick(e){ const ed=e.target.closest('[data-d-edit]'), de=e.target.closest('[data-d-del]'), nw=e.target.closest('[data-d-new]'), hx=e.target.closest('[data-dhint-x]');
+function dailyClick(e){ if(DAYV.isOpen()&&e.target.closest('#dayDlg')) return DAYV.click(e);
+  { const c=e.target.closest('[data-day-open]'); if(c&&!e.target.closest('button,a,input,select,label,.dhint')){ DAYV.open(); return true; } }
+  const ed=e.target.closest('[data-d-edit]'), de=e.target.closest('[data-d-del]'), nw=e.target.closest('[data-d-new]'), hx=e.target.closest('[data-dhint-x]');
   if(nw){ IMP.manualDaily(); return true; }
   if(hx){ try{ localStorage.setItem(HINT_KEY,todayISO()); }catch(err){} const h=$('dHint'); if(h) h.remove(); toast('D’accord, rappel demain matin'); return true; }
   if(e.target.closest('#btnExpD2')){ download('suivi-montagne-activite-'+todayISO()+'.csv',dailyCSV(),'text/csv;charset=utf-8'); return true; }
@@ -2878,7 +2989,7 @@ function show(p){
   if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); renderPrefs(); }
   const t=$('pageTitle'); if(t&&t.textContent!==TITLES[p]){ t.textContent=TITLES[p]; t.classList.remove('swap'); void t.offsetWidth; t.classList.add('swap'); }
   moveInd(); animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
-function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderPoids(); renderEquip(); if(curPage==='sum'&&curSum) renderSummit(curSum); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
+function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderPoids(); renderEquip(); if(curPage==='sum'&&curSum) renderSummit(curSum); if(DAYV.isOpen()) DAYV.rerender(); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
 let sumFrom='obj';
 function openSummit(n){ if(!renderSummit(n)) return; try{ history.pushState({sum:+n},''); }catch(e){} show('sum'); }
 function openSummitNoPush(n){ if(renderSummit(n)) show('sum'); }
@@ -2917,8 +3028,8 @@ function initUI(){
   // feuille : fond, croix, glisser vers le bas, Échap
   $('sheetBg').addEventListener('click',()=>{ if(IMP.isOpen()){ IMP.close(); return; } fillForm(null); show(curPage); });
   $('btnSheetX').addEventListener('click',()=>{ fillForm(null); show(curPage); });
-  addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
-  addEventListener('popstate',()=>{ if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
+  addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const c=e.target.closest&&e.target.closest('[data-day-open]'); if(c&&e.target===c){ e.preventDefault(); DAYV.open(); } return; } if(e.key!=='Escape') return; if(DAYV.isOpen()){ DAYV.close(); return; } if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
+  addEventListener('popstate',()=>{ if(DAYV.isOpen()&&!(history.state&&history.state.day)){ DAYV.close(true); return; } if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
   const sh=$('p-add'), grab=sh.querySelector('.grab'); let y0=null,dy=0;
   grab.addEventListener('pointerdown',e=>{ y0=e.clientY; dy=0; sh.classList.add('dragging'); grab.setPointerCapture(e.pointerId); });
   grab.addEventListener('pointermove',e=>{ if(y0==null) return; dy=Math.max(0,e.clientY-y0); sh.style.transform='translate3d(0,'+dy+'px,0)'; });

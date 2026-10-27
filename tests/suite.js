@@ -12,10 +12,10 @@ let pass = 0, fail = 0; const out = [];
 function ok(c, name, extra) { if (c) { pass++; out.push('  ✔ ' + name); } else { fail++; out.push('  ✘ ' + name + (extra !== undefined ? ' → ' + JSON.stringify(extra).slice(0, 400) : '')); } }
 // Valeurs attendues de l'OCR : fichier local non commité (${SAMPLE_DIR}/truth.json), comme les captures.
 const SDIR = process.env.SAMPLE_DIR || require('path').resolve('.');
-// v24 : versions anciennes commitées dans tests/fixtures (old.html = v4 sans données, commit fab7403 ; old16.html = v16, commit 2f57c2c),
+// v24 : versions anciennes commitées dans tests/fixtures (old.html = v4 sans données, commit fab7403 ; old16.html = v16, commit 2f57c2c ; v25 : old24.html = v24, commit 9153bb4),
 // copiées dans le dossier servi si elles manquent : plus besoin de l'historique git (clone neuf ou superficiel).
 { const fs = require('fs'), path = require('path'); const SERVE = process.env.SERVE_DIR || process.cwd();
-  for (const f of ['old.html', 'old16.html']) { const fp = path.join(SERVE, f), src = path.join(__dirname, 'fixtures', f); if (fs.existsSync(fp)) continue;
+  for (const f of ['old.html', 'old16.html', 'old24.html']) { const fp = path.join(SERVE, f), src = path.join(__dirname, 'fixtures', f); if (fs.existsSync(fp)) continue;
     try { fs.copyFileSync(src, fp); console.log('(' + f + ' copié depuis tests/fixtures)'); }
     catch (e) { console.error('Impossible de copier ' + src + ' : ' + e.message); process.exit(2); } }
   if (!process.env.OLD16) process.env.OLD16 = 'old16.html'; }
@@ -49,7 +49,7 @@ function FIXTURE() {
     const r = await p.evaluate(() => ({v:DB.version, n:DB.sessions.length, w:DB.weights.map(x=>x.id), biv:DB.equip.filter(c=>/bivouac/i.test(c.name)).length, tomb:Object.keys(DB.tomb), types:TYPES.length, obj:OBJECTIFS.map(o=>o.n), snaps:snapshots().length}));
     ok(r.v === 4, 'version des données = 4', r.v); ok(r.n === 0 && r.w.length === 0, 'aucune séance ni pesée embarquée dans le code (elles viennent du stockage local / de la synchro)', r);
     ok(r.biv === 1, 'une catégorie Bivouac'); ok(['s','c','i','w'].every(k => r.tomb.includes(k)), 'pierres tombales s/c/i/w');
-    ok(r.obj.join() === '1,2,3,4,5,6,7,8,9,10,11,12', 'objectifs 1→12 (GR 441 en n° 10, Cabaliros 11, Taillon 12 : numéros inchangés)', r.obj); ok(r.snaps === 1, 'copie de sécurité du jour créée', r.snaps);
+    ok(r.obj.join() === '1,2,3,4,5,6,7,8,9,10,11,12,13', 'objectifs 1→13 (GR 441 en n° 10, Cabaliros 11, Taillon 12, Vache 13 : numéros inchangés)', r.obj); ok(r.snaps === 1, 'copie de sécurité du jour créée', r.snaps);
     for (const t of ['journal','obj','prep','evo','poids','equip','data']) await p.evaluate(t => show(t), t);
     ok(p.errs.length === 0, 'aucune erreur JS sur les 7 onglets', p.errs); await ctx.close(); }
 
@@ -695,29 +695,29 @@ function FIXTURE() {
     ok(r.o11 === 2334 && r.o12 === 3144, 'Cabaliros 2 334 m (n° 11) et Taillon 3 144 m (n° 12)', r);
     ok(!r.f11.length && !r.f12.length && r.s11 === 12 && r.s12 === 12, 'fiches 11 et 12 complètes (tous les champs, saison)', [r.f11, r.f12]);
     ok(['crampons','piolet','casque'].every(k => r.g12.includes(k)), 'Taillon : crampons, piolet, casque conseillés');
-    ok(r.mono && r.order[0] === 1 && r.order[r.order.length-1] === 8 && r.order.indexOf(11) < r.order.indexOf(12) && r.order.indexOf(6) < r.order.indexOf(12), 'classement par difficulté croissant et cohérent', r.order);
-    ok(r.allTech && r.num === '1,2,3,4,5,6,7,8,9,10,11,12', 'technicité renseignée partout, numéros non modifiés');
+    ok(r.mono && r.order[0] === 13 && r.order[1] === 1 && r.order[r.order.length-1] === 9 && r.order[r.order.length-2] === 8 && r.order.indexOf(11) < r.order.indexOf(12) && r.order.indexOf(6) < r.order.indexOf(12), 'classement par difficulté croissant et cohérent', r.order);
+    ok(r.allTech && r.num === '1,2,3,4,5,6,7,8,9,10,11,12,13', 'technicité renseignée partout, numéros non modifiés');
     await p.evaluate(() => show('obj')); await W(300);
     const L = await p.evaluate(() => ({first:[...document.querySelectorAll('#objList > .card')].map(c=>c.querySelector('[data-sum]').dataset.sum), badge:document.querySelector('#objList .dlv').textContent, exp:!!document.querySelector('.diffexp'), tag:document.querySelector('#objList .dtag').textContent}));
-    ok(L.first.join() === r.order.join() && L.badge === '1' && L.exp && /Niveau 1\/12/.test(L.tag), 'Objectifs triés par difficulté par défaut, badge de niveau et explication', L);
+    ok(L.first.join() === r.order.join() && L.badge === '1' && L.exp && /Niveau 1\/13/.test(L.tag), 'Objectifs triés par difficulté par défaut, badge de niveau et explication', L);
     // v18 : numéro affiché = rang de difficulté ; plus de bouton de tri ; clés internes inchangées
     const V = await p.evaluate(() => { localStorage.setItem('sm-objsort','num'); renderObj(); const cards=[...document.querySelectorAll('#objList > .card')];
       const h=cards.map(c=>c.querySelector('.dlv').textContent+':'+c.querySelector('[data-sum]').dataset.sum);
       renderSummit(8); const eb=document.querySelector('#sumBody .eyebrow2').textContent; renderPrep(); const ph=document.querySelector('#prepList h3').textContent;
       const opt=[...new DOMParser().parseFromString('<select>'+objOpts(12)+'</select>','text/html').querySelectorAll('option')].map(o=>o.value+'='+o.textContent);
       return {h, eb, ph, opt, seg:!!document.querySelector('[data-osort]')}; });
-    ok(V.h[0] === '1:1' && V.h[4] === '5:11' && V.h[7] === '8:12' && V.h[11] === '12:8' && !V.seg, 'numéros affichés = rang de difficulté (Muletiers 1 … Barrhorn 12), tri unique', V.h);
-    ok(/Objectif 12 sur 12/.test(V.eb) && /^1\. Puy de Dôme/.test(V.ph), 'fiche sommet et Prépa : numéro de difficulté', [V.eb, V.ph]);
-    ok(V.opt[1] === '1=1. Puy de Dôme' && V.opt.includes('12=8. Pic du Taillon') && V.opt.includes('8=12. Barrhorn (Üssers Barrhorn)'), 'sélecteur d’ascension : numéro affiché = difficulté, valeur stockée = clé interne', V.opt);
+    ok(V.h[0] === '1:13' && V.h[1] === '2:1' && V.h[5] === '6:11' && V.h[8] === '9:12' && V.h[11] === '12:8' && V.h[12] === '13:9' && !V.seg, 'numéros affichés = rang de difficulté (Vache 1, Muletiers 2 … Barrhorn 12, Grande Sassière 13), tri unique', V.h);
+    ok(/Objectif 12 sur 13/.test(V.eb) && /^1\. Puy de la Vache/.test(V.ph), 'fiche sommet et Prépa : numéro de difficulté', [V.eb, V.ph]);
+    ok(V.opt[1] === '13=1. Puy de la Vache' && V.opt[2] === '1=2. Puy de Dôme' && V.opt.includes('12=9. Pic du Taillon') && V.opt.includes('8=12. Barrhorn (Üssers Barrhorn)') && V.opt.includes('9=13. Aiguille de la Grande Sassière'), 'sélecteur d’ascension : numéro affiché = difficulté, valeur stockée = clé interne', V.opt);
     // statut par numéro : modifier le n° 12 depuis la liste triée ne touche que le Taillon
     await p.select('select[data-obj="12"][data-k="statut"]', 'Prêt'); await W(300);
     ok(await p.evaluate(() => objState(12).statut === 'Prêt' && objState(8).statut === 'À préparer' && objState(4).statut === 'À préparer'), 'statut modifié dans la liste triée : enregistré sur le bon numéro');
     const nx = await p.evaluate(() => { DB.objectifs[1]={statut:'Fait',dateRealisee:'2026-10-01',datePrevue:'',updatedAt:1}; DB.objectifs[2]={statut:'Fait',dateRealisee:'2026-10-02',datePrevue:'',updatedAt:1};
       const a=nextObjective().n; DB.objectifs[4]={statut:'Fait',dateRealisee:'2026-10-03',datePrevue:'',updatedAt:1}; const b=nextObjective().n;
       const f=new Date(); f.setDate(f.getDate()+10); DB.objectifs[12]={statut:'Prêt',datePrevue:toISO(f),dateRealisee:'',updatedAt:1}; const c=nextObjective().n; return [a,b,c]; });
-    ok(nx.join() === '4,3,12', 'Prochaine ascension : la plus facile non faite, sauf date prévue', nx);
+    ok(nx.join() === '4,3,12', 'Prochaine ascension : la plus facile non faite et non fermée (Vache en travaux ignorée), fermeture bloquante seulement (téléphérique du Sancy ≠ randonnée fermée), sauf date prévue', nx);
     for (const n of [11, 12]) { const t = await p.evaluate(n => { renderSummit(n); return $('sumBody').innerText; }, n);
-      ok(/Variantes/.test(t) && /Technique, carte et secours/.test(t) && /Bons plans/.test(t) && /niveau \d+\/12/i.test(t) && /112/.test(t), 'fiche ' + n + ' : variantes, technique, secours, bons plans, niveau'); }
+      ok(/Variantes/.test(t) && /Technique, carte et secours/.test(t) && /Bons plans/.test(t) && /niveau \d+\/13/i.test(t) && /112/.test(t), 'fiche ' + n + ' : variantes, technique, secours, bons plans, niveau'); }
     const t12 = await p.evaluate(() => { renderSummit(12); return $('sumBody').innerText; });
     ok(/Sarradets/.test(t12) && /Brèche de Roland/.test(t12) && /crampons/i.test(t12) && /1748 OT/.test(t12), 'Taillon : refuge des Sarradets, Brèche, crampons, carte IGN');
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
@@ -731,10 +731,10 @@ function FIXTURE() {
       const st=await Promise.all([...new Set(imgs.map(i=>i.getAttribute('src')))].map(async u=>(await fetch(u)).status));
       return {n:figs.length, ok:imgs.filter(i=>i.naturalWidth>=600).length, cred:figs.every(f=>/Wikimedia Commons/.test(f.textContent)&&/CC|domaine/i.test(f.textContent)), st, ow:document.documentElement.scrollWidth>innerWidth+1,
         cover:OBJECTIFS.every(o=>PHOTOS[o.n]&&PHOTO_FILES[PHOTOS[o.n]])}; });
-    ok(r.n === 12 && r.ok === 12 && r.st.every(x=>x===200) && r.cover, '12 cartes Objectifs avec photo chargée (locale, HTTP 200)', r);
+    ok(r.n === 13 && r.ok === 13 && r.st.every(x=>x===200) && r.cover, '13 cartes Objectifs avec photo chargée (locale, HTTP 200)', r);
     ok(r.cred && !r.ow, 'crédit auteur/licence sur chaque photo, sans débordement', r);
     const h = await p.evaluate(async () => { const res=[]; for (const o of OBJECTIFS) { renderSummit(o.n); const i=document.querySelector('#sumBody .sumhero img'); i.loading='eager'; await new Promise(r=>{ if(i.complete) r(); else { i.onload=i.onerror=r; setTimeout(r,5000); } }); res.push(i.naturalWidth>0); } return res; });
-    ok(h.every(Boolean), 'photo en tête des 12 fiches sommet', h);
+    ok(h.every(Boolean), 'photo en tête des 13 fiches sommet', h);
     const fb = await p.evaluate(async () => { const k=PHOTOS[1]; PHOTO_FILES.__x={w:800,h:600,a:'x',l:'x',lu:'#',p:'#',t:'x'}; PHOTOS[1]='__x'; renderSummit(1); const i=document.querySelector('#sumBody .sumhero img'); i.loading='eager'; await new Promise(r=>{ i.addEventListener('error',()=>setTimeout(r,20)); setTimeout(r,2000); }); await new Promise(r=>setTimeout(r,50)); const gone=!document.querySelector('#sumBody .sumhero figure'); PHOTOS[1]=k; delete PHOTO_FILES.__x; return gone; });
     ok(fb, 'photo manquante : retirée proprement (pas d’image cassée)');
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
@@ -875,6 +875,92 @@ function FIXTURE() {
       restoreSnap(0); const m1 = mergeDB(JSON.parse(JSON.stringify(DB)), remote), m2 = mergeDB(remote, JSON.parse(JSON.stringify(DB)));
       return {kept: !!DB.objectifs[4].gpx, newer: DB.objectifs[4].updatedAt > remote.objectifs[4].updatedAt, g1: !!(m1.objectifs[4] && m1.objectifs[4].gpx), g2: !!(m2.objectifs[4] && m2.objectifs[4].gpx)}; });
     ok(r.kept && r.newer && r.g1 && r.g2, 'restauration : trace actuelle recollée et objectif daté de la restauration → la trace survit à la synchro avec un gist plus récent', r);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 24. v25 : Puy de la Vache, Barrhorn en 2 jours, vue détaillée de l'activité quotidienne ----------
+  out.push('24. v25 : Puy de la Vache (n° 1), Barrhorn 12 / Grande Sassière 13, vue détaillée de l’activité quotidienne');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => { const o=OBJECTIFS.find(o=>o.n===13), I=OBJ_INFO[13], b=OBJECTIFS.find(o=>o.n===8);
+      const req=['type','sum','start','parking','access','route','water','refuges','dangers','winter','seasonTxt','tech','ign','variants','tips','secours'];
+      const cl=closuresFor(o,todayISO(),todayISO());
+      return {alt:[o.altDep,o.altSom,o.dplus,o.dist,o.h], miss:req.filter(k=>!I[k]), season:(SEASON[13]||[]).length, gear:(OBJ_GEAR[13]||[]).length, ph:PHOTOS[13], cred:PHOTO_FILES[PHOTOS[13]], src:o.src.length,
+        geo:I.sum, start:I.start.ll, cl:cl.length, park:/Ventouse/.test(I.parking)&&/20\/04\/2026/.test(I.parking), rank:[diffRank(13),diffRank(1),diffRank(8),diffRank(9),diffRank(7)], N:OBJECTIFS.length,
+        bm:b.multi&&b.multi.jours, bd:/2 jours/.test(b.duree)&&/Turtmannhütte/.test(b.duree), keys:OBJECTIFS.map(o=>o.n).join(), uniq:new Set(OBJECTIFS.map(o=>o.n)).size}; });
+    ok(r.alt.join() === '990,1167,285,4,2' && !r.miss.length && r.season === 12 && r.gear > 4 && r.src >= 4 && Math.abs(r.geo[0]-45.705)<0.01 && Math.abs(r.geo[1]-2.963)<0.01, 'fiche Puy de la Vache complète (altitudes, D+, distance, durée, sources, coordonnées météo)', r);
+    ok(r.ph === 'puy-de-la-vache' && r.cred && /commons\.wikimedia/i.test(r.cred.p) && /CC BY-SA/.test(r.cred.l), 'photo Wikimedia Commons libre avec crédit', r.cred);
+    ok(r.cl === 1 && r.park, 'fermeture (travaux, arrêté, parking) affichée et alternative de stationnement', r);
+    ok(r.rank.join() === '1,2,12,13,11' && r.N === 13 && r.uniq === 13 && r.keys === '1,2,3,4,5,6,7,8,9,10,11,12,13', 'Vache n° 1, Muletiers 2, Barrhorn 12, Grande Sassière 13 ; clés internes 1–12 inchangées, 13 nouvelle', r);
+    ok(r.bm === 2 && r.bd, 'Barrhorn : organisation en 2 jours (nuit à la Turtmannhütte)', r);
+    const st = await p.evaluate(async () => { const u='./img/sommets/puy-de-la-vache.webp'; const res=await fetch(u); const sw=await (await fetch('./sw.js')).text(); return {s:res.status, pre:sw.includes(u)}; });
+    ok(st.s === 200 && st.pre, 'photo locale servie et précachée par le service worker', st);
+    const t = await p.evaluate(() => { renderSummit(13); const a=$('sumBody').innerText; renderSummit(8); const b=$('sumBody').innerText; renderSummit(9); const c=$('sumBody').innerText; return {a,b,c}; });
+    ok(/Objectif 1 sur 13/.test(t.a) && /Fermé/.test(t.a) && /Ventouse/.test(t.a) && /Gegeours/.test(t.a), 'fiche Vache : niveau 1/13, fermeture, parking alternatif, crédit photo');
+    ok(/Objectif 12 sur 13/.test(t.b) && /2 jours/.test(t.b) && /sans escalade/i.test(t.b), 'fiche Barrhorn : 12/13, 2 jours, sans escalade');
+    ok(/Objectif 13 sur 13/.test(t.c) && /le plus difficile/.test(t.c), 'fiche Grande Sassière : 13/13, la plus difficile');
+    // données existantes : état des objectifs 1/2 conservé, objectif 13 synchronisable
+    const m = await p.evaluate(() => { DB.objectifs[1]={statut:'Prêt',datePrevue:'',dateRealisee:'',updatedAt:5}; DB.objectifs[2]={statut:'Prêt',datePrevue:'',dateRealisee:'',updatedAt:6}; save();
+      const R=JSON.parse(JSON.stringify(DB)); R.objectifs[13]={statut:'Prêt',datePrevue:'2028-05-01',dateRealisee:'',updatedAt:9}; const M=mergeDB(DB,R);
+      return {k:Object.keys(M.objectifs).sort().join(), s1:M.objectifs[1].statut, s13:M.objectifs[13].statut, nx:nextObjective().n}; });
+    ok(m.k === '1,13,2' && m.s1 === 'Prêt' && m.s13 === 'Prêt', 'fusion : objectifs 1/2 intacts, objectif 13 synchronisé', m);
+    ok(m.nx !== 13, 'Vache fermée : pas proposée comme prochaine ascension', m);
+    ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
+  // ancien client (v24) : un état d'objectif 13 inconnu est conservé
+  { const [ctx, p] = await fresh(BASE + '/old24.html');
+    await p.evaluate(() => { const D=JSON.parse(JSON.stringify(DB)); D.objectifs[13]={statut:'Prêt',datePrevue:'2028-05-01',dateRealisee:'',updatedAt:5}; localStorage.setItem(KEY, JSON.stringify(D)); });
+    await p.reload({waitUntil:'networkidle0'});
+    for (const t of ['journal','obj','prep','evo','data']) { await p.evaluate(t => show(t), t); await W(120); }
+    const r = await p.evaluate(() => { DB.sessions.push({id:'o24',date:'2026-10-01',type:'Randonnée',dist:4,dplus:285,dur:7200,updatedAt:7}); save(); const L=JSON.parse(localStorage.getItem(KEY));
+      const other=JSON.parse(JSON.stringify(L)); other.objectifs[13].updatedAt=9; other.objectifs[13].statut='Fait'; const m=mergeDB(L,other); return {k:!!L.objectifs[13], m:m.objectifs[13]&&m.objectifs[13].statut}; });
+    ok(r.k && r.m === 'Fait', 'ancien client v24 : garde et fusionne l’état de l’objectif 13', r);
+    ok(p.errs.length === 0, 'ancien client v24 : aucune erreur JS', p.errs); await ctx.close(); }
+  // vue détaillée de l'activité quotidienne (mobile, CPU ralenti ×4)
+  { const [ctx, p] = await fresh(); await p.setViewport({width:390, height:844, hasTouch:true, isMobile:true}); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
+    await p.evaluate(() => { const T=todayISO(); DB.daily=[]; for (let i=1;i<=70;i++){ if(i%9===0) continue; const d=addDays(T,-i); DB.daily.push(i%3? {id:'day-'+d,date:d,pas:4000+(i*733)%9000,kcal:300+(i*37)%500,actMin:20+(i*7)%60,src:'test',updatedAt:1} : {id:'day-'+d,date:d,pas:3000+i*50,kcal:200,actMin:null,pausesActives:i%5,src:'test',updatedAt:1}); } save(); show('journal'); renderJournal(); });
+    const before = await p.evaluate(() => localStorage.getItem(KEY));
+    await p.emulateCPUThrottling(4);
+    // boutons de la carte : n'ouvrent pas la vue
+    await p.evaluate(() => { localStorage.removeItem(KEY+'.dailyHint'); renderJournal(); });
+    const card = await p.evaluate(() => ({tap:!!document.querySelector('#dailyCard[data-day-open][role=button]'), go:/détails/.test($('dailyCard').innerText)}));
+    ok(card.tap && card.go, 'carte « Activité quotidienne » cliquable (rôle bouton, « détails › »)', card);
+    // fluidité : on mesure les images pendant l'ouverture
+    const fr = await p.evaluate(async () => { const ts=[]; let on=true; const loop=t=>{ ts.push(t); if(on) requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const t0=performance.now(); $('dailyCard').querySelector('h3').click(); const tOpen=performance.now()-t0;
+      await new Promise(r=>setTimeout(r,900)); on=false; const gaps=ts.slice(1).map((t,i)=>t-ts[i]);
+      return {tOpen, max:Math.max(...gaps), n:ts.length, open:DAYV.isOpen(), vis:!$('dayDlg').hidden&&$('dayDlg').classList.contains('on'), bars:$('chDV1').querySelectorAll('rect.b').length, svg2:!!$('chDV2').querySelector('svg'), hist:!!(history.state&&history.state.day)}; });
+    ok(fr.open && fr.vis && fr.hist && fr.bars > 20 && fr.svg2, 'appui sur la carte : vue détaillée ouverte, graphiques dessinés après l’animation', fr);
+    ok(fr.tOpen < 120 && fr.max < 120, 'ouverture fluide (CPU ×4) : rendu initial < 120 ms, aucune image bloquée > 120 ms', fr);
+    const v = await p.evaluate(async () => { const out={}; for (const [k] of DAYV.P) { document.querySelector(`[data-day-p="${k}"]`).click(); await new Promise(r=>setTimeout(r,60));
+        const R=DAYV._R, s=DAYV.stats(R.days,'pas'); out[k]={n:R.n, bars:$('chDV1').querySelectorAll('rect.b').length, kpi:$('dayBox').querySelector('.kpi b').textContent, avg:s.avg==null?'–':f(s.avg,0), rows:$('dayBox').querySelectorAll('.dtbl tr').length-1, nd:s.nd}; }
+      for (const m of ['kcal','min','pas']) { document.querySelector(`[data-day-m="${m}"]`).click(); await new Promise(r=>setTimeout(r,60)); out[m]=$('dayBox').querySelector('.card h3').textContent; }
+      return out; });
+    ok(v['7'].n === 7 && v['28'].n === 28 && v['84'].n === 84 && v['182'].n === 182 && v.all.n >= 69 && v.all.n <= 71, 'périodes 7 j / 4 / 12 / 26 sem. / tout', v);
+    ok(['7','28','84','182','all'].every(k => v[k].kpi === v[k].avg && v[k].rows === v[k].nd), 'moyennes et tableau jour par jour exacts pour chaque période', v);
+    ok(v['28'].bars >= 20 && v['84'].bars <= 13 && /par semaine/.test(v['84'] ? 'par semaine' : ''), 'jour par jour jusqu’à 45 j, moyennes hebdomadaires au-delà', v);
+    ok(/Calories/.test(v.kcal) && /Minutes/.test(v.min) && /Pas/.test(v.pas), 'choix de l’indicateur : pas, calories, minutes', v);
+    const sc = await p.evaluate(async () => { const el=$('chDV1'), svg=el.querySelector('svg'), r=svg.getBoundingClientRect(); const C=el._c;
+      const ev=(t,x)=>svg.dispatchEvent(new PointerEvent(t,{bubbles:true,clientX:x,clientY:r.top+r.height/2,pointerId:1}));
+      const t0=performance.now(); ev('pointerdown',r.left+r.width*0.2); for(let i=0;i<20;i++) ev('pointermove',r.left+r.width*(0.2+i*0.03)); ev('pointerup',r.left+r.width*0.8); const dt=performance.now()-t0;
+      return {dt, sel:el._sel, txt:el.querySelector('.chart-detail').textContent}; });
+    ok(sc.dt < 150 && sc.sel > 0 && /pas/.test(sc.txt), 'graphique interactif réactif au doigt (21 déplacements < 150 ms, CPU ×4)', sc);
+    await p.emulateCPUThrottling(1);
+    await p.goBack(); await W(500);
+    const c1 = await p.evaluate(() => ({o:DAYV.isOpen(), h:$('dayDlg').hidden, pg:curPage, body:document.body.classList.contains('day-open')}));
+    ok(!c1.o && c1.h && c1.pg === 'journal' && !c1.body, 'bouton retour : ferme la vue et reste sur le Journal', c1);
+    await p.keyboard.press('Tab'); await p.evaluate(() => $('dailyCard').focus()); await p.keyboard.press('Enter'); await W(500);
+    const k1 = await p.evaluate(() => DAYV.isOpen()); await p.keyboard.press('Escape'); await W(500); const k2 = await p.evaluate(() => DAYV.isOpen() || !(history.state === null || !history.state.day));
+    await p.evaluate(() => $('dailyCard').click()); await W(500); await p.evaluate(() => $('dayDlg').dispatchEvent(new MouseEvent('click',{bubbles:true}))); await W(500); const k3 = await p.evaluate(() => DAYV.isOpen());
+    await p.evaluate(() => $('dailyCard').click()); await W(500); await p.evaluate(() => document.querySelector('[data-day-x]').click()); await W(500); const k4 = await p.evaluate(() => DAYV.isOpen());
+    ok(k1 && !k2 && !k3 && !k4, 'clavier (Entrée / Échap), appui hors de la feuille et ✕ : ouverture et fermeture', [k1, k2, k3, k4]);
+    await p.evaluate(() => { document.querySelector('#dailyCard [data-imp-open]') && document.querySelector('#dailyCard [data-imp-open]').click(); }); await W(300);
+    const k5 = await p.evaluate(() => { const o=DAYV.isOpen(); if(IMP.isOpen()) IMP.close(); return o; });
+    ok(!k5, 'bouton « Importer » de la carte : n’ouvre pas la vue détaillée');
+    const sw = await p.evaluate(async () => { $('dailyCard').click(); await new Promise(r=>setTimeout(r,450)); const pg=curPage; return {pg, inMain:!!$('dayDlg').closest('main')}; });
+    ok(sw.pg === 'journal' && !sw.inMain, 'vue détaillée hors de la zone de balayage des onglets', sw);
+    await p.evaluate(() => DAYV.close()); await W(400);
+    const after = await p.evaluate(() => localStorage.getItem(KEY));
+    ok(after === before, 'données inchangées après toutes les manipulations (stockage identique octet pour octet)');
+    const vp = await p.evaluate(() => { $('dailyCard').click(); return new Promise(r=>setTimeout(()=>{ const b=$('dayBox').getBoundingClientRect(); r({ow:document.documentElement.scrollWidth>innerWidth+1||b.right>innerWidth+1, w:b.width}); DAYV.close(); },500)); });
+    ok(!vp.ow, 'vue détaillée sans débordement horizontal (390 px)', vp);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ancienne version (v16) face à des données des objectifs 11/12
