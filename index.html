@@ -379,6 +379,20 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 #dailyCard.tap:active{transform:scale(.985)}#dailyCard .go{font-size:13px;color:var(--mut);margin-left:6px;white-space:nowrap}
 body.day-open{overflow:hidden}
 @media (prefers-reduced-motion:reduce){#dayDlg,#dayDlg .dsh{transition:none}}
+/* v26 : bandeau « Le chemin des sommets » */
+.jeu{margin:-16px -14px 12px}
+.jeu-strip{position:relative;height:300px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;scrollbar-width:none;background:#1b2a4a;-webkit-overflow-scrolling:touch;outline-offset:-3px}
+.jeu-strip::-webkit-scrollbar{display:none}
+.jeu-in{position:relative;height:100%}
+.jeu-in canvas{position:absolute;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;cursor:pointer}
+.jeu-hk{position:absolute;image-rendering:pixelated;pointer-events:none;z-index:2;animation:jeubob .9s steps(2) infinite}
+@keyframes jeubob{50%{transform:translateY(-2px)}}
+@media (prefers-reduced-motion:reduce){.jeu-hk{animation:none}}
+.jeu-hint{text-align:center;font-size:11px;padding:4px 8px}
+.jeu-hud{margin:6px 14px 0;background:#141f2e;border:2px solid #1a1420;box-shadow:0 0 0 2px #ffe14d;padding:8px 10px;font:bold 13px/1.35 'Courier New',monospace;color:#f3f7f6;overflow-wrap:anywhere}
+.jeu-hud .y{color:#ffe14d}.jeu-hud small{font-weight:normal;color:#c9d3d1}
+.jeu-bar{height:10px;border:2px solid #fff;background:#1a1420;margin-top:5px}.jeu-bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,#6cc24a 0 6px,#4fa33a 6px 8px)}
+.jeu-cl{margin-top:5px;font-weight:normal;font-size:12px;color:#fca5a5}
 </style>
 </head>
 <body>
@@ -461,6 +475,7 @@ body.day-open{overflow:hidden}
 
 <!-- OBJECTIFS -->
 <section class="page" id="p-obj">
+  <div id="jeu" class="jeu"></div>
   <div class="card small mut">Valeurs <b>approximatives</b> issues de topos en ligne (sources sous chaque sommet). D+, distance et durée = sortie complète (aller-retour ou boucle) sauf mention. <b style="color:var(--glacier)">Touche un sommet pour ouvrir sa fiche détaillée.</b></div>
   <div id="objSort"></div>
   <div id="objList"></div>
@@ -1369,7 +1384,7 @@ function updAuto(){ const {s}=readForm(); const sp=speed(s), va=vasc(s), pc=sp?3
 /* ---------- Objectifs ---------- */
 function renderObjSort(){ const N=OBJECTIFS.length;
   $('objSort').innerHTML=`${true?`<details class="card small diffexp"><summary><b>Objectifs numérotés du plus facile (1) au plus difficile (${N})</b> : suis cet ordre</summary><p class="mut" style="margin:8px 0 4px">Suis cet ordre : chaque sommet prépare le suivant. Le niveau est calculé à partir de :</p><ul class="steps"><li><b>D+</b> (1 point par 100 m)</li><li><b>Distance</b> (1 point par 2 km)</li><li><b>Altitude</b> du sommet au-dessus de 1 500 m (1 point par 200 m)</li><li><b>Technicité</b> d’après les topos (0 à 7,5 points : raide, éboulis, névés, crampons…)</li><li><b>Itinérance</b> : D+ et distance pris par étape, + 4 points par jour supplémentaire</li></ul><p class="mut" style="margin:4px 0 0">« Prochaine ascension » et les conseils suivent aussi cet ordre (sauf si tu as mis une date prévue). Le numéro de chaque sommet est son rang de difficulté.</p></details>`:''}`; }
-function renderObj(){ renderObjSort(); const N=OBJECTIFS.length;
+function renderObj(){ try{ JEU.render(); }catch(e){ console.warn('bandeau',e); } renderObjSort(); const N=OBJECTIFS.length;
   $('objList').innerHTML=objOrder().map(o=>{ const st=objState(o.n), R=diffRank(o.n), D=diffScore(o);
     return `<div class="card">${photoHTML(o,"sp-card")}<div class="sumlink" data-sum="${o.n}" role="button" tabindex="0" aria-label="Fiche détaillée : ${esc(o.sommet)}"><div class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><span class="dlv" title="Objectif ${R} sur ${N} (rang de difficulté)">${R}</span><h3 style="margin:0;flex:1;min-width:0">${esc(o.sommet)}<span class="go">fiche ›</span></h3>${o.altSom>=2500?'<span class="alt">⚠️ altitude</span>':''}${o.multi?'<span class="tag">'+o.multi.jours+' jours</span>':''}</div>
     <div class="small">${esc(o.iti)}<br><span class="mut">Départ :</span> ${esc(o.depart)}</div>
@@ -1386,6 +1401,84 @@ function renderObj(){ renderObjSort(); const N=OBJECTIFS.length;
       <div><label>Date réalisée</label><input type="date" data-obj="${o.n}" data-k="dateRealisee" value="${st.dateRealisee}"></div></div>
     <div class="row" style="margin-top:10px;justify-content:space-between"><details class="small"><summary>Sources</summary>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}</details><button class="btn sm sec" data-sum="${o.n}">Fiche détaillée ›</button></div></div>`; }).join('');
 }
+
+/* ---------- v26 : « Le chemin des sommets » — bandeau de progression en 26 niveaux (13 prépas + 13 sommets) en tête d'Objectifs ----------
+   Décors pixel art fournis (img/jeu/*.webp, 300 px de haut), un canevas par décor, chargé seulement à l'approche (IntersectionObserver).
+   Niveaux dérivés des vraies données : prépa validée si préparation ≥ 80 % (ou statut « Prêt »/« Fait »), sommet validé si statut « Fait ».
+   Un sommet fermé par arrêté (CLOSURES[n] avec block, ex. Puy de la Vache 2026–2028) est « passé » : il ne bloque pas la progression. */
+const JEU=(()=>{ const H=300,OV=60,HKH=78,PREP_OK=0.8;
+  const GS=[{"n":"auvergne","w":978,"pp":[[183,249],[277,256],[368,245],[459,256],[551,246],[646,259],[738,255],[827,268]],"lv":[[0,"p",277,256],[0,"s",370,245],[1,"p",459,256],[1,"s",551,246],[2,"p",646,259],[2,"s",738,255]],"ca":[183,249],"cb":[827,268]},{"n":"rhune","w":800,"pp":[[148,222],[258,216],[328,211],[404,206],[469,217]],"lv":[[3,"p",258,216],[3,"s",404,206]],"ca":[148,222],"cb":[469,217]},{"n":"sancy-val-enfer","w":853,"pp":[[0,248],[167,247],[427,246],[667,248],[853,244]],"lv":[[4,"p",250,246],[4,"s",427,246]],"ca":[130,247],"cb":[723,247]},{"n":"cabaliros","w":997,"pp":[[0,208],[58,204],[195,225],[341,242],[487,244],[633,251],[779,252],[925,217],[997,215]],"lv":[[5,"p",307,238],[5,"s",538,246]],"ca":[130,215],"cb":[867,231]},{"n":"sancy-cretes","w":957,"pp":[[0,212],[56,208],[187,228],[327,245],[467,246],[608,253],[748,254],[888,221],[957,219]],"lv":[[6,"p",280,239],[6,"s",516,248]],"ca":[130,219],"cb":[827,235]},{"n":"midi-tourmalet","w":957,"pp":[[0,212],[56,208],[187,228],[327,245],[467,246],[608,253],[748,254],[888,221],[957,219]],"lv":[[7,"p",280,239],[7,"s",516,248]],"ca":[130,219],"cb":[827,235]},{"n":"taillon","w":957,"pp":[[0,212],[56,208],[187,228],[327,245],[467,246],[608,253],[748,254],[888,221],[957,219]],"lv":[[8,"p",280,239],[8,"s",516,248]],"ca":[130,219],"cb":[827,235]},{"n":"gr441","w":969,"pp":[[38,209],[189,228],[331,244],[473,245],[615,254],[757,251],[899,220],[937,216]],"lv":[[9,"p",284,239],[9,"s",522,248]],"ca":[130,221],"cb":[839,233]},{"n":"midi-artigues","w":969,"pp":[[38,209],[189,228],[331,244],[473,245],[615,254],[757,251],[899,220],[937,216]],"lv":[[10,"p",284,239],[10,"s",522,248]],"ca":[130,221],"cb":[839,233]},{"n":"barrhorn","w":917,"pp":[[54,240],[179,249],[313,258],[458,261],[582,261],[716,260],[909,237]],"lv":[[11,"p",269,255],[11,"s",458,261]],"ca":[130,245],"cb":[787,251]},{"n":"grande-sassiere","w":957,"pp":[[103,294],[187,271],[327,245],[467,245],[561,248],[654,243],[665,226],[645,210],[561,198],[561,173],[589,159],[608,133],[598,105],[619,75],[615,47]],"lv":[[12,"p",467,245],[12,"s",615,47]],"ca":[130,287],"cb":[615,47]}];
+  const COL=['#f1c40f','#1abc9c','#9b59b6','#e84393','#e67e22','#e74c3c','#3498db'];
+  const F={0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001111001111',4:'101101111001001',5:'111100111001111',6:'111100111101111',7:'111001001001001',8:'111101111101111',9:'111101111001111'};
+  let X=0; const L=GS.map(s=>{ const o={x:X,w:s.w,s}; X+=s.w-OV; return o; }); const TOT=X+OV;
+  const AT=[]; L.forEach(o=>o.s.lv.forEach(([k,t,x,y])=>{ AT[2*k+(t==='p'?0:1)]=[o.x+x,y]; }));
+  // raccords entre décors (courbe douce, sous les bosquets) et bosquets de sapins aux jonctions (pseudo-aléatoire figé)
+  const CON=[]; for(let k=0;k<L.length-1;k++){ const A=L[k],B=L[k+1],P0=[A.x+A.s.cb[0],A.s.cb[1]],P1=[B.x+B.s.ca[0],B.s.ca[1]],dx=(P1[0]-P0[0])*.45,pts=[];
+    for(let i=0;i<=60;i++){ const t=i/60,u=1-t; pts.push([u*u*u*P0[0]+3*u*u*t*(P0[0]+dx)+3*u*t*t*(P1[0]-dx)+t*t*t*P1[0],u*u*u*P0[1]+3*u*u*t*P0[1]+3*u*t*t*P1[1]+t*t*t*P1[1]]); } CON.push(pts); }
+  let seed=7; const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+  const GROVES=L.slice(1).map(o=>{ const cx=o.x+OV/2,T=[]; for(let i=0;i<18;i++) T.push([Math.round(cx-40+rnd()*80),Math.round(H+4-rnd()*40),Math.round(70+rnd()*70)]); T.sort((a,b)=>a[1]-b[1]); return {cx,T}; });
+  let lv=[],CUR=0,ALL=false,S=1,built=false,io=null,ro=null,lastW=0,centred=false; const imgs={},drawn={};
+  function levels(){ const st=trainStats(new Date()), today=todayISO(), out=[];
+    OBJ_BY_DIFF.forEach((o,k)=>{ const s=objState(o.n), R=readiness(o,st), fait=s.statut==='Fait';
+      const cl=(CLOSURES[o.n]||[]).find(c=>c.block&&c.from<=today&&c.to>=today);
+      out.push({t:'prep',k,n:o.n,nm:o.sommet,pct:Math.round(Math.min(1,R.r)*100),done:fait||s.statut==='Prêt'||R.r>=PREP_OK});
+      out.push({t:'som',k,n:o.n,nm:o.sommet,done:fait,closed:!fait&&cl?cl:null,st:s.statut}); });
+    let c=out.findIndex(l=>!l.done&&!l.closed); ALL=c<0; if(c<0) c=out.length-1; return [out,c]; }
+  const fir=(c,x,b,hh)=>{ c.fillStyle='#3a2414'; c.fillRect(x-2,b-8,4,8); for(let y=0;y<hh;y+=3){ const w=Math.round((y/hh)*hh*0.26+2)+((y/3)%3===2?-2:0);
+    c.fillStyle='#0a1a12'; c.fillRect(x-w-1,b-8-hh+y,2*w+2,3); c.fillStyle='#245a33'; c.fillRect(x-w,b-8-hh+y,2*w,3); c.fillStyle='#3a7d44'; c.fillRect(x-w,b-8-hh+y,Math.max(1,w*0.6|0),3); c.fillStyle='#12321f'; c.fillRect(x+(w*0.4|0),b-8-hh+y,Math.ceil(w*0.6),3); } };
+  const seg=(c,pts)=>{ c.lineJoin=c.lineCap='round'; c.strokeStyle='#5a361a'; c.lineWidth=10; c.beginPath(); pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])); c.stroke(); c.strokeStyle='#9a6a3a'; c.lineWidth=7; c.stroke();
+    let acc=0; c.fillStyle='#f4efe2'; for(let i=1;i<pts.length;i++){ const a=pts[i-1],b=pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]); for(let s=0;s<d;s++){ if((acc++)%10<5) c.fillRect(Math.round(a[0]+(b[0]-a[0])*s/d)-1,Math.round(a[1]+(b[1]-a[1])*s/d)-1,2,2); } } };
+  const disc=(c,x,y,r,col)=>{ c.fillStyle=col; for(let j=-r;j<=r;j++){ const w=Math.round(Math.sqrt(r*r-j*j+r*.6)); c.fillRect(x-w,y+j,w*2+1,1); } };
+  const num=(c,s,x,y,col)=>{ const q=2,w=s.length*4-1,x0=x-Math.round(w*q/2),y0=y-5; c.fillStyle=col; for(let k=0;k<s.length;k++){ const g=F[s[k]]; if(!g) continue; for(let j=0;j<15;j++) if(g[j]==='1') c.fillRect(x0+(k*4+j%3)*q,y0+(j/3|0)*q,q,q); } };
+  const shade=h=>{ const n=parseInt(h.slice(1),16),f=v=>(v*.75)|0; return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`; };
+  const check=(c,x,y,r)=>{ c.fillStyle='#fff'; for(let i=0;i<r;i++) c.fillRect(x-2*r+i,y-r/2+i,3,3); for(let i=0;i<2*r;i++) c.fillRect(x-r+i,y+r/2-i,3,3); };
+  const flag=(c,x,y,col)=>{ c.fillStyle='#3a2a1a'; c.fillRect(x,y-22,2,24); c.fillStyle=col; c.fillRect(x+2,y-22,11,7); c.fillRect(x+2,y-15,7,2); };
+  function badges(c,x0,x1){ lv.forEach((l,i)=>{ const [x,y]=AT[i]; if(x<x0-30||x>x1+30) return; const cur=i===CUR&&!ALL, done=l.done, lock=!done&&!cur;
+    if(l.t==='prep'){ disc(c,x,y,6,'#1a1420'); disc(c,x,y,4,done?'#6cc24a':cur?'#fff':'#8d929e'); if(done){ c.fillStyle='#fff'; c.fillRect(x-2,y,2,2); c.fillRect(x,y+1,1,1); c.fillRect(x+1,y-2,2,3); } return; }
+    const col=COL[l.k%COL.length]; if(cur){ disc(c,x,y,20,'rgba(255,236,140,.30)'); disc(c,x,y,17,'rgba(255,236,140,.35)'); }
+    disc(c,x,y,14,'#1a1420'); const g=lock||l.closed; disc(c,x,y,12,g?'#7b8090':col); disc(c,x,y+3,9,g?'#5d6270':shade(col)); disc(c,x,y,9,g?'#7b8090':col); c.fillStyle='rgba(255,255,255,.55)'; c.fillRect(x-7,y-9,5,2);
+    const t=String(l.k+1); if(done) check(c,x+1,y,3); else if(g){ num(c,t,x+1,y+1,'#1a1420'); num(c,t,x,y,'#fff'); } else num(c,t,x,y,'#1a1420');
+    if(l.closed){ c.fillStyle='#1a1420'; c.fillRect(x+7,y-20,13,13); c.fillStyle='#e74c3c'; c.fillRect(x+8,y-19,11,11); c.fillStyle='#fff'; c.fillRect(x+10,y-14,7,2); }
+    else if(lock){ c.fillStyle='#1a1420'; c.fillRect(x+8,y-19,10,10); c.fillStyle='#e0b23a'; c.fillRect(x+9,y-15,8,5); c.strokeStyle='#e0b23a'; c.lineWidth=2; c.strokeRect(x+11,y-19,4,4); } }); }
+  function draw(k){ const o=L[k], cv=document.querySelector('#jeuIn canvas[data-k="'+k+'"]'); if(!cv) return; const im=imgs[k];
+    if(!im||!im.complete||!im.naturalWidth){ if(!im){ const i=new Image(); i.decoding='async'; imgs[k]=i; i.onload=()=>{ drawn[k]=0; draw(k); }; i.onerror=()=>{ imgs[k]=null; }; i.src='img/jeu/'+o.s.n+'.webp'; } return; }
+    if(drawn[k]) return; drawn[k]=1; cv.width=o.w; cv.height=H; const c=cv.getContext('2d'); c.imageSmoothingEnabled=false; c.drawImage(im,0,0);
+    if(k){ c.globalCompositeOperation='destination-in'; const g=c.createLinearGradient(0,0,OV,0); for(let i=0;i<=8;i++){ const u=i/8; g.addColorStop(u,'rgba(0,0,0,'+(u*u*(3-2*u))+')'); } c.fillStyle=g; c.fillRect(0,0,o.w,H); c.globalCompositeOperation='source-over'; }
+    c.save(); c.translate(-o.x,0); const x0=o.x,x1=o.x+o.w;
+    CON.forEach(p=>{ if(p[p.length-1][0]>=x0&&p[0][0]<=x1) seg(c,p); });
+    GROVES.forEach(g=>{ if(g.cx+60<x0||g.cx-60>x1) return; c.fillStyle='#0d2418'; c.fillRect(g.cx-30,H-40,60,40); g.T.forEach(([x,b,hh])=>fir(c,x,b,hh)); });
+    const f0=L[0].s.pp[0]; if(k===0) flag(c,f0[0]-6,f0[1]-2,'#2ecc40'); { const [x,y]=AT[25]; if(x+30>=x0) flag(c,x+18,y+6,'#e74c3c'); }
+    badges(c,x0,x1); c.restore(); }
+  function build(root){ root.innerHTML=`<div class="jeu-strip" id="jeuStrip" data-noswipe tabindex="0" role="img" aria-roledescription="carte de progression"><div class="jeu-in" id="jeuIn">${L.map((o,k)=>`<canvas data-k="${k}" width="1" height="1"></canvas>`).join('')}<img class="jeu-hk" id="jeuHk" src="img/jeu/randonneur.png" alt="" width="46" height="79" draggable="false"></div></div><div class="jeu-hint mut">◀ glisse pour voir les niveaux · touche un sommet pour sa fiche ▶</div><div class="jeu-hud" id="jeuHud" aria-live="polite"></div>`;
+    const st=$('jeuStrip');
+    io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) draw(+e.target.dataset.k); }),{root:st,rootMargin:'0px 700px'});
+    st.querySelectorAll('canvas').forEach(c=>io.observe(c));
+    st.addEventListener('click',e=>{ const r=st.getBoundingClientRect(), x=(e.clientX-r.left+st.scrollLeft)/S, y=(e.clientY-r.top)/S; let best=-1,bd=26;
+      AT.forEach(([ax,ay],i)=>{ const d=Math.hypot(ax-x,ay-y); if(d<bd){ bd=d; best=i; } }); if(best>=0) openSummit(String(lv[best].n)); });
+    st.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); st.scrollBy({left:(e.key==='ArrowRight'?1:-1)*st.clientWidth*.6,behavior:RM()?'auto':'smooth'}); } });
+    if(window.ResizeObserver){ ro=new ResizeObserver(()=>{ if(st.clientWidth&&st.clientWidth!==lastW) layout(true); }); ro.observe(st); }
+    addEventListener('orientationchange',()=>setTimeout(()=>layout(true),250));
+    built=true; }
+  function layout(keep){ const st=$('jeuStrip'); if(!st) return; const w=st.clientWidth, mid=w&&lastW?(st.scrollLeft+lastW/2)/S:null;
+    S=Math.max(.7,Math.min(1,(innerHeight*0.42)/H)); st.style.height=Math.round(H*S)+'px'; const inn=$('jeuIn'); inn.style.width=Math.round(TOT*S)+'px'; inn.style.height=Math.round(H*S)+'px';
+    L.forEach((o,k)=>{ const c=inn.querySelector('canvas[data-k="'+k+'"]'); c.style.left=Math.round(o.x*S)+'px'; c.style.width=Math.round(o.w*S)+'px'; c.style.height=Math.round(H*S)+'px'; });
+    const hk=$('jeuHk'), [hx,hy]=AT[CUR], hh=Math.round(HKH*S), hw=Math.round(46*HKH/79*S); hk.style.width=hw+'px'; hk.style.height=hh+'px';
+    hk.style.left=Math.round(hx*S-hw*.62)+'px'; hk.style.top=Math.round(hy*S-hh+(lv[CUR]&&lv[CUR].t==='som'?-8:2)*S)+'px';
+    if(keep&&mid!=null&&w) st.scrollLeft=mid*S-w/2; lastW=w; }
+  function centre(){ const st=$('jeuStrip'); if(!st||!st.clientWidth) return false; layout(false); st.scrollLeft=Math.max(0,AT[CUR][0]*S-st.clientWidth/2); centred=true; return true; }
+  function hud(){ const l=lv[CUR], done=lv.filter(x=>x.done||x.closed).length; let a,b;
+    if(ALL){ a='Les 26 niveaux sont validés'; b='Bravo : les 13 sommets sont faits ✓'; }
+    else if(l.t==='prep'){ a='Prépa '+esc(l.nm); b=`<span class="y">Préparation ${l.pct} %</span> — atteins ${PREP_OK*100} % (ou passe le statut à « Prêt ») pour débloquer l’ascension`; }
+    else { a='Ascension '+esc(l.nm); b='<span class="y">Prépa validée ✓</span> — passe le statut à « Fait » après l’ascension pour débloquer le niveau suivant'; }
+    const cl=lv.filter(x=>x.closed).map(x=>`<div class="jeu-cl">⛔ ${esc(x.nm)} fermé (travaux jusqu’au ${dFR(x.closed.to)}) : niveau passé, la progression n’est pas bloquée.</div>`).join('');
+    $('jeuHud').innerHTML=`<b>NIVEAU ${CUR+1}/26 · SOMMET ${(l.k+1)}/13 ★ ${a.toUpperCase()}</b><br>${b}<div class="jeu-bar" role="progressbar" aria-valuemin="0" aria-valuemax="26" aria-valuenow="${done}" aria-label="Niveaux validés"><i style="width:${(done/26*100).toFixed(1)}%"></i></div><small>${done}/26 niveaux validés</small>${cl}`;
+    $('jeuStrip').setAttribute('aria-label',`Chemin des sommets : niveau ${CUR+1} sur 26, ${l.nm}. Flèches gauche et droite pour faire défiler.`); }
+  function render(){ const root=$('jeu'); if(!root) return; if(!built) build(root); const prev=JSON.stringify([lv.map(x=>[x.done,!!x.closed]),CUR]);
+    [lv,CUR]=levels(); if(JSON.stringify([lv.map(x=>[x.done,!!x.closed]),CUR])!==prev) for(const k in drawn) drawn[k]=0;
+    layout(false); hud(); $('jeuIn').querySelectorAll('canvas').forEach(c=>{ const k=+c.dataset.k, r=c.getBoundingClientRect(), sr=$('jeuStrip').getBoundingClientRect(); if(drawn[k]===0||(sr.width&&r.right>sr.left-700&&r.left<sr.right+700)) draw(k); });
+    if(!centred) centre(); }
+  return {render,centre,get cur(){ return CUR; },get levels(){ return lv; },get at(){ return AT; },get all(){ return ALL; }};
+})();
 
 /* ---------- Préparation ---------- */
 function readinessWindow(){ const end=new Date(); const start=new Date(end.getFullYear(),end.getMonth(),end.getDate()-27); return [toISO(start),toISO(end)]; }
@@ -1965,7 +2058,7 @@ function dayJRender(n){ const el=$('sumDayJ'); if(!el||curSum!==+n) return; cons
   const fh=x=>{ const m=Math.round(x*60); return String(Math.floor(m/60)).padStart(2,'0')+'h'+String(m%60).padStart(2,'0'); };
   const dep=limit-h-0.5, rise=sun?hourP(sun.rise):6, depTxt=dep<rise-1? 'avant '+fh(rise)+' (frontale) — ou raccourcis la sortie' : 'au plus tard '+fh(dep);
   const ic=c=>c==null?'·':c>=95?'⛈️':c>=71&&c<=86&&!(c>=80&&c<=82)?'❄️':c>=51?'🌧️':c===45||c===48?'🌫️':c>=3?'☁️':c>=1?'⛅':'☀️';
-  const strip=H? `<div class="hstrip">${H.filter(x=>x[0]>=6&&x[0]<=20).map(x=>`<div class="${x[2]>=95?'st':''}"><small>${x[0]}h</small><b>${ic(x[2])}</b><small>${x[1]!=null?f(x[1],0)+'°':''}</small><small class="mut">${x[3]!=null?x[3]+'%':''}</small></div>`).join('')}</div>` : '';
+  const strip=H? `<div class="hstrip" data-noswipe>${H.filter(x=>x[0]>=6&&x[0]<=20).map(x=>`<div class="${x[2]>=95?'st':''}"><small>${x[0]}h</small><b>${ic(x[2])}</b><small>${x[1]!=null?f(x[1],0)+'°':''}</small><small class="mut">${x[3]!=null?x[3]+'%':''}</small></div>`).join('')}</div>` : '';
   const g=gearStatus(o.n), miss=g.filter(x=>x.st!=='ok'), G=sanGpx(st.gpx), M=offMeta(n);
   el.innerHTML=`<div class="kv"><b>Date</b><span>${dFR(day)}${st.datePrevue&&st.datePrevue>=T?' (date prévue)':' (demain — fixe une date prévue pour l’adapter)'}</span>
    ${sun?`<b>Soleil</b><span>🌅 ${hhmm(sun.rise)} · 🌇 ${hhmm(sun.set)} (au départ)</span>`:''}
@@ -2986,7 +3079,7 @@ function show(p){
   document.querySelectorAll('.page:not(#p-add)').forEach(x=>{ const on=x.id==='p-'+p; if(on&&changed){ x.classList.remove('on'); void x.offsetWidth; x.dataset.dir=dir; } x.classList.toggle('on',on); });
   const tabP0=p==='sum'?sumFrom:p, tabP=PARENT_TAB[tabP0]||tabP0; document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('on',b.dataset.p===tabP));
   [...PAGES,'sum'].forEach(t=>document.body.classList.toggle('pg-'+t,t===p));
-  if(p==='journal') renderJournal(); if(p==='obj') renderObj(); if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); renderPrefs(); }
+  if(p==='journal') renderJournal(); if(p==='obj'){ renderObj(); JEU.centre(); } if(p==='prep') renderPrep(); if(p==='evo') renderEvo(); if(p==='poids') renderPoids(); if(p==='equip') renderEquip(); if(p==='data'){ renderSync(); renderSnaps(); renderPrefs(); }
   const t=$('pageTitle'); if(t&&t.textContent!==TITLES[p]){ t.textContent=TITLES[p]; t.classList.remove('swap'); void t.offsetWidth; t.classList.add('swap'); }
   moveInd(); animateIn($('p-'+p)); if(changed) window.scrollTo(0,0); }
 function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); renderPoids(); renderEquip(); if(curPage==='sum'&&curSum) renderSummit(curSum); if(DAYV.isOpen()) DAYV.rerender(); if(typeof animateIn==='function') animateIn($('p-'+curPage)); }
@@ -3038,7 +3131,7 @@ function initUI(){
   // balayage horizontal entre onglets
   const main=document.querySelector('main'); let sx=0,sy=0,lock=null,pg=null,dx=0;
   main.addEventListener('touchstart',e=>{ if(document.body.classList.contains('sheet-open')||document.body.classList.contains('imp-open')||e.touches.length>1){ lock='n'; return; }
-    const t=e.target; if(t.closest('input,textarea,select,.scroll,.seg,.mapf,.chart,[contenteditable]')){ lock='n'; return; }
+    const t=e.target; if(t.closest('[data-noswipe],input,textarea,select,.scroll,.seg,.mapf,.chart,[contenteditable]')){ lock='n'; return; }
     sx=e.touches[0].clientX; sy=e.touches[0].clientY; lock=null; dx=0; pg=document.querySelector('.page.on:not(#p-add)'); },{passive:true});
   main.addEventListener('touchmove',e=>{ if(lock==='n'||!pg) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy;
     if(lock==null){ if(Math.abs(x)<10&&Math.abs(y)<10) return; lock=Math.abs(x)>Math.abs(y)*1.4?'h':'n'; if(lock==='h') pg.classList.add('dragging'); }

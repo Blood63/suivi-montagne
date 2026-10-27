@@ -2,12 +2,14 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v25';            // fichiers de l'appli (renouvelé à chaque version)
+const CACHE = PREFIX + 'v26';            // fichiers de l'appli (renouvelé à chaque version)
 const EXT = PREFIX + 'ext-v2';          // polices + moteur OCR Tesseract + Leaflet (stables ; v2 : réponses CORS pour la vérification d'intégrité)
 const TILES = PREFIX + 'tiles-v1';       // v23 : tuiles OSM préparées à la demande (« Préparer hors-ligne »), remplies par la page
 const KEEP = [CACHE, EXT, TILES];
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
-  './img/sommets/barrhorn.webp', './img/sommets/cabaliros.webp', './img/sommets/chaine-des-puys.webp', './img/sommets/grande-sassiere.webp', './img/sommets/pic-du-midi-artigues.webp', './img/sommets/pic-du-midi-tourmalet.webp', './img/sommets/puy-de-dome.webp', './img/sommets/puy-de-la-vache.webp', './img/sommets/rhune.webp', './img/sommets/sancy.webp', './img/sommets/sancy-cretes.webp', './img/sommets/taillon.webp'];
+  './img/sommets/barrhorn.webp', './img/sommets/cabaliros.webp', './img/sommets/chaine-des-puys.webp', './img/sommets/grande-sassiere.webp', './img/sommets/pic-du-midi-artigues.webp', './img/sommets/pic-du-midi-tourmalet.webp', './img/sommets/puy-de-dome.webp', './img/sommets/puy-de-la-vache.webp', './img/sommets/rhune.webp', './img/sommets/sancy.webp', './img/sommets/sancy-cretes.webp', './img/sommets/taillon.webp',
+  // v26 : décors du bandeau « Le chemin des sommets » + randonneur (hors-ligne)
+  './img/jeu/auvergne.webp', './img/jeu/rhune.webp', './img/jeu/sancy-val-enfer.webp', './img/jeu/cabaliros.webp', './img/jeu/sancy-cretes.webp', './img/jeu/midi-tourmalet.webp', './img/jeu/taillon.webp', './img/jeu/gr441.webp', './img/jeu/midi-artigues.webp', './img/jeu/barrhorn.webp', './img/jeu/grande-sassiere.webp', './img/jeu/randonneur.png'];
 const EXT_HOSTS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

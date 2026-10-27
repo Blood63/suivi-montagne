@@ -963,6 +963,69 @@ function FIXTURE() {
     ok(!vp.ow, 'vue détaillée sans débordement horizontal (390 px)', vp);
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
+  // v26 : bandeau « Le chemin des sommets » (26 niveaux) en tête d'Objectifs
+  { const [ctx, p] = await fresh(); const reqs = []; p.on('request', r => { if (/img\/jeu\//.test(r.url())) reqs.push(r.url()); });
+    await p.setViewport({width:390, height:844, isMobile:true, hasTouch:true}); await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
+    await p.evaluate(() => show('obj')); await W(900);
+    const lz = reqs.filter(u => /\.webp/.test(u)).length; ok(lz >= 1 && lz <= 4, 'décors chargés à la demande (seulement ceux proches de l’écran)', lz);
+    const L0 = await p.evaluate(() => ({cur:JEU.cur, n:JEU.levels.length, c:JEU.levels.map(l=>l.closed?'C':l.done?'D':'.').join('')}));
+    ok(L0.n === 26 && L0.cur === 0 && L0.c[1] === 'C', '26 niveaux ; données vides : niveau 1 (prépa Vache), sommet Vache fermé marqué « passé »', L0);
+    const before = await p.evaluate(() => localStorage.getItem(KEY));
+    const L1 = await p.evaluate(() => { const S=DB.objectifs; const k=JSON.stringify(S); S[13]={statut:'Prêt',datePrevue:'',dateRealisee:'',updatedAt:1}; JEU.render(); const z=JEU.cur; S[1]={statut:'Prêt',datePrevue:'',dateRealisee:'',updatedAt:1};
+      JEU.render(); const a=JEU.cur; S[1].statut='Fait'; JEU.render(); const b=JEU.cur; const st=trainStats(new Date());
+      const coh=JEU.levels.every((l,i)=>{ const o=OBJ_BY_DIFF[l.k], s=objState(o.n); return l.n===o.n&&(l.t==='prep'?l.done===(s.statut==='Fait'||s.statut==='Prêt'||readiness(o,st).r>=0.8):l.done===(s.statut==='Fait')); });
+      const cl=CLOSURES[13], save=cl.map(c=>c.to); cl.forEach(c=>c.to='2020-01-01'); JEU.render(); const c=JEU.cur; cl.forEach((c,i)=>c.to=save[i]); JEU.render();
+      DB.objectifs=JSON.parse(k); JEU.render(); return {z,a,b,c,coh,d:JEU.cur}; });
+    ok(L1.z === 2 && L1.a === 3 && L1.b === 4, 'niveaux dérivés des statuts : prépa Vache « Prêt » → niveau 3 (Vache fermée passée), Dôme « Prêt » → 4, « Fait » → 5', L1);
+    ok(L1.coh, 'chaque niveau = prépa ≥ 80 % / statut, ou sommet « Fait » (cohérence avec les données réelles)');
+    ok(L1.c === 1 && L1.d === 0, 'Vache : bloque seulement quand la fermeture est levée (sinon « passé »)', L1);
+    const ce = await p.evaluate(() => { const st=$('jeuStrip'), S=st.clientHeight/300, x=JEU.at[JEU.cur][0]*S; const hk=$('jeuHk').getBoundingClientRect(), sr=st.getBoundingClientRect();
+      return {d:Math.abs(x-(st.scrollLeft+st.clientWidth/2)), clamp:x<st.clientWidth/2, hx:hk.left+hk.width*.62-sr.left+st.scrollLeft-x}; });
+    ok((ce.d < 3 || ce.clamp) && Math.abs(ce.hx) < 3, 'ouverture centrée sur le niveau courant, randonneur posé sur sa pastille', ce);
+    // balayage horizontal sur le bandeau : défile le bandeau, ne change pas d'onglet
+    const box = await p.evaluate(() => { const r=$('jeuStrip').getBoundingClientRect(); return {x:r.left+r.width*0.8, y:r.top+r.height*0.5}; });
+    const sl0 = await p.evaluate(() => $('jeuStrip').scrollLeft);
+    await p.touchscreen.touchStart(box.x, box.y); for (let i = 1; i <= 10; i++) await p.touchscreen.touchMove(box.x - i * 24, box.y + 2); await p.touchscreen.touchEnd(); await W(700);
+    const sw1 = await p.evaluate(() => ({pg:curPage, sl:$('jeuStrip').scrollLeft}));
+    ok(sw1.pg === 'obj' && sw1.sl > sl0 + 50, 'balayage sur le bandeau : il défile, l’onglet reste « Objectifs »', {sl0, ...sw1});
+    const hb = await p.evaluate(() => { const r=$('jeuHud').getBoundingClientRect(); return {x:r.left+r.width*0.8, y:r.top+r.height*0.5}; });
+    await p.touchscreen.touchStart(hb.x, hb.y); for (let i = 1; i <= 10; i++) await p.touchscreen.touchMove(hb.x - i * 20, hb.y + 1); await p.touchscreen.touchEnd(); await W(700);
+    ok(await p.evaluate(() => curPage) === 'prep', 'balayage hors du bandeau : change toujours d’onglet (Objectifs → Prépa)');
+    await p.evaluate(() => show('obj')); await W(500);
+    const ce2 = await p.evaluate(() => { const st=$('jeuStrip'), x=JEU.at[JEU.cur][0]*st.clientHeight/300; return Math.abs(x-(st.scrollLeft+st.clientWidth/2)) < 3 || x < st.clientWidth/2; });
+    ok(ce2, 'retour sur Objectifs : recentré sur le niveau courant');
+    // appui sur une pastille : fiche du bon sommet
+    const tp = await p.evaluate(() => { const st=$('jeuStrip'), S=st.clientHeight/300, i=JEU.cur, [x,y]=JEU.at[i]; st.scrollLeft=x*S-st.clientWidth/2; const r=st.getBoundingClientRect(); return {x:r.left+x*S-st.scrollLeft, y:r.top+y*S, n:JEU.levels[i].n}; });
+    await p.touchscreen.tap(tp.x, tp.y); await W(600);
+    const ts = await p.evaluate(() => ({pg:curPage, s:String(curSum)})); ok(ts.pg === 'sum' && ts.s === String(tp.n), 'appui sur une pastille : fiche détaillée du sommet', {tp, ts});
+    await p.goBack(); await W(500);
+    // tous les décors dessinés en faisant défiler jusqu'au bout ; défilement fluide
+    await p.emulateCPUThrottling(4);
+    const fl = await p.evaluate(async () => { const st=$('jeuStrip'); let worst=0, t=performance.now(); for (let i=0;i<60;i++){ st.scrollLeft+= st.scrollWidth/60; await new Promise(r=>requestAnimationFrame(r)); const n=performance.now(); worst=Math.max(worst,n-t); t=n; }
+      await new Promise(r=>setTimeout(r,1200)); return {worst, drawn:[...document.querySelectorAll('#jeuIn canvas')].filter(c=>c.width>1).length}; });
+    await p.emulateCPUThrottling(1);
+    ok(fl.drawn === 11, 'défilement jusqu’au bout : les 11 décors sont chargés et dessinés', fl);
+    ok(fl.worst < 120, 'défilement fluide (CPU ×4) : aucune image > 120 ms', fl);
+    // redimensionnement / rotation
+    const pre = await p.evaluate(() => { const st=$('jeuStrip'); st.scrollLeft=3000; return (st.scrollLeft+st.clientWidth/2)/(st.clientHeight/300); });
+    await p.setViewport({width:844, height:390, isMobile:true, hasTouch:true}); await W(700);
+    const ro = await p.evaluate(() => { const st=$('jeuStrip'); return {h:st.clientHeight, mid:(st.scrollLeft+st.clientWidth/2)/(st.clientHeight/300), ow:document.documentElement.scrollWidth>innerWidth+1, iw:$('jeuIn').offsetWidth}; });
+    ok(ro.h < 300 && ro.h >= 209 && Math.abs(ro.mid - pre) < 8 && !ro.ow, 'rotation en paysage : bandeau réduit, même endroit au centre, pas de débordement', {pre, ...ro});
+    for (const w of [360, 430, 390]) { await p.setViewport({width:w, height:800, isMobile:true, hasTouch:true}); await W(400);
+      const r = await p.evaluate(() => { const h=$('jeuHud').getBoundingClientRect(), s=$('jeuStrip').getBoundingClientRect(); return {ow:document.documentElement.scrollWidth>innerWidth+1, hud:h.right<=innerWidth&&h.left>=0, s:Math.round(s.width)}; });
+      ok(!r.ow && r.hud && r.s === w, 'bandeau en ' + w + ' px : pleine largeur, sans débordement', r); }
+    ok(await p.evaluate(() => localStorage.getItem(KEY)) === before, 'bandeau : données inchangées (stockage identique octet pour octet)');
+    // hors-ligne : décors et randonneur précachés
+    await p.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
+    let ks = []; for (let i = 0; i < 40; i++) { ks = await p.evaluate(async SWC => { const c = await caches.open(SWC); return (await c.keys()).map(r => r.url).filter(u => /img\/jeu\//.test(u)); }, SWC); if (ks.length >= 12) break; await W(250); }
+    ok(ks.length === 12, 'service worker : 11 décors + randonneur précachés', ks.length);
+    await p.setOfflineMode(true); await p.reload({waitUntil:'domcontentloaded'}); await W(1500);
+    const off = await p.evaluate(async () => { show('obj'); await new Promise(r=>setTimeout(r,500)); const st=$('jeuStrip'); for (let i=0;i<12;i++){ st.scrollLeft+=st.scrollWidth/12; await new Promise(r=>setTimeout(r,120)); } await new Promise(r=>setTimeout(r,1200));
+      return {drawn:[...document.querySelectorAll('#jeuIn canvas')].filter(c=>c.width>1).length, hk:$('jeuHk').complete&&$('jeuHk').naturalWidth>0}; });
+    await p.setOfflineMode(false);
+    ok(off.drawn === 11 && off.hk, 'hors-ligne : bandeau complet (11 décors + randonneur)', off);
+    ok(p.errs.length === 0, 'bandeau : aucune erreur JS', p.errs); await ctx.close(); }
+
   // ancienne version (v16) face à des données des objectifs 11/12
   if (process.env.OLD16) { const [ctx, p] = await fresh(BASE + '/' + process.env.OLD16);
     await p.evaluate(() => { const D=JSON.parse(JSON.stringify(DB)); D.objectifs[11]={statut:'Prêt',datePrevue:'2027-06-20',dateRealisee:'',updatedAt:5}; D.objectifs[12]={statut:'Fait',datePrevue:'',dateRealisee:'2027-07-10',updatedAt:6,gpx:{pts:[[42.71,-0.05,2208],[42.70,-0.05,2600],[42.6936,-0.0513,3144]],dist:3,dplus:936,name:'fictif'}};
