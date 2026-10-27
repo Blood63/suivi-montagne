@@ -156,6 +156,20 @@ header h1.swap{animation:ttl .35s cubic-bezier(.2,.8,.2,1)}
 .syncpill.on{opacity:1;transform:none}
 .offpill{right:auto;left:auto;position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 18px);background:rgba(251,146,60,.16);border-color:rgba(251,146,60,.45)}
 body.syncing .offpill{opacity:0}
+/* v28 : indicateur de synchro toujours visible + panneau de détails */
+body.has-sb .syncpill{visibility:hidden}
+.sbadge{position:absolute;right:14px;top:calc(env(safe-area-inset-top) + 16px);display:flex;align-items:center;gap:6px;font:600 12px/1 var(--font);color:var(--snow);background:rgba(8,18,16,.55);border:1px solid rgba(255,255,255,.22);padding:6px 10px;border-radius:999px;cursor:pointer;z-index:2;max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbadge .sdot{width:9px;height:9px;border-radius:50%;flex:none;background:#8b9a97}
+.sbadge[data-s="ok"] .sdot{background:#34d399}.sbadge[data-s="pending"] .sdot{background:#fbbf24}.sbadge[data-s="syncing"] .sdot{background:#7cc8ea;animation:sbp 1s infinite alternate}
+.sbadge[data-s="offline"] .sdot{background:#fb923c}.sbadge[data-s="error"] .sdot{background:#f87171}.sbadge[data-s="error"]{border-color:rgba(248,113,113,.7)}.sbadge[data-s="none"] .sdot{background:transparent;border:1.5px solid #8b9a97}
+@keyframes sbp{to{opacity:.35}}@media (prefers-reduced-motion:reduce){.sbadge .sdot{animation:none!important}}
+.spanel{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 64px);z-index:60;display:flex;justify-content:center;padding:0 10px}
+.spanel[hidden]{display:none}
+.spcard{position:relative;width:100%;max-width:460px;background:#10231f;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.spcard .xbtn{position:absolute;right:8px;top:6px}
+.sp-st{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:700;margin-bottom:6px}
+.safec{border:1px solid rgba(251,146,60,.45)}.safec .tag.s2{background:rgba(52,179,138,.2)}.safec .tag.s1{background:rgba(251,146,60,.2)}.safec .tag.s0{background:rgba(248,113,113,.2)}
+.sp-ok{background:rgba(52,211,153,.18);color:#6ee7b7}.sp-pending{background:rgba(251,191,36,.18);color:#fcd34d}.sp-syncing{background:rgba(124,200,234,.18);color:#bae6fd}.sp-offline{background:rgba(251,146,60,.18);color:#fdba74}.sp-error{background:rgba(248,113,113,.2);color:#fecaca}.sp-none{background:rgba(255,255,255,.1)}
 .toast.act{pointer-events:auto}
 .toast .tbtn{margin-left:10px;background:none;border:1px solid rgba(124,200,234,.6);color:var(--glacier);font:600 13px var(--font);padding:3px 10px;border-radius:999px;cursor:pointer}
 .spin{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:var(--glacier);animation:spin .8s linear infinite}
@@ -252,6 +266,7 @@ input[type=file]::file-selector-button{font:600 14px var(--font);color:var(--sno
 .adv h4,.h4{margin:14px 0 6px;font-size:14px;font-weight:650;color:var(--snow)}
 .adv-sec{margin-top:12px}
 .warnl{font-size:13.5px;padding:8px 10px;border-radius:12px;background:rgba(251,146,60,.10);border:1px solid rgba(251,146,60,.28);margin-top:6px}
+.warnl.verif-old{color:#fdba74;font-weight:600;border-color:rgba(251,146,60,.6);background:rgba(251,146,60,.16)}
 .tipl{display:flex;gap:10px;font-size:13.5px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-top:6px}
 .tipl>span{flex:none;font-size:16px;line-height:1.2}
 .planl{display:flex;flex-direction:column;font-size:13.5px;padding:8px 10px;border-left:3px solid var(--glacier);background:rgba(124,200,234,.06);border-radius:0 12px 12px 0;margin-top:6px}
@@ -418,7 +433,14 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
   </div>
   <div class="syncpill" id="syncPill" aria-live="polite"><span class="spin"></span>Synchro…</div>
   <div class="syncpill offpill" id="offPill" role="status">⛰︎ Hors ligne</div>
+  <button class="sbadge" id="syncBadge" type="button" data-noswipe aria-haspopup="dialog" aria-controls="syncPanel"><i class="sdot"></i><span id="syncBadgeTxt">Synchro</span></button>
 </header>
+<div class="spanel" id="syncPanel" role="dialog" aria-modal="false" aria-labelledby="spTitle" hidden data-noswipe>
+  <div class="spcard"><button class="xbtn" type="button" data-sp-close aria-label="Fermer">×</button>
+    <h3 id="spTitle" style="margin:0 0 6px"></h3><div id="spBody" class="small"></div>
+    <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px"><button class="btn sm" type="button" id="spSync">Synchroniser maintenant</button><button class="btn sec sm" type="button" id="spSettings">Réglages de synchro</button><button class="btn sec sm" type="button" id="spRestore">Restaurer une copie locale</button></div>
+  </div>
+</div>
 <main>
 
 <!-- JOURNAL -->
@@ -580,6 +602,7 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
     <div id="syncTokenState" class="small mut"></div>
     <div id="syncGist" class="small mut"></div>
     <div id="syncMsg" class="small mut" style="margin:6px 0"></div>
+    <p class="small warnl" id="syncTokNote" style="margin:6px 0">🔐 Le jeton est sensible : il donne accès à tes gists. Ne le saisis que sur tes appareils personnels (jamais sur un appareil partagé ou public).</p>
     <label for="syncToken">Jeton GitHub (scope « gist » uniquement)</label>
     <div class="row"><input id="syncToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ghp_… ou github_pat_…" style="flex:1"><button class="btn sec sm" id="btnTokShow" type="button" aria-label="Afficher le jeton">👁️</button></div>
     <div class="row" style="margin-top:10px">
@@ -601,7 +624,7 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
       <p class="mut">Sécurité : le jeton reste sur l’appareil et n’est envoyé qu’à api.github.com. Il ne donne accès qu’à tes gists et n’est jamais inclus dans les exports. Pour le révoquer : github.com → Settings → Developer settings → Personal access tokens. Un jeton « fine-grained » marche aussi s’il a uniquement la permission « Gists : Read and write ».</p>
     </details>
   </div>
-  <div class="card">
+  <div class="card" id="snapCard">
     <h2>Copies de sécurité</h2>
     <p class="small mut" style="margin-top:0">L’app garde sur ce téléphone 5 copies automatiques (une par jour, et avant chaque import, restauration ou réinitialisation). Si la synchronisation est active, une copie restaurée est ensuite fusionnée avec le gist.</p>
     <div id="snapList"></div>
@@ -672,46 +695,46 @@ const STATUTS = ['À préparer','Prêt','Fait'];
      cadre de pratique du bivouac en Chaîne des Puys (Parc des Volcans / puydedome-tourisme.com, 2025).
    Coordonnées : OpenStreetMap / Nominatim (approximatives, à ± 100 m). Tout ce qui est marqué « ⚠︎ à vérifier » est incertain. */
 const OBJECTIFS = [
- {n:1,sommet:'Puy de Dôme',iti:'Sentier des Muletiers (GR 441)',depart:'Col de Ceyssat',altDep:1078,altSom:1465,dplus:390,dist:3.8,duree:'≈ 50 min montée · 1 h 30 A/R',h:1.5,diff:'Facile à moyenne (court mais raide)',conf:'Élevée',
+ {n:1,verifiedAt:'2026-10-20',sommet:'Puy de Dôme',iti:'Sentier des Muletiers (GR 441)',depart:'Col de Ceyssat',altDep:1078,altSom:1465,dplus:390,dist:3.8,duree:'≈ 50 min montée · 1 h 30 A/R',h:1.5,diff:'Facile à moyenne (court mais raide)',conf:'Élevée',
   note:'Montée seule : 1,9 km / ≈ 350–390 m D+. Chemin fermé pour travaux du 5 au 16/10/2026 (parking du col de Ceyssat inaccessible).',
   src:[['Puy-de-Dôme Tourisme – chemin des Muletiers','https://www.puydedome-tourisme.com/fr/fiche/equipement/le-chemin-des-muletiers-orcines_TFO6453685/'],['Clermont Auvergne Volcans','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-muletiers/'],['FFRandonnée 63 – travaux d’octobre 2026','https://puy-de-dome.ffrandonnee.fr/post/chemin-des-muletiers/'],['État des chemins (Puy-de-Dôme Tourisme)','https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/']]},
- {n:2,sommet:'Puy de Dôme',iti:'Sentier des Chèvres (PR puis GR 441)',depart:'Gare du Panoramique des Dômes',altDep:980,altSom:1465,dplus:530,dist:10,duree:'1 h 15–2 h montée · ≈ 3 h–3 h 30 A/R',h:3.25,diff:'Moyenne',conf:'Élevée',
+ {n:2,verifiedAt:'2026-10-20',sommet:'Puy de Dôme',iti:'Sentier des Chèvres (PR puis GR 441)',depart:'Gare du Panoramique des Dômes',altDep:980,altSom:1465,dplus:530,dist:10,duree:'1 h 15–2 h montée · ≈ 3 h–3 h 30 A/R',h:3.25,diff:'Moyenne',conf:'Élevée',
   note:'Montée : ≈ 5 km / 526–532 m D+ (fiche officielle). Fin par des escaliers puis la route de service.',
   src:[['Clermont Auvergne Volcans – chemin des Chèvres','https://www.clermontauvergnevolcans.com/fiches/le-puy-de-dome-par-le-chemin-des-chevres/'],['Chaîne des Puys en rando','https://chainedespuysenrando.fr/le-puy-de-dome-par-le-sentier-des-chevres/'],['Accès au sommet (site officiel du puy de Dôme)','https://volcan.puy-de-dome.fr/infos-pratiques/acces-au-sommet.html']]},
- {n:3,sommet:'Puy de Sancy',iti:'Boucle Val d’Enfer / Val de Courre',depart:'Station du Mont-Dore (téléphérique)',altDep:1340,altSom:1885,dplus:560,dist:7,duree:'≈ 3 h (boucle)',h:3.25,diff:'Difficile (Val d’Enfer raide)',conf:'Élevée',
+ {n:3,verifiedAt:'2026-10-20',sommet:'Puy de Sancy',iti:'Boucle Val d’Enfer / Val de Courre',depart:'Station du Mont-Dore (téléphérique)',altDep:1340,altSom:1885,dplus:560,dist:7,duree:'≈ 3 h (boucle)',h:3.25,diff:'Difficile (Val d’Enfer raide)',conf:'Élevée',
   note:'Boucle PDIPR « Le puy de Sancy » : 7 km, 560 m, 3 h (la fiche « patrimoine » de sancy.com annonce 8 km, 546 m, 3 h 30).',
   src:[['Sancy.com – Le puy de Sancy (boucle)','https://www.sancy.com/fr/fiche/equipement/le-puy-de-sancy-mont-dore_TFO890393/'],['Sancy.com – accès au puy de Sancy','https://www.sancy.com/fr/fiche/patrimoine-naturel/le-puy-de-sancy-mont-dore_TFO4638613/'],['Visorando – Sancy par le Val de Courre','https://www.visorando.com/randonnee-le-puy-de-sancy-par-le-val-de-courre/']]},
- {n:4,sommet:'La Rhune',iti:'Voie normale du Col de Saint-Ignace',depart:'Col de Saint-Ignace',altDep:169,altSom:905,dplus:740,dist:9.8,duree:'≈ 2 h 15–2 h 30 montée · 4 h A/R',h:4,diff:'Difficile (raide, rocailleux)',conf:'Élevée',
+ {n:4,verifiedAt:'2026-10-20',sommet:'La Rhune',iti:'Voie normale du Col de Saint-Ignace',depart:'Col de Saint-Ignace',altDep:169,altSom:905,dplus:740,dist:9.8,duree:'≈ 2 h 15–2 h 30 montée · 4 h A/R',h:4,diff:'Difficile (raide, rocailleux)',conf:'Élevée',
   note:'Descente possible en petit train (du 28/03 au 01/11/2026, selon places).',
   src:[['Mapirando – La Rhune depuis le col de Saint-Ignace','https://www.mapirando.fr/topo/la-rhune-depuis-le-col-de-saint-ignace/'],['Les plus beaux villages – Sare','https://www.les-plus-beaux-villages.com/randonnees/sare/la-rhune-depuis-le-col-de-saint-ignace/'],['Train de la Rhune – FAQ 2026','https://www.rhune.com/fr/faq']]},
- {n:5,sommet:'Puy de Sancy',iti:'Grande boucle des Crêtes via la Grande Cascade',depart:'Centre-ville du Mont-Dore',altDep:1050,altSom:1885,dplus:1050,dist:18,duree:'≈ 7 h (boucle)',h:6.5,diff:'Difficile',conf:'Élevée',
+ {n:5,verifiedAt:'2026-10-20',sommet:'Puy de Sancy',iti:'Grande boucle des Crêtes via la Grande Cascade',depart:'Centre-ville du Mont-Dore',altDep:1050,altSom:1885,dplus:1050,dist:18,duree:'≈ 7 h (boucle)',h:6.5,diff:'Difficile',conf:'Élevée',
   note:'Boucle officielle « Les crêtes du Sancy » ; variantes 15,6–17 km / ≈ 990–1 050 m (sancy.com : 17 km, 1 050 m, ≈ 6 h).',
   src:[['Sancy.com – Les crêtes du Sancy','https://www.sancy.com/fr/fiche/equipement/les-cretes-du-sancy-mont-dore_TFO890509/'],['Les Terres du Milieu – crêtes du Sancy','https://www.lesterresdumilieu.fr/sancy-cretes']]},
- {n:6,sommet:'Pic du Midi de Bigorre',iti:'Voie du Tourmalet (col de Sencours, Laquets)',depart:'Col du Tourmalet',altDep:2115,altSom:2877,dplus:800,dist:13,duree:'≈ 2 h 30 montée · 5–6 h A/R',h:5.5,diff:'Moyenne (haute montagne, sans neige)',conf:'Moyenne-élevée',
+ {n:6,verifiedAt:'2026-10-20',sommet:'Pic du Midi de Bigorre',iti:'Voie du Tourmalet (col de Sencours, Laquets)',depart:'Col du Tourmalet',altDep:2115,altSom:2877,dplus:800,dist:13,duree:'≈ 2 h 30 montée · 5–6 h A/R',h:5.5,diff:'Moyenne (haute montagne, sans neige)',conf:'Moyenne-élevée',
   note:'Piste jusqu’à ≈ 2 637 m puis sentier ; éboulis sur la fin. D+ annoncé 760–850 m.',
   src:[['Altituderando – Pic du Midi par le Tourmalet','https://www.altituderando.com/Pic-du-Midi-de-Bigorre-2876m-par-le-col-du-Tourmalet'],['Iris-Pyrénées','https://iris-py.fr/randonnee-pyrenees/le-pic-du-midi-de-bigorre-depuis-le-col-du-tourmalet/'],['Pic du Midi – accès à pied (été 2026)','https://picdumidi.com/en/page/adventur']]},
- {n:7,sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',h:7,diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
+ {n:7,verifiedAt:'2026-10-20',sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',h:7,diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
   note:'Topos : 1 600–1 700 m D+, 19–20 km A/R. Certains départs (virage des Arizes) sont à ≈ 1 280 m.',
   src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21'],['Ma petite rando – sentier des Muletiers','https://mapetiterando.fr/randonnee/ce-sentier-historique-mene-au-sommet-du-pic-du-midi-1700-m-de-denivele-et-une-vue-a-couper-le-souffle/']]},
- {n:8,sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'2 jours : J1 Sänntum → Turtmannhütte ≈ 2 h 30–3 h (+650 m) · J2 sommet et retour ≈ 8 h (+1 100 m / −1 700 m)',h:8,multi:{jours:2,dpJ:1100,distJ:16,hJ:8,txt:'En 2 jours avec nuit à la Turtmannhütte (2 519 m) : J1 ≈ 4,5 km et +650 m jusqu’à la cabane ; J2 ≈ 15,5 km, +1 100 m jusqu’au sommet puis −1 700 m jusqu’à Sänntum. Cible de préparation : la journée 2 (≈ 1 100 m D+, ≈ 8 h).'},diff:'Difficile (T3 sans escalade, mains courantes au Gässi ; très physique, altitude)',conf:'Moyenne',
+ {n:8,verifiedAt:'2026-10-20',sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'2 jours : J1 Sänntum → Turtmannhütte ≈ 2 h 30–3 h (+650 m) · J2 sommet et retour ≈ 8 h (+1 100 m / −1 700 m)',h:8,multi:{jours:2,dpJ:1100,distJ:16,hJ:8,txt:'En 2 jours avec nuit à la Turtmannhütte (2 519 m) : J1 ≈ 4,5 km et +650 m jusqu’à la cabane ; J2 ≈ 15,5 km, +1 100 m jusqu’au sommet puis −1 700 m jusqu’à Sänntum. Cible de préparation : la journée 2 (≈ 1 100 m D+, ≈ 8 h).'},diff:'Difficile (T3 sans escalade, mains courantes au Gässi ; très physique, altitude)',conf:'Moyenne',
   note:'Longtemps présenté comme le plus haut sommet randonnable des Alpes (un sentier vers le Gross Bigerhorn, 3 625 m, existe depuis 2024). Sources : 1 660–1 980 m D+, 18,6–21,2 km. Prévu en 2 jours avec nuit à la Turtmannhütte (2 519 m) : aucune escalade nécessaire, acclimatation et journée du sommet raccourcie.',
   src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097'],['Novo-monde – Monter au Barrhorn','https://www.novo-monde.com/ascension-barrhorn-valais-suisse/'],['CAS – Turtmannhütte','https://www.sac-cas.ch/fr/cabanes-et-courses/portail-des-courses-du-cas/turtmannhuette-sac-2147000281/']]},
- {n:9,sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',h:7.5,diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
+ {n:9,verifiedAt:'2026-10-20',sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',h:7.5,diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
   note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable.',
   src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – la Grande Sassière','https://www.tignes.net/decouvrir/la-station/grande-sassiere'],['Parc national de la Vanoise – réserve de la Grande Sassière','https://www.vanoise-parcnational.fr/fr/des-actions/gerer-et-proteger-les-patrimoines/les-reserves-naturelles-nationales/la-reserve-0']]},
  // GR 441 ajouté en dernière position (n° 10) : itinérance de 6 jours, de nature différente des ascensions à la journée ; les numéros 1–9 restent inchangés (l'état « fait / prévu » est stocké par numéro).
- {n:10,sommet:'GR 441 – Tour de la Chaîne des Puys',iti:'Boucle en 6 étapes au départ de Volvic',depart:'Volvic (573 m)',altDep:573,altSom:1465,dplus:2900,dist:114,duree:'6 jours (étapes de 15 à 23 km, 4 h–5 h 40)',h:5.7,multi:{jours:6,dpJ:520,distJ:23,hJ:5.7},diff:'Moyenne (itinérance, étapes longues)',conf:'Moyenne-élevée',
+ {n:10,verifiedAt:'2026-10-20',sommet:'GR 441 – Tour de la Chaîne des Puys',iti:'Boucle en 6 étapes au départ de Volvic',depart:'Volvic (573 m)',altDep:573,altSom:1465,dplus:2900,dist:114,duree:'6 jours (étapes de 15 à 23 km, 4 h–5 h 40)',h:5.7,multi:{jours:6,dpJ:520,distJ:23,hJ:5.7},diff:'Moyenne (itinérance, étapes longues)',conf:'Moyenne-élevée',
   note:'114–115 km, ≈ 2 750–3 050 m D+ cumulé selon les tracés ; point culminant le puy de Dôme (1 465 m) si le tracé passe au sommet (certains topos donnent 1 415 m). D+ moyen ≈ 460–510 m par jour (estimation : total ÷ 6).',
   src:[['Topo de Rando – GR 441','https://topo-de-rando.com/gr-441/'],['GR-Go – GR 441','https://gr-go.fr/grande-randonnee/gr441-tour-de-la-chaine-des-puys/'],['Randonnées.info – étapes du GR 441','https://randonnees.info/gr-441/'],['Randozone – GR 441','https://www.randozone.com/fiche/13935/sentier-de-grande-randonnee-gr-441-tour-de-la-chaine-des-puys.html'],['Cadre de pratique du bivouac (Chaîne des Puys)','https://www.puydedome-tourisme.com/uploads/2026/01/cadre-de-pratique-bivouac-randonnee-mars25.pdf']]},
  // v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12) ajoutés à la suite — numéros 1–10 inchangés (état, dates, séances objN et GPX sont stockés par numéro).
- {n:11,sommet:'Pic du Cabaliros',iti:'Depuis Sireix (piste de la Curadère, cabane d’Aurios)',depart:'Terminus de la piste de Sireix (parc à bétail)',altDep:1660,altSom:2334,dplus:740,dist:11,duree:'≈ 2 h–2 h 30 montée · 4 h 30–5 h 30 A/R',h:5,diff:'Moyenne (sentes pastorales, pente finale herbeuse ≈ 30 %)',conf:'Élevée',
+ {n:11,verifiedAt:'2026-10-20',sommet:'Pic du Cabaliros',iti:'Depuis Sireix (piste de la Curadère, cabane d’Aurios)',depart:'Terminus de la piste de Sireix (parc à bétail)',altDep:1660,altSom:2334,dplus:740,dist:11,duree:'≈ 2 h–2 h 30 montée · 4 h 30–5 h 30 A/R',h:5,diff:'Moyenne (sentes pastorales, pente finale herbeuse ≈ 30 %)',conf:'Élevée',
   note:'Topo officiel (Vallées de Gavarnie) : 10,7 km, +721 m, 5 h ; Visorando : 11,8 km, +767 m, 5 h 35 ; Randozone : ≈ 700 m, 3 h 30 (temps de marche). Sommet 2 334 m (table d’orientation) ; parking donné à 1 590–1 660 m selon les sources.',
   src:[['Rando Vallées de Gavarnie – Le pic du Cabaliros depuis Sireix','https://rando.valleesdegavarnie.com/trek/29148-Le-pic-du-Cabaliros%2C-depuis-Sireix'],['Visorando – Pic du Cabaliros depuis Sireix','https://www.visorando.com/randonnee-pic-du-cabaliros-depuis-sireix/'],['Randozone – Randonnée au pic de Cabaliros','https://www.randozone.com/topos/randonnee/57/randonnee-au-pic-de-cabaliros'],['Iris-Pyrénées – Cabaliros depuis Estaing','https://iris-py.fr/randonnee-pyrenees/le-pic-du-cabaliros-depuis-estaing/'],['Rando Vallées de Gavarnie – Cabaliros depuis Cauterets','https://rando.valleesdegavarnie.com/trek/29275-Le-pic-du-Cabaliros%2C-depuis-Cauterets'],['Topos Pyrénées (Mariano) – Cabaliros par Cauterets','https://www.topopyrenees.com/randonnee-cabaliros-2334m-par-cauterets/']]},
- {n:12,sommet:'Pic du Taillon',iti:'Voie normale par le port de Boucharo et la Brèche de Roland',depart:'Col des Tentes (Gavarnie)',altDep:2208,altSom:3144,dplus:1000,dist:15,duree:'≈ 3 h 30–4 h montée · 6 h 30–7 h A/R',h:6.5,diff:'Moyenne à difficile (T3, haute montagne, névés en début de saison)',conf:'Élevée',
+ {n:12,verifiedAt:'2026-10-20',sommet:'Pic du Taillon',iti:'Voie normale par le port de Boucharo et la Brèche de Roland',depart:'Col des Tentes (Gavarnie)',altDep:2208,altSom:3144,dplus:1000,dist:15,duree:'≈ 3 h 30–4 h montée · 6 h 30–7 h A/R',h:6.5,diff:'Moyenne à difficile (T3, haute montagne, névés en début de saison)',conf:'Élevée',
   note:'Camptocamp : +950 m, 16 km, T3, crampons en début de saison, passages à 35° ; Toporandosmontagne : +1 000 m, 14,5 km, 3 h 30 montée + 3 h descente ; Randozone : 4 h + 3 h. D+ réel ≈ 950–1 050 m (contre-pentes).',
   src:[['Camptocamp – Taillon, voie normale depuis le col des Tentes','https://www.camptocamp.org/routes/56592/fr/taillon-voie-normale-depuis-le-col-des-tentes'],['Toporandosmontagne – Le Taillon par la Brèche de Roland','https://www.toporandosmontagne.com/65/vallees-gaves/le-taillon/le-taillon.php'],['Randozone – Pic du Taillon depuis le col des Tentes','https://www.randozone.com/topos/randonnee/76/pic-du-taillon-depuis-le-col-de-tentes'],['Imag’In Pyrénées – Taillon (voies et conseils)','https://www.imag-in-pyrenees.com/taillon.htm'],['Refuge de la Brèche de Roland (FFCAM) – réservation et infos 2026','https://refugebrechederoland.ffcam.fr/reservation.html'],['Parc national des Pyrénées – refuges de Luz-Gavarnie','https://www.pyrenees-parcnational.fr/fr/des-decouvertes/sejourner-dans-le-parc-national/ou-dormir-en-montagne/refuges/vallee-de-luz-gavarnie'],['Hautes-Pyrénées Tourisme – col des Tentes (route, réseau)','https://cdt65.media.tourinsoft.eu/upload/CL-00357-CDHP-FicheRando-Col-des-tentes-OK.pdf'],['InfoRoute65 – état des routes','https://inforoute.ha-py.fr/']]},
  // v25 : Puy de la Vache (n° 13 interne, affiché n° 1 = le plus facile). Clés 1–12 inchangées.
- {n:13,sommet:'Puy de la Vache',iti:'Boucle des puys de Lassolas et de la Vache (PDIPR)',depart:'Parking « Puy de la Vache et puy de Lassolas » (D5, Saint-Genès-Champanelle)',altDep:990,altSom:1167,dplus:285,dist:4,duree:'≈ 2 h (boucle)',h:2,diff:'Facile (court, escaliers et pouzzolane)',conf:'Élevée',
+ {n:13,verifiedAt:'2026-10-27',sommet:'Puy de la Vache',iti:'Boucle des puys de Lassolas et de la Vache (PDIPR)',depart:'Parking « Puy de la Vache et puy de Lassolas » (D5, Saint-Genès-Champanelle)',altDep:990,altSom:1167,dplus:285,dist:4,duree:'≈ 2 h (boucle)',h:2,diff:'Facile (court, escaliers et pouzzolane)',conf:'Élevée',
   note:'⛔ Site en travaux (2026–2028) : montée aux puys de la Vache et de Lassolas interdite par arrêté municipal depuis le 13/05/2026, parking fermé depuis le 20/04/2026 (vérifié le 27/10/2026, sans date de réouverture). Boucle officielle : 4 km, 285 m D+, 2 h (Département du Puy-de-Dôme). Cônes égueulés de ≈ 8 400 ans, coulée de la cheire d’Aydat.',
   src:[['Parc des Volcans d’Auvergne – infos puys et travaux','https://www.decouvrir.parcdesvolcans.fr/chaine-des-puys-faille-de-limagne/infos-puys-et-travaux'],['Département du Puy-de-Dôme – communiqué travaux (17/04/2026)','https://www.puy-de-dome.fr/fileadmin/user_upload/CP_Travaux_La_Vache_et_Lassolas_-_compresse.pdf'],['Mairie de Saint-Genès-Champanelle – fermeture','https://saint-genes-champanelle.fr/fermeture-des-puys-de-la-vache-et-de-lassolas/'],['Puy-de-Dôme Tourisme – état des chemins','https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'],['Guide Auvergne – boucle Lassolas et Vache (données PDIPR, tracé)','https://guide-auvergne.fr/randonnees-auvergne/les-puys-de-lassolas-et-de-la-vache-iti0560/']]},
 ];
@@ -1213,7 +1236,7 @@ function load(){ let r=null; try{ r=localStorage.getItem(KEY); DB = r? JSON.pars
   }
   normalizeDB(DB); if(dedupeBivouac(DB)|dedupeRef(DB)|ensureRoadtrip(DB)) save();
   snapshot('copie automatique du jour'); }
-function save(){ const j=JSON.stringify(DB);
+function save(){ const j=JSON.stringify(DB); if(typeof sbSoon==='function') sbSoon();
   if(typeof scheduleSync==='function'){ if(syncing){ if(!syncSaving) syncPending=true; } else scheduleSync(); }
   try{ localStorage.setItem(KEY, j); }
   catch(e){ // v22 : stockage plein → on libère les copies de sécurité les plus anciennes une par une, en gardant la plus récente
@@ -1579,7 +1602,7 @@ function equipClick(e){
 // Le jeton reste dans ce navigateur (localStorage) et n'est envoyé qu'à https://api.github.com.
 const SYNC_KEY = KEY+'.sync'; const GIST_FILE='suivi-montagne-data.json'; const GH_API='https://api.github.com';
 function syncCfg(){ const d={token:'',gistId:'',lastSync:0,auto:true}; try{ return Object.assign(d,JSON.parse(localStorage.getItem(SYNC_KEY)||'{}')); }catch(e){ return d; } }
-function saveSyncCfg(c){ localStorage.setItem(SYNC_KEY,JSON.stringify(c)); }
+function saveSyncCfg(c){ localStorage.setItem(SYNC_KEY,JSON.stringify(c)); if(typeof sbSoon==='function') sbSoon(); }
 class SyncError extends Error{ constructor(m,status){ super(m); this.status=status; } }
 async function gh(token,path,opt={}){
   if(navigator.onLine===false) throw new SyncError('Pas de connexion internet : synchronisation impossible pour le moment.');
@@ -1632,7 +1655,7 @@ function ssave(){ syncSaving=true; try{ save(); } finally{ syncSaving=false; } }
 async function syncNow(opts={}){
   const c=syncCfg(); if(!c.token){ setSyncStatus('Aucun jeton enregistré : colle ton jeton GitHub ci-dessus.','red'); return false; }
   if(syncPaused&&opts.silent) return false; // v22 : synchro auto en pause pendant un choix d'import
-  if(syncing) return false; syncing=true; document.body.classList.add('syncing'); setSyncStatus('Synchronisation en cours…');
+  if(syncing) return false; syncing=true; document.body.classList.add('syncing'); setSyncStatus('Synchronisation en cours…'); sbUpdate();
   const btn=$('btnSync'); if(btn) btn.disabled=true;
   try{
     let gist=null;
@@ -1655,16 +1678,61 @@ async function syncNow(opts={}){
     const changed=JSON.stringify(DB)!==before;
     const got=diffText(syncDiff(local0,DB)), put=sent?diffText(sent):'';
     const sum=(got?'Reçu de l’autre appareil : '+got+'. ':'')+(put?'Envoyé : '+put+'.':'')||'Rien de nouveau.';
-    ssave(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); c2.lastSum=sum; saveSyncCfg(c2);
+    ssave(); const c2=syncCfg(); c2.gistId=c.gistId; c2.lastSync=Date.now(); c2.lastSum=sum; saveSyncCfg(c2); syncErr=null; sbBase(DB);
     if(changed||!opts.silent) renderAll(); // pas de re-rendu (ni perte de focus) si rien n'a changé
     setSyncStatus('Synchronisé ✔ — '+sum,'green'); if(!opts.silent) toast('Synchronisation réussie'+(got?' — reçu : '+got:'')); else if(got) toast('Reçu de l’autre appareil : '+got);
     return true;
   }catch(e){
     const m=e instanceof SyncError? e.message : 'Erreur inattendue pendant la synchronisation : '+e.message;
     if(c.gistId!==syncCfg().gistId){ const c3=syncCfg(); c3.gistId=c.gistId; saveSyncCfg(c3); }
-    setSyncStatus(m,'red'); if(!opts.silent) toast(m); return false;
-  }finally{ syncing=false; if(btn) btn.disabled=false; document.body.classList.remove('syncing'); if(syncPending){ syncPending=false; scheduleSync(1500); } }
+    syncErr={m,t:Date.now(),status:e.status||0}; setSyncStatus(m,'red'); if(!opts.silent) toast(m); return false;
+  }finally{ syncing=false; if(btn) btn.disabled=false; document.body.classList.remove('syncing'); sbUpdate(); if(syncPending){ syncPending=false; scheduleSync(1500); } }
 }
+/* v28 : indicateur d'état de la synchro (lecture seule : ne touche ni aux données ni au jeton) */
+let syncErr=null, sbT=null; const SB_KEY=KEY+'.syncBase';
+function sbSig(db){ const m=a=>{ const o={}; for(const x of a||[]) if(x&&x.id) o[x.id]=x.updatedAt||0; return o; }; const i={}, c={};
+  for(const k of (db.equip||[])){ c[k.id]=k.updatedAt||0; for(const it of k.items||[]) i[it.id]=it.updatedAt||0; }
+  const ob={}; for(const [k,v] of Object.entries(db.objectifs||{})) ob[k]=JSON.stringify(v);
+  const tb={}; for(const k of ['s','c','i','w','d']) tb[k]=Object.keys((db.tomb||{})[k]||{}).length;
+  return {s:m(db.sessions),w:m(db.weights),d:m(db.daily),i,c,o:ob,p:JSON.stringify(db.prefs||{}),tb}; }
+function sbBase(db){ try{ localStorage.setItem(SB_KEY,JSON.stringify(sbSig(db))); }catch(e){} }
+function sbPending(){ let b=null; try{ b=JSON.parse(localStorage.getItem(SB_KEY)||'null'); }catch(e){} if(!b) return null; const a=sbSig(DB); let n=0;
+  for(const k of ['s','w','d','i','c','o']){ const A=a[k], B=b[k]||{}; for(const id in A) if(B[id]!==A[id]) n++; for(const id in B) if(!(id in A)) n++; }
+  if(a.p!==b.p) n++; return n; }
+function sbSoon(){ clearTimeout(sbT); sbT=setTimeout(()=>{ try{ sbUpdate(); }catch(e){} },120); }
+function hmParis(t){ try{ return new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}).format(new Date(t)); }catch(e){ const d=new Date(t); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); } }
+function dtParis(t){ try{ return new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(t)).replace(':','h').replace(/\s(\d\d)h(\d\d)$/,' à $1:$2'); }catch(e){ return fmtDT(t); } }
+function relT(t){ const s=Math.max(0,(Date.now()-t)/1000); if(s<60) return 'à l’instant'; const m=Math.round(s/60); if(m<60) return 'il y a '+m+' min'; const h=Math.round(m/60); if(h<24) return 'il y a '+h+' h'; const d=Math.round(h/24); return 'il y a '+d+' jour'+(d>1?'s':''); }
+function syncState(){ const c=syncCfg(); const pend=c.token?sbPending():null;
+  if(!c.token) return {s:'none',lbl:'Synchro off',title:'Synchronisation non configurée',c,pend};
+  if(syncing) return {s:'syncing',lbl:'Synchro…',title:'Synchronisation en cours',c,pend};
+  if(navigator.onLine===false) return {s:'offline',lbl:pend?'Hors ligne · '+pend:'Hors ligne',title:'Hors ligne',c,pend};
+  if(syncErr) return {s:'error',lbl:'Erreur synchro',title:'Erreur de synchronisation',c,pend};
+  if(!c.lastSync) return {s:'pending',lbl:'Jamais synchro',title:'Jamais synchronisé sur cet appareil',c,pend};
+  if(pend) return {s:'pending',lbl:pend+' en attente',title:'Modifications en attente',c,pend};
+  return {s:'ok',lbl:'✓ '+hmParis(c.lastSync),title:'Synchronisé',c,pend}; }
+function sbUpdate(){ const b=$('syncBadge'); if(!b) return; document.body.classList.add('has-sb'); const S=syncState();
+  b.dataset.s=S.s; $('syncBadgeTxt').textContent=S.lbl; b.setAttribute('aria-label','État de la synchronisation : '+S.title+(S.c.lastSync?', dernière synchro '+relT(S.c.lastSync):'')+'. Afficher les détails');
+  if(!$('syncPanel').hidden) spRender(S); }
+function spRender(S){ S=S||syncState(); const c=S.c, last=c.lastSync?`<div>Dernière synchro réussie : <b>${esc(dtParis(c.lastSync))}</b> (heure de Paris) — ${relT(c.lastSync)}</div>`:'<div>Aucune synchronisation réussie sur cet appareil.</div>';
+  const pend=S.pend==null?'':S.pend?`<div>📝 <b>${S.pend} modification${S.pend>1?'s':''}</b> locale${S.pend>1?'s':''} pas encore envoyée${S.pend>1?'s':''} au gist.</div>`:'<div>Aucune modification locale en attente.</div>';
+  const why={none:'<div>Aucun jeton GitHub sur cet appareil : les données restent uniquement ici. Configure la synchro dans Données.</div>',
+    syncing:'<div>Échange avec le gist en cours…</div>',offline:'<div>📴 Pas de réseau : tout est enregistré sur l’appareil et sera synchronisé au retour de la connexion.</div>',
+    error:syncErr?`<div class="red">⚠️ ${esc(syncErr.m)}</div><div class="mut">Échec à ${esc(hmParis(syncErr.t))}. Les données locales sont intactes.</div>`:'',pending:'',ok:c.lastSum?`<div class="mut">${esc(c.lastSum)}</div>`:''}[S.s]||'';
+  $('spTitle').innerHTML=`<span class="sp-st sp-${S.s}">${esc(S.title)}</span>`; $('spBody').innerHTML=why+last+pend;
+  const sb=$('spSync'); sb.textContent=S.s==='error'?'Réessayer':'Synchroniser maintenant'; sb.hidden=S.s==='none'; sb.disabled=S.s==='syncing'||S.s==='offline'; }
+function spOpen(on){ const p=$('syncPanel'); p.hidden=!on; $('syncBadge').setAttribute('aria-expanded',String(!!on)); if(on){ spRender(); $('spSync').hidden?$('spSettings').focus():$('spSync').focus(); } }
+function goData(id){ spOpen(false); show('data'); setTimeout(()=>{ const el=$(id); if(el) el.scrollIntoView({block:'start',behavior:'auto'}); },60); }
+function initSyncBadge(){ const b=$('syncBadge'); if(!b) return;
+  b.addEventListener('click',e=>{ e.stopPropagation(); spOpen($('syncPanel').hidden); });
+  $('syncPanel').addEventListener('click',e=>{ if(e.target.closest('[data-sp-close]')) spOpen(false); e.stopPropagation(); });
+  document.addEventListener('click',e=>{ if(!$('syncPanel').hidden&&!e.target.closest('#syncPanel,#syncBadge')) spOpen(false); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('syncPanel').hidden){ spOpen(false); b.focus(); } });
+  $('spSync').addEventListener('click',async()=>{ await syncNow(); renderSync(); sbUpdate(); });
+  $('spSettings').addEventListener('click',()=>goData('syncCard')); $('spRestore').addEventListener('click',()=>goData('snapCard'));
+  addEventListener('online',sbUpdate); addEventListener('offline',sbUpdate); setInterval(sbUpdate,30e3);
+  if(!localStorage.getItem(SB_KEY)&&syncCfg().lastSync){ /* première ouverture en v28 : pas de référence, on la crée à la prochaine synchro */ }
+  sbUpdate(); }
 function fmtDT(t){ const d=new Date(t); return dFR(toISO(d))+' à '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 function setSyncStatus(msg,cls){ const el=$('syncMsg'); if(el){ el.textContent=msg||''; el.className='small '+(cls||'mut'); } }
 function renderSync(){ const c=syncCfg();
@@ -1744,6 +1812,7 @@ async function importReplace(o){
   N.tomb=tomb; DB=N; ensureRoadtrip(DB); save(); renderAll();
   toast('Données remplacées'+(c.token?' — envoi au gist…':' (pas de jeton : le gist sera remplacé à la prochaine synchro)'));
   if(c.token) await syncNow(); return true; }
+const IMPORT_MAX_BYTES=20*1048576; // v28 : garde-fou contre un fichier énorme
 function validImport(o){ return !!(o&&Array.isArray(o.sessions)&&o.sessions.every(s=>s&&typeof s.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.date)&&typeof s.type==='string')
   && (o.weights==null||(Array.isArray(o.weights)&&o.weights.every(w=>w&&typeof w.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(w.date))))
   && (o.daily==null||Array.isArray(o.daily))); }
@@ -2016,7 +2085,7 @@ function parseWx(j,o,st){ const days=[]; const D=j.daily||{}, H=j.hourly||{};
   const hrs={}; (H.time||[]).forEach((t,i)=>{ const h=+t.slice(11,13); if(h<5||h>21) return; const d=t.slice(0,10); (hrs[d]=hrs[d]||[]).push([h,H.temperature_2m?H.temperature_2m[i]:null,H.weather_code?H.weather_code[i]:null,H.precipitation_probability?H.precipitation_probability[i]:null,H.wind_gusts_10m?H.wind_gusts_10m[i]:null]); });
   (D.time||[]).forEach((date,i)=>days.push({date,code:D.weather_code?D.weather_code[i]:null,tmin:D.temperature_2m_min?D.temperature_2m_min[i]:null,tmax:D.temperature_2m_max?D.temperature_2m_max[i]:null,pop:D.precipitation_probability_max?D.precipitation_probability_max[i]:null,precip:D.precipitation_sum?D.precipitation_sum[i]:null,wind:D.wind_speed_10m_max?D.wind_speed_10m_max[i]:null,gust:D.wind_gusts_10m_max?D.wind_gusts_10m_max[i]:null,app:appAt[date]!=null?appAt[date]:null,hours:hrs[date]||null}));
   return {days, fetchedAt:Date.now(), planned:st.datePrevue||''}; }
-function wxRender(n,data,stale){ const el=$('sumWx'); if(!el||curSum!==+n) return; const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n);
+function wxRender(n,data,stale){ const el=$('sumWx'); safeWxUpdate(n); if(!el||curSum!==+n) return; const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n);
   const planned=data.planned&&data.days.find(d=>d.date===data.planned);
   const list=planned?[planned]:data.days.slice(0,4);
   el.innerHTML=`<div class="small mut">À l’altitude du sommet (${f(o.altSom,0)} m) · source Open-Meteo · ${stale?'<b>copie hors-ligne du '+esc(fmtDT(data.fetchedAt))+'</b>':'mis à jour à '+hhmm(new Date(data.fetchedAt))} <button class="btn sec sm" type="button" data-wx-refresh style="margin-left:6px">↻ Actualiser</button></div>
@@ -2077,6 +2146,43 @@ function dayJRender(n){ const el=$('sumDayJ'); if(!el||curSum!==+n) return; cons
    <div class="row" style="margin-top:10px"><button class="btn sec sm" type="button" id="offPrep" data-offprep>📥 Préparer hors-ligne</button><span class="small mut" id="offMsg"></span></div>
    <p class="small mut" style="margin-top:6px">Télécharge la météo, la carte de la zone (au plus ${TILE_MAX} tuiles OpenStreetMap, zoom ≤ ${TILE_ZMAX}, à la demande uniquement) et le moteur de carte, pour consulter cette fiche sans réseau. Indicatif : vérifie le bulletin montagne la veille.</p>`; }
 function uncMark(t){ return esc(t).replace(/⚠︎|⚠️?/g,'<span class="unc" title="Information incertaine : à vérifier">⚠︎</span>'); }
+/* v28 : bloc Sécurité en tête de fiche — options de repli tirées des itinéraires, variantes et refuges déjà documentés */
+const REPLI={
+ 1:'Demi-tour possible à tout moment par le même sentier ; au sommet, descente en train à crémaillère (payant, selon horaires).',
+ 2:'Demi-tour possible à tout moment par le même sentier ; au sommet, descente en train à crémaillère (payant, selon horaires).',
+ 3:'Avant le Val d’Enfer, faire demi-tour vers la station ; en haut, descendre par le Val de Courre, plus doux. Descente en téléphérique seulement s’il est ouvert (voir fermetures).',
+ 4:'Demi-tour par le même sentier ; au sommet, descente en petit train selon la saison et les places.',
+ 5:'Raccourcir par le puy de Sancy et la descente du Val de Courre vers la station (boucle de l’objectif 3) ; sinon même chemin.',
+ 6:'Points de demi-tour : col de Sencours (2 378 m) puis les Laquets (2 620 m, hôtellerie à ouverture à vérifier) ; retour par le même chemin.',
+ 7:'Points de demi-tour : lac d’Oncet puis col de Sencours (2 378 m) ; redescendre vers Artigues par le même chemin (la piste de Sencours mène au col du Tourmalet, loin du départ).',
+ 8:'Faire la course en 2 jours : la Turtmannhütte (2 519 m) est le point de repli ; ne pas s’engager dans le Gässi par pluie, vent ou orage. Retour par le même chemin.',
+ 9:'Aucun refuge sur l’itinéraire : faire demi-tour avant la pente finale si neige ou glace sans crampons, ou si l’orage menace. Descente par le même chemin.',
+ 10:'Itinérance : chaque étape arrive dans un village avec hébergement ; fractionner une étape ou interrompre la boucle si besoin.',
+ 11:'Cabane d’Aurios (≈ 1 970 m) : abri et point de demi-tour ; renoncer à la pente finale si neige dure ou brouillard. Retour par le même chemin (la crête est réservée aux randonneurs expérimentés).',
+ 12:'Refuge des Sarradets (2 587 m) puis la Brèche de Roland : points de demi-tour ; renoncer au névé sans crampons ni piolet. Retour par le même chemin.',
+ 13:'Site fermé pendant les travaux : ne pas monter aux puys ; le GR au pied des volcans et la carrière restent ouverts (ou le puy de Vichatel).'};
+const WX_STALE_MS=3*3600e3;
+function safeWxHTML(n){ let x=null; try{ x=(JSON.parse(localStorage.getItem(KEY+'.wx')||'{}'))[n]||null; }catch(e){}
+  const off=navigator.onLine===false; if(!x||!x.t) return `<span class="mut">Météo : pas encore chargée${off?' (hors-ligne)':''}.</span>`;
+  const old=Date.now()-x.t>WX_STALE_MS, d=new Date(x.t), sameDay=toISO(d)===todayISO();
+  return `Météo mise à jour à <b>${esc(hmParis(x.t))}</b>${sameDay?'':' le '+dFR(toISO(d))} (${relT(x.t)})${old||off?` <span class="unc">⚠︎ ${off?'hors-ligne : ':''}${old?'prévision ancienne, à actualiser avant de partir':'dernière prévision en mémoire'}</span>`:''}`; }
+function safeWxUpdate(n){ const el=$('safeWx'); if(el&&curSum===+n) el.innerHTML=safeWxHTML(n); }
+// v28 : date de dernière vérification des infos pratiques (fermetures, saison, accès) ; alerte au-delà de 6 mois
+function verifStale(iso,now){ if(!iso) return true; const d=new Date(iso+'T12:00:00'); d.setMonth(d.getMonth()+6); return (now||new Date())>d; }
+function verifHTML(o){ const st=verifStale(o.verifiedAt);
+  return `Vérifié le ${o.verifiedAt?dFR(o.verifiedAt):'—'} <span class="small mut">(fermetures, saison, accès)</span>${st?`<div class="warnl verif-old">⚠️ Infos de plus de 6 mois, à revérifier avant le départ</div>`:''}`; }
+function safetyHTML(o,I){ const mon=new Date().getMonth(), v=(SEASON[o.n]||[])[mon], today=todayISO();
+  const grade=((o.diff+' '+(I.tech||'')).match(/\bT[1-6]\b/)||[])[0], cl=(CLOSURES[o.n]||[]).filter(c=>c.from<=today&&c.to>=today);
+  const now=v==null?'':` <span class="tag s${v}">ce mois-ci : ${['déconseillé','selon conditions','idéal'][v]}</span>`;
+  return `<div class="card safec" id="safeBlock"><h3>🛟 Sécurité</h3>
+  ${cl.map(c=>`<div class="warnl">⛔ <b>${c.block?'Fermé':'Fermeture en cours'}</b> jusqu’au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
+  <div class="kv"><b>Difficulté</b><span>${esc(o.diff)}${grade?` · cotation <b>${grade}</b>`:''}</span>
+  <b>Saison</b><span>${uncMark(I.seasonTxt)}${now}</span>
+  <b>Risques</b><span><ul class="steps" style="margin:0">${I.dangers.slice(0,3).map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul>${I.dangers.length>3?`<span class="small mut">+ ${I.dangers.length-3} autre${I.dangers.length>4?'s':''} dans « Dangers et précautions ».</span>`:''}</span>
+  <b>Repli</b><span>${esc(REPLI[o.n]||'Retour par le même chemin.')}</span>
+  <b>Météo</b><span id="safeWx">${safeWxHTML(o.n)}</span>
+  <b>Vérifié</b><span id="safeVerif">${verifHTML(o)}</span></div>
+  <p class="small" style="margin:8px 0 0">🧭 Une trace GPX n’est pas une navigation GPS en temps réel : emporte une carte, vérifie les conditions et fais preuve de jugement (demi-tour si besoin). Secours : 112.</p></div>`; }
 function renderSummit(n){
   const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I){ return false; }
   curSum=o.n; const A=advise(o), st=objState(o.n), M=o.multi, mon=new Date().getMonth();
@@ -2095,6 +2201,7 @@ function renderSummit(n){
     ${o.note?`<div class="small mut" style="margin-top:4px">${uncMark(o.note)}</div>`:''}
     <div class="small mut" style="margin-top:6px"><span class="unc">⚠︎</span> = information incertaine ou variable, à vérifier avant de partir.</div>
   </div>
+  ${safetyHTML(o,I)}
   ${ASC.card(o)}
   <div class="card"><h3>🗓️ Jour J <span class="small mut">(disponible hors-ligne)</span></h3><div id="sumDayJ"></div></div>
   ${cl.filter(c=>c.to>=today).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> du ${dFR(c.from)} au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
@@ -2124,7 +2231,7 @@ function renderSummit(n){
   ${I.uncertain&&I.uncertain.length?`<div class="card"><h3>❓ À vérifier avant de partir</h3><ul class="steps">${I.uncertain.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
   <div class="card small"><h3>📚 Sources</h3>${o.src.map(([t,u])=>`<div><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></div>`).join('')}<p class="mut" style="margin:8px 0 0">Données issues de topos et sites officiels (consultés en octobre 2026) ; conditions, horaires et accès changent : vérifie toujours avant de partir.</p></div>`;
   const _g=sanGpx(st.gpx); if(_g){ drawGpxProfile(_g); initGpxMap(o.n); } else if(offMeta(o.n)) initGpxMap(o.n);
-  dayJRender(o.n); loadSummitWeather(o.n,false);
+  dayJRender(o.n); loadSummitWeather(o.n,false); safeWxUpdate(o.n);
   return true;
 }
 function addGear(k){ const G=GEAR[k]; if(!G) return; const now=Date.now();
@@ -3218,7 +3325,7 @@ function init(){
   $('btnExpJson').addEventListener('click',()=>download('suivi-montagne-'+stamp()+'.json',JSON.stringify(DB,null,2),'application/json'));
   $('btnExpCsv').addEventListener('click',()=>download('suivi-montagne-seances-'+stamp()+'.csv',sessionsCSV(),'text/csv;charset=utf-8'));
   $('btnExpCsvM').addEventListener('click',()=>download('suivi-montagne-mois-'+stamp()+'.csv',monthsCSV(),'text/csv;charset=utf-8'));
-  $('impFile').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
+  $('impFile').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file) return; if(file.size>IMPORT_MAX_BYTES){ alert('Fichier trop volumineux ('+f(file.size/1048576,1)+' Mo ; 20 Mo max) : ce n’est pas une sauvegarde de l’appli. Rien n’a été modifié.'); e.target.value=''; return; } const rd=new FileReader();
     rd.onload=()=>{ try{ const o=JSON.parse(rd.result); if(!validImport(o)) throw new Error('format');
       openImpChoice(o); }
       catch(err){ alert('Fichier invalide : JSON de sauvegarde attendu.'); } finally { e.target.value=''; } };
@@ -3237,7 +3344,7 @@ function init(){
     const v=num(raw); if(v==null||isNaN(v)||v<2||v>104||Math.round(v)!==v){ alert('Semaines affichées : entre un nombre entier entre 2 et 104.'); return; }
     DB.prefs=DB.prefs||{}; DB.prefs.chartWeeks={v:Math.round(v),updatedAt:Date.now()}; save(); renderPrefs(); renderAll(); toast('Graphiques : '+Math.round(v)+' semaines affichées'); });
   fillForm(null); renderAll(); show('journal');
-  initSync(); appReady=true;
+  initSync(); initSyncBadge(); appReady=true;
   initUI();
   // rappel doux, une fois par matin, si les statistiques d'hier manquent (seulement si la fonction est utilisée)
   try{ const h=new Date().getHours(), TK=KEY+'.dailyToast'; if(h>=5&&h<12&&needDailyHint()&&localStorage.getItem(TK)!==todayISO()){ localStorage.setItem(TK,todayISO()); setTimeout(()=>{ if(needDailyHint()&&!dayOf(addDays(todayISO(),-1))) toast('☀️ Pense à importer les statistiques d’hier (Mi Fitness → Statistiques → Partager)'); },2600); } }catch(e){}

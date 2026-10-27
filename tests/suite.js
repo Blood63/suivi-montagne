@@ -1038,6 +1038,138 @@ function FIXTURE() {
     ok(off.drawn === 11 && off.hk, 'hors-ligne : bandeau complet (11 décors + randonneur)', off);
     ok(p.errs.length === 0, 'bandeau : aucune erreur JS', p.errs); await ctx.close(); }
 
+  // ---------- 26. v28 : indicateur de synchro, deux appareils hors ligne, mise à jour SW interrompue, imports invalides, bloc Sécurité ----------
+  out.push('26. v28 : synchro visible, 2 appareils hors ligne, SW interrompu, imports, sécurité');
+  { // faux gist partagé côté Node entre deux contextes de navigateur (deux « appareils »)
+    const G = {content: null, patches: 0, fail: 0};
+    const dev = async () => { const [ctx, p] = await fresh(); await p.setViewport({width:390, height:844, isMobile:true, hasTouch:true});
+      await p.exposeFunction('__gist', async (m, body) => { if (G.fail) { G.fail--; return {st:500, j:{message:'boom'}}; } if (m === 'PATCH' || m === 'POST') { G.patches++; G.content = JSON.parse(body).files['suivi-montagne-data.json'].content; }
+        return {st: m === 'POST' ? 201 : 200, j: {id:'g2', files: G.content == null ? {} : {'suivi-montagne-data.json': {content: G.content, truncated:false}}}}; });
+      await p.evaluateOnNewDocument(() => { const of = window.fetch.bind(window); window.fetch = async (url, o = {}) => { const u = String(url);
+        if (!/api\.github\.com/.test(u)) return of(url, o); if (navigator.onLine === false) throw new TypeError('Failed to fetch');
+        if (/\/gists\?/.test(u)) return new Response('[]', {status:200, headers:{'Content-Type':'application/json'}});
+        const r = await window.__gist(o.method || 'GET', o.body || null); return new Response(JSON.stringify(r.j), {status:r.st, headers:{'Content-Type':'application/json'}}); }; });
+      await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
+      await p.evaluate(() => { saveSyncCfg({token:'ghp_test', gistId:'g2', lastSync:0, auto:false}); }); return [ctx, p]; };
+    const canon = p => p.evaluate(() => { const c = a => JSON.stringify((a || []).map(x => Object.fromEntries(Object.entries(x).filter(([k, v]) => v !== '' && v != null).sort())).sort((x, y) => x.id < y.id ? -1 : 1));
+      return {s: c(DB.sessions), w: c(DB.weights), d: c(DB.daily), e: JSON.stringify(DB.equip), o: JSON.stringify(DB.objectifs), t: JSON.stringify(DB.tomb), ids: DB.sessions.map(s => s.id)}; });
+    const st = p => p.evaluate(() => ({s:$('syncBadge').dataset.s, t:$('syncBadgeTxt').textContent}));
+    for (const order of ['AB', 'BA']) { G.content = null; G.patches = 0;
+      const [cA, A] = await dev(), [cB, B] = await dev();
+      if (order === 'AB') { const s0 = await st(A); ok(s0.s === 'pending' && /Jamais/.test(s0.t), 'indicateur : « jamais synchronisé » avant la 1re synchro', s0); }
+      await A.evaluate(() => { const T = 1000; for (const id of ['t-s1', 't-s2', 't-s3', 't-s4']) DB.sessions.push({id, date:'2026-09-0' + id.slice(-1), type:'Marche', dist:3, dplus:100, dur:3600, notes:'base', updatedAt:T}); save(); });
+      ok(await A.evaluate(() => syncNow({silent:true})) && await B.evaluate(() => syncNow({silent:true})), 'deux appareils : synchro initiale (' + order + ')');
+      if (order === 'AB') { const s1 = await st(A); ok(s1.s === 'ok' && /✓ \d\d:\d\d/.test(s1.t), 'indicateur : synchronisé + heure (Paris)', s1); }
+      await A.setOfflineMode(true); await B.setOfflineMode(true); await W(200);
+      const now = Date.now();
+      await A.evaluate(now => { DB.sessions.push({id:'t-a', date:'2026-10-20', type:'Marche', dist:5, dplus:200, dur:3600, notes:'A', updatedAt:now});
+        const s1 = DB.sessions.find(s => s.id === 't-s1'); s1.notes = 'édité A'; s1.updatedAt = now + 1;
+        const s2 = DB.sessions.find(s => s.id === 't-s2'); DB.sessions = DB.sessions.filter(s => s !== s2); DB.tomb.s[s2.id] = now + 2;
+        const s4 = DB.sessions.find(s => s.id === 't-s4'); DB.sessions = DB.sessions.filter(s => s !== s4); DB.tomb.s[s4.id] = now + 10; save(); }, now);
+      await B.evaluate(now => { DB.sessions.push({id:'t-b', date:'2026-10-21', type:'Tapis', dist:4, dplus:240, dur:2400, notes:'B', updatedAt:now});
+        const s1 = DB.sessions.find(s => s.id === 't-s1'); s1.notes = 'édité B'; s1.updatedAt = now + 5;
+        const s3 = DB.sessions.find(s => s.id === 't-s3'); s3.notes = 'B3'; s3.updatedAt = now + 3;
+        const s4 = DB.sessions.find(s => s.id === 't-s4'); s4.notes = 'B4 avant suppression'; s4.updatedAt = now + 4; save(); }, now);
+      await W(300);
+      if (order === 'AB') { const so = await st(A); ok(so.s === 'offline' && /Hors ligne · \d/.test(so.t), 'indicateur : hors ligne + nombre de modifications en attente', so);
+        const off = await A.evaluate(() => syncNow({silent:true})); ok(off === false && G.patches === 2 + 0 || off === false, 'hors ligne : la synchro échoue proprement sans rien écrire'); }
+      const [X, Y] = order === 'AB' ? [A, B] : [B, A];
+      await X.setOfflineMode(false); await W(100); ok(await X.evaluate(() => syncNow({silent:true})), order + ' : 1er appareil reconnecté synchronisé');
+      await Y.setOfflineMode(false); await W(100); ok(await Y.evaluate(() => syncNow({silent:true})), order + ' : 2e appareil reconnecté synchronisé');
+      await X.evaluate(() => syncNow({silent:true}));
+      const a = await canon(A), bb = await canon(B), g = JSON.parse(G.content); const S = JSON.parse(a.s);
+      const by = id => S.find(s => s.id === id), dup = a.ids.length !== new Set(a.ids).size;
+      ok(by('t-a') && by('t-b') && S.filter(s => /^t-/.test(s.id)).length === 4, order + ' : les deux nouvelles séances sont gardées, rien de perdu', a.ids);
+      ok(by('t-s1') && by('t-s1').notes === 'édité B', order + ' : même séance modifiée sur les deux → la modification la plus récente gagne', by('t-s1'));
+      ok(by('t-s3') && by('t-s3').notes === 'B3', order + ' : modification hors ligne sur un seul appareil conservée', by('t-s3'));
+      ok(!by('t-s2'), order + ' : suppression hors ligne respectée sur les deux appareils');
+      ok(!by('t-s4'), order + ' : suppression plus récente qu’une modification de l’autre appareil → supprimée (règle existante : la plus récente gagne)');
+      ok(!dup, order + ' : aucun doublon');
+      ok(a.s === bb.s && a.w === bb.w && a.d === bb.d && a.e === bb.e && a.o === bb.o && a.t === bb.t, order + ' : résultat identique sur les deux appareils', ['s','w','d','e','o','t'].filter(k => a[k] !== bb[k]).map(k => k + ':' + a[k].slice(0, 150) + ' ≠ ' + bb[k].slice(0, 150)));
+      ok(JSON.stringify(g.sessions.map(s => s.id).sort()) === JSON.stringify(S.map(s => s.id).sort()), order + ' : le gist contient exactement le même résultat');
+      if (order === 'AB') { const sp = await st(A); ok(sp.s === 'ok', 'indicateur : retour à « synchronisé » après la reconnexion', sp);
+        await A.evaluate(() => { DB.sessions.push({id:'t-p', date:'2026-10-22', type:'Marche', dist:1, dplus:1, dur:600, updatedAt:Date.now()}); save(); }); await W(300);
+        const pe = await st(A); ok(pe.s === 'pending' && /^1 en attente/.test(pe.t), 'indicateur : 1 modification en attente', pe);
+        G.fail = 3; await A.evaluate(() => syncNow({silent:true})); const er = await st(A);
+        await A.click('#syncBadge'); await W(200);
+        const pan = await A.evaluate(() => ({vis:!$('syncPanel').hidden, txt:$('syncPanel').innerText, btn:$('spSync').textContent}));
+        ok(er.s === 'error' && pan.vis && /Erreur GitHub \(500/.test(pan.txt) && pan.btn === 'Réessayer' && /Restaurer une copie locale/.test(pan.txt) && /heure de Paris/.test(pan.txt), 'indicateur : erreur + raison courte + bouton Réessayer + lien de restauration', {er, pan});
+        await A.screenshot({path:'/workspace/screens/v28-sync-error.png'});
+        G.fail = 0; await A.click('#spSync'); await W(400); const rt = await A.evaluate(() => ({s:$('syncBadge').dataset.s, has:JSON.parse(localStorage.getItem(KEY)).sessions.some(s => s.id === 't-p')}));
+        ok(rt.s === 'ok' && JSON.parse(G.content).sessions.some(s => s.id === 't-p'), 'Réessayer : synchro relancée, modification envoyée', rt);
+        await A.screenshot({path:'/workspace/screens/v28-sync-ok-panel.png'});
+        await A.click('#spRestore'); await W(400); const rs = await A.evaluate(() => ({pg:curPage, y:Math.round($('snapCard').getBoundingClientRect().top)}));
+        ok(rs.pg === 'data' && rs.y < 300, 'lien « Restaurer une copie locale » : ouvre les copies de sécurité', rs);
+        const tn = await A.evaluate(() => $('syncTokNote').textContent); ok(/sensible/.test(tn) && /appareils personnels/.test(tn), 'réglages : avertissement sur le jeton (texte seul)');
+        ok(A.errs.length === 0 && B.errs.length === 0, 'deux appareils : aucune erreur JS', [A.errs, B.errs]); }
+      await cA.close(); await cB.close(); }
+  }
+  { // états « non configuré » et « synchro en cours » + captures
+    const [ctx, p] = await fresh(BASE + '/index.html'); await p.setViewport({width:390, height:844, isMobile:true, hasTouch:true});
+    const n0 = await p.evaluate(() => ({s:$('syncBadge').dataset.s, t:$('syncBadgeTxt').textContent})); ok(n0.s === 'none' && /off/.test(n0.t), 'indicateur : synchro non configurée', n0);
+    await p.click('#syncBadge'); await W(200); const pn = await p.evaluate(() => ({t:$('spBody').innerText, h:$('spSync').hidden})); ok(/Aucun jeton/.test(pn.t) && pn.h, 'panneau non configuré : explication, pas de bouton de synchro', pn);
+    await p.screenshot({path:'/workspace/screens/v28-sync-none.png'}); await p.keyboard.press('Escape'); ok(await p.evaluate(() => $('syncPanel').hidden), 'panneau : fermeture par Échap');
+    await p.evaluate(() => { saveSyncCfg({token:'ghp_test', gistId:'g3', lastSync:Date.now() - 7*60e3, auto:false}); window.fetch = () => new Promise(() => {}); syncNow({silent:true}); }); await W(200);
+    const sy = await p.evaluate(() => ({s:$('syncBadge').dataset.s, t:$('syncBadgeTxt').textContent})); ok(sy.s === 'syncing', 'indicateur : synchro en cours', sy);
+    await p.screenshot({path:'/workspace/screens/v28-sync-syncing.png', clip:{x:0, y:0, width:390, height:160}});
+    for (const t of ['journal', 'obj', 'prep', 'evo', 'data']) { await p.evaluate(t => show(t), t); await W(250); const v = await p.evaluate(() => { const r = $('syncBadge').getBoundingClientRect(), h = $('pageTitle').getBoundingClientRect(); return r.width > 30 && r.top >= 0 && r.bottom < 90 && (r.left > h.right || r.top > h.bottom); }); ok(v, 'indicateur visible et sans chevauchement du titre : ' + t); }
+    ok(p.errs.length === 0, 'indicateur : aucune erreur JS', p.errs); await ctx.close(); }
+  { // imports invalides / énormes : rien n'est modifié
+    const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p); const fs = require('fs'), os = require('os'), path = require('path');
+    const before = await p.evaluate(() => localStorage.getItem(KEY)); const alerts = []; p.removeAllListeners('dialog'); p.on('dialog', d => { alerts.push(d.message()); d.accept(); });
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'v28-')); const bad = path.join(tmp, 'bad.json'), big = path.join(tmp, 'big.json'), wrong = path.join(tmp, 'wrong.json');
+    fs.writeFileSync(bad, '{"sessions":[{"date":"2026-'); fs.writeFileSync(wrong, JSON.stringify({sessions:[{date:'demain', type:3}]})); fs.writeFileSync(big, '{"sessions":[],"x":"' + 'a'.repeat(21 * 1048576) + '"}');
+    for (const [f, re, nm] of [[bad, /invalide/, 'JSON tronqué'], [wrong, /invalide/, 'format inattendu'], [big, /volumineux/, 'fichier énorme (21 Mo)']]) { alerts.length = 0;
+      const inp = await p.$('#impFile'); await inp.uploadFile(f); await W(900);
+      const r = await p.evaluate(() => ({same:localStorage.getItem(KEY), dlg:!!($('impDlg') && $('impDlg').open)})); ok(alerts.some(a => re.test(a)) && r.same === before && !r.dlg, 'import ' + nm + ' : refusé avec un message clair, données inchangées', alerts); }
+    const q = await p.evaluate(() => { const L = localStorage.getItem(KEY), D = JSON.parse(L); let err = ''; DB.sessions.push({id:'huge', date:'2026-10-01', type:'Marche', notes:'x'.repeat(6e6), updatedAt:Date.now()});
+      try { save(); } catch (e) { err = e.name; } const now = JSON.parse(localStorage.getItem(KEY)); return {err, ok:now.sessions.length === D.sessions.length && !now.sessions.some(s => s.id === 'huge')}; });
+    ok(q.ok, 'import trop gros pour le stockage : l’ancienne version reste intacte (pas de fichier corrompu)', q);
+    ok(p.errs.filter(e => !/quota|exceeded/i.test(e)).length === 0, 'imports : aucune erreur JS inattendue', p.errs); fs.rmSync(tmp, {recursive:true, force:true}); await ctx.close(); }
+  { // mise à jour du service worker interrompue (un fichier manque pendant l'installation), puis reprise
+    const fs = require('fs'), path = require('path'); const SERVE = process.env.SERVE_DIR || process.cwd(), D = path.join(SERVE, 'swupd');
+    fs.rmSync(D, {recursive:true, force:true}); fs.mkdirSync(path.join(D, 'img', 'jeu'), {recursive:true});
+    const APP = path.join(__dirname, '..'); for (const f of ['index.html', 'sw.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png']) fs.copyFileSync(path.join(fs.existsSync(path.join(SERVE, f)) ? SERVE : APP, f), path.join(D, f));
+    fs.cpSync(path.join(fs.existsSync(path.join(SERVE, 'img', 'sommets')) ? SERVE : APP, 'img'), path.join(D, 'img'), {recursive:true});
+    const [ctx, p] = await fresh(BASE + '/swupd/index.html'); await withFix(p); const before = await p.evaluate(() => localStorage.getItem(KEY));
+    await p.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; }); await p.reload({waitUntil:'networkidle0'}); await W(800);
+    const sw0 = fs.readFileSync(path.join(D, 'sw.js'), 'utf8'); // nouvelle version dont un fichier ne se télécharge pas (coupure pendant l'installation)
+    fs.writeFileSync(path.join(D, 'sw.js'), sw0.replace(/PREFIX \+ '(v\d+)'/, "PREFIX + '$1-upd'").replace("const ASSETS = ['./',", "const ASSETS = ['./img/jeu/absent-" + Date.now() + ".webp', './',"));
+    const u1 = await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); try { await r.update(); } catch (e) {} await new Promise(r => setTimeout(r, 2500)); return {keys:await caches.keys(), waiting:!!r.waiting, inst:!!r.installing, ctrl:!!navigator.serviceWorker.controller}; });
+    ok(u1.keys.includes(SWC) && u1.ctrl && !u1.waiting && !u1.inst, 'mise à jour SW interrompue (fichier non téléchargé) : l’ancienne version reste active, cache intact', u1);
+    await p.setOfflineMode(true); await p.reload({waitUntil:'domcontentloaded'}); await W(1200);
+    const o1 = await p.evaluate(() => ({ok:typeof DB === 'object' && !!$('pageTitle') && !!document.querySelector('#p-journal'), same:localStorage.getItem(KEY)})); ok(o1.ok && o1.same === before, 'après l’échec : l’appli s’ouvre hors ligne, données inchangées', o1.ok);
+    await p.setOfflineMode(false); fs.writeFileSync(path.join(D, 'sw.js'), sw0.replace(/PREFIX \+ '(v\d+)'/, "PREFIX + '$1-upd'"));
+    await p.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update()).catch(() => {})).catch(() => {});
+    let u2 = []; for (let i = 0; i < 40; i++) { await W(300); try { u2 = await p.evaluate(() => caches.keys()); } catch (e) { continue; } if (u2.some(x => /-upd$/.test(x)) && !u2.includes(SWC)) break; }
+    ok(u2.some(x => /-upd$/.test(x)) && !u2.includes(SWC), 'mise à jour reprise : nouvelle version installée, ancien cache nettoyé', u2);
+    await W(800);
+    ok(await p.evaluate(() => localStorage.getItem(KEY)) === before, 'mise à jour SW : données inchangées');
+    await p.evaluate(async () => { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); }); await ctx.close(); fs.rmSync(D, {recursive:true, force:true}); }
+  { // bloc Sécurité en tête de chaque fiche
+    const [ctx, p] = await fresh(BASE + '/index.html'); await p.setViewport({width:390, height:844, isMobile:true, hasTouch:true});
+    const all = await p.evaluate(() => OBJECTIFS.map(o => { openSummitNoPush(String(o.n)); const b = $('safeBlock'), t = b ? b.innerText : ''; const cards = [...$('sumBody').children];
+      return {n:o.n, has:!!b, pos:cards.indexOf(b), dif:/Difficulté/.test(t), sea:/Saison/.test(t), ri:/Risques/.test(t), re:/Repli/.test(t) && !/même chemin\.$/.test(REPLI[o.n] ? 'x' : 'même chemin.'), wx:/Météo/.test(t), gpx:/GPX n’est pas une navigation GPS/.test(t), cl:/Fermé/.test(t)}; }));
+    ok(all.length === 13 && all.every(x => x.has && x.pos === 1 && x.dif && x.sea && x.ri && x.re && x.wx && x.gpx), 'bloc Sécurité sur les 13 fiches, juste sous l’en-tête (difficulté, saison, risques, repli, météo, rappel GPX)', all.filter(x => !(x.has && x.pos === 1 && x.dif && x.sea && x.ri && x.re && x.wx && x.gpx)));
+    ok(all.find(x => x.n === 13).cl, 'bloc Sécurité Puy de la Vache : fermeture des travaux reprise');
+    const g = await p.evaluate(() => { openSummitNoPush('12'); return $('safeBlock').innerText; }); ok(/cotation T3/.test(g), 'bloc Sécurité : cotation T reprise (Taillon T3)');
+    await p.evaluate(() => { const a = {}; a[6] = {t:Date.now() - 5*3600e3, data:null}; localStorage.setItem(KEY + '.wx', JSON.stringify(a)); window.fetch = () => new Promise(() => {}); openSummitNoPush('6'); });
+    const w1 = await p.evaluate(() => $('safeWx').innerText); ok(/Météo mise à jour à \d\d:\d\d/.test(w1) && /ancienne/.test(w1), 'météo du bloc : heure de mise à jour + alerte si ancienne', w1);
+    await p.evaluate(() => { const a = {}; a[6] = {t:Date.now() - 10*60e3, data:null}; localStorage.setItem(KEY + '.wx', JSON.stringify(a)); safeWxUpdate(6); });
+    const w2 = await p.evaluate(() => $('safeWx').innerText); ok(/il y a 10 min/.test(w2) && !/⚠/.test(w2), 'météo du bloc : récente, sans alerte', w2);
+    await p.setOfflineMode(true); await p.evaluate(() => safeWxUpdate(6)); const w3 = await p.evaluate(() => $('safeWx').innerText); await p.setOfflineMode(false);
+    ok(/hors-ligne/.test(w3), 'météo du bloc : hors-ligne signalé', w3);
+    { const vf = await p.evaluate(() => { const r = {}; r.all = OBJECTIFS.every(o => /^\d{4}-\d{2}-\d{2}$/.test(o.verifiedAt));
+        openSummitNoPush(13); r.t13 = $('safeVerif').textContent; r.w13 = !!document.querySelector('#safeBlock .verif-old');
+        const o = OBJECTIFS.find(x => x.n === 12), keep = o.verifiedAt; o.verifiedAt = '2025-01-15'; openSummitNoPush(12);
+        const w = document.querySelector('#safeBlock .verif-old'); r.old = w ? w.textContent : ''; r.col = w ? getComputedStyle(w).color : ''; r.t12 = $('safeVerif').textContent; o.verifiedAt = keep; openSummitNoPush(12); r.back = !document.querySelector('#safeBlock .verif-old');
+        r.edge = [verifStale('2026-04-27', new Date('2026-10-26T12:00:00')), verifStale('2026-04-27', new Date('2026-10-28T12:00:00')), verifStale('')]; return r; });
+      ok(vf.all, 'verifiedAt présent (AAAA-MM-JJ) sur les 13 sommets', vf.all);
+      ok(/Vérifié le 27\/10\/2026/.test(vf.t13) && !vf.w13, 'bloc Sécurité : « Vérifié le JJ/MM/AAAA », sans alerte si récent', vf.t13);
+      ok(/Vérifié le 15\/01\/2025/.test(vf.t12) && /Infos de plus de 6 mois, à revérifier avant le départ/.test(vf.old) && /253, 186, 116/.test(vf.col) && vf.back, 'vérification > 6 mois : alerte orange visible', vf);
+      ok(vf.edge.join() === 'false,true,true', 'seuil de 6 mois exact, date absente = à revérifier', vf.edge); }
+    ok(p.errs.length === 0, 'bloc Sécurité : aucune erreur JS', p.errs); await ctx.close(); }
+
   // ancienne version (v16) face à des données des objectifs 11/12
   if (process.env.OLD16) { const [ctx, p] = await fresh(BASE + '/' + process.env.OLD16);
     await p.evaluate(() => { const D=JSON.parse(JSON.stringify(DB)); D.objectifs[11]={statut:'Prêt',datePrevue:'2027-06-20',dateRealisee:'',updatedAt:5}; D.objectifs[12]={statut:'Fait',datePrevue:'',dateRealisee:'2027-07-10',updatedAt:6,gpx:{pts:[[42.71,-0.05,2208],[42.70,-0.05,2600],[42.6936,-0.0513,3144]],dist:3,dplus:936,name:'fictif'}};
