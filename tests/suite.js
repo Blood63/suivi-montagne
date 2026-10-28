@@ -138,7 +138,7 @@ function FIXTURE() {
   { const [ctx, p] = await fresh(BASE + '/icon-192.png'); // page de la même origine qui n'enregistre pas le SW
     await p.evaluate(async () => { for (const k of ['ma-bibliotheque-v3','autre-appli','suivi-montagne-v4','suivi-montagne-v2']) { const c = await caches.open(k); await c.put('/x-' + k, new Response('x')); } });
     await p.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes(SWC) && !keys.includes('suivi-montagne-v4')) break; await W(250); }
+    let keys = []; for (let i = 0; i < 40; i++) { keys = await p.evaluate(() => caches.keys()); if (keys.includes(SWC) && !keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2')) break; await W(250); }
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
     ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes(SWC), 'anciens caches de l’appli supprimés, '+SWC+' créé', keys);
     await ctx.close(); }
@@ -1342,6 +1342,35 @@ function FIXTURE() {
       const m = mergeDB(L, other); return {k:Object.keys(L.objectifs).join(), s:L.sessions.some(s=>s.id==='old16-asc'&&s.objN===12), g:!!L.objectifs[12].gpx, m11:m.objectifs[11].statut, m12:m.objectifs[12].statut}; });
     ok(/11/.test(r.k) && /12/.test(r.k) && r.s && r.g && r.m11 === 'Fait' && r.m12 === 'Fait', 'ancienne version v16 : garde et fusionne les données des objectifs 11/12 sans les perdre', r);
     ok(p.errs.length === 0, 'ancienne version v16 : aucune erreur JS avec les objectifs 11/12', p.errs); await ctx.close(); }
+
+  // ---------- 28. v30 : carte Leaflet libérée en quittant la fiche, politique de sécurité (CSP) ----------
+  out.push('28. v30 : carte libérée (map.remove), CSP');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    // Leaflet factice (aucun réseau) : compte les cartes créées / libérées
+    await p.evaluate(() => { window.__m = {made:0, removed:0}; const chain = () => new Proxy(function(){}, {get:(t,k)=>k==='getBounds'?(()=>[[0,0],[1,1]]):chain(), apply:()=>chain()});
+      const mk = () => { const o = {remove(){ window.__m.removed++; }, fitBounds(){}, invalidateSize(){}, setView(){}}; window.__m.made++; return o; };
+      window.L = {map:mk, tileLayer:()=>({addTo:()=>({})}), polyline:()=>({addTo:()=>({getBounds:()=>[[0,0],[1,1]]})}), marker:()=>({addTo:()=>({bindPopup:()=>({})})}), circleMarker:()=>({addTo:()=>({bindPopup:()=>({})})})};
+      const g={pts:[],n0:0,dist:1,dplus:1}; for(let i=0;i<40;i++) g.pts.push([45.7+i*0.001,2.9+(i%2?0.001:-0.001),1000+i]); g.n0=40; DB.objectifs[1]=Object.assign(objState(1),{gpx:g,updatedAt:Date.now()}); save(); });
+    const M = () => p.evaluate(() => Object.assign({}, window.__m, {live:!!(document.getElementById('sumMap')&&document.getElementById('sumMap')._map)}));
+    await p.evaluate(() => openSummit(1)); await W(400); const a = await M(); ok(a.made === 1 && a.removed === 0 && a.live, 'fiche sommet : une carte créée, pas encore libérée', a);
+    await p.evaluate(() => closeSummit()); await W(400); const b2 = await M(); ok(b2.removed === 1 && !b2.live, 'fermeture de la fiche (closeSummit) : carte libérée', b2);
+    await p.evaluate(() => openSummit(1)); await W(400); const c = await M(); ok(c.made === 2 && c.removed === 1 && c.live, 'réouverture : nouvelle carte créée', c);
+    await p.evaluate(() => show('prep')); await W(300); const d = await M(); ok(d.removed === 2 && !d.live, 'changement d’onglet : carte libérée', d);
+    await p.evaluate(() => openSummit(1)); await W(400); await p.evaluate(() => renderSummit(1)); await W(400); const e2 = await M(); ok(e2.made === 4 && e2.removed === 3 && e2.live, 'nouveau rendu de la fiche : ancienne carte libérée, une seule vivante', e2);
+    await p.evaluate(() => history.back()); await W(600); const f2 = await M(); ok(f2.removed === 4 && !f2.live, 'bouton retour : carte libérée', f2);
+    await p.evaluate(() => { openSummit(1); closeSummit(); }); await W(500); const g2 = await M(); ok(g2.made === g2.removed && !g2.live, 'ouverture puis fermeture immédiates : aucune carte orpheline', g2);
+    ok(p.errs.length === 0, 'carte libérée : aucune erreur JS', p.errs);
+    // CSP
+    const csp = await p.evaluate(() => { const m = document.querySelector('meta[http-equiv="Content-Security-Policy"]'); const o = {}; if (m) m.content.split(';').forEach(x => { const t = x.trim().split(/\s+/); if (t[0]) o[t[0]] = t.slice(1); }); return o; });
+    ok(csp['default-src'] && csp['default-src'].join() === "'self'", 'CSP : default-src \'self\'', csp['default-src']);
+    ok(csp['connect-src'] && csp['connect-src'].includes('https://api.github.com') && csp['connect-src'].includes('https://api.open-meteo.com') && csp['connect-src'].includes('https://tile.openstreetmap.org') && csp['connect-src'].includes('https://gist.githubusercontent.com'), 'CSP : connect-src contient GitHub, gist, Open-Meteo, tuiles OSM', csp['connect-src']);
+    ok(csp['connect-src'] && !csp['connect-src'].some(x => x === '*' || x === 'https:' || x === 'http:'), 'CSP : connect-src sans joker', csp['connect-src']);
+    ok(csp['script-src'] && !csp['script-src'].includes("'unsafe-eval'") && csp['object-src'] && csp['object-src'].join() === "'none'" && csp['base-uri'], 'CSP : pas de unsafe-eval, object-src none, base-uri', csp);
+    const bl = await p.evaluate(async () => { const v = []; document.addEventListener('securitypolicyviolation', e => v.push(e.effectiveDirective)); let r1 = 'ok', r2 = 'ok'; try { await fetch('https://exemple-non-autorise.invalid/x?token=1', {mode:'no-cors'}); } catch (e) { r1 = 'bloqué'; } try { await fetch('https://api.github.com/zen', {mode:'no-cors'}); } catch (e) { r2 = 'bloqué-ou-reseau'; }
+      await new Promise(r => setTimeout(r, 200)); return {r1, v}; });
+    ok(bl.r1 === 'bloqué' && bl.v.includes('connect-src'), 'CSP : une requête vers un domaine non autorisé est bloquée (violation connect-src)', bl);
+    ok(!/PREFIX \+ 'v29'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (plus v29)');
+    await ctx.close(); }
 
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);

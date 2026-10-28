@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<!-- v30 : politique de sécurité du contenu. connect-src = uniquement les services réellement utilisés (le jeton GitHub ne peut partir que vers api.github.com ; data: = module wasm intégré de Tesseract, sans réseau ; les gist volumineux via gist.githubusercontent.com ; météo Open-Meteo ; tuiles OSM ; moteur OCR + modèle de langue + Leaflet : tous sur jsDelivr). 'unsafe-inline' : l'appli est un fichier unique avec script/styles intégrés. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' data: https://api.github.com https://gist.githubusercontent.com https://api.open-meteo.com https://tile.openstreetmap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; frame-src https://www.openstreetmap.org; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e211e">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2277,13 +2279,16 @@ function loadLeaflet(){ if(window.L) return Promise.resolve(window.L); if(leafle
   leafletP=new Promise((res,rej)=>{ const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'; css.integrity='sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H'; css.crossOrigin='anonymous'; document.head.appendChild(css);
     const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'; sc.integrity='sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH'; sc.crossOrigin='anonymous'; sc.onload=()=>res(window.L); sc.onerror=()=>{ leafletP=null; rej(new Error('leaflet')); }; document.head.appendChild(sc); });
   return leafletP; }
+// v30 : la carte Leaflet est libérée (map.remove() : écouteurs, tuiles, mémoire) dès qu'on quitte la fiche sommet ou qu'on la re-rend ; la réouverture recrée une carte neuve
+let sumMapObj=null;
+function freeSumMap(){ const el=$('sumMap'); for(const m of new Set([sumMapObj, el&&el._map])){ if(m){ try{ m.remove(); }catch(e){} } } sumMapObj=null; if(el) el._map=null; }
 async function initGpxMap(n){ const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n), g=sanGpx(st.gpx); const el=$('sumMap'); if(!o||!el||(!g&&!offMeta(n))) return;
-  if(el._map){ try{ el._map.remove(); }catch(e){} el._map=null; }
-  try{ const L=await loadLeaflet(); if(curSum!==o.n||!document.body.contains(el)) return;
+  freeSumMap();
+  try{ const L=await loadLeaflet(); if(curSum!==o.n||curPage!=='sum'||!document.body.contains(el)) return; freeSumMap();
     const M=offMeta(n), off=navigator.onLine===false, zc=off&&M&&M.zmax?M.zmax:0; // v24 : hors-ligne, seules les tuiles préparées (zoom 11–zmax) existent
     const map=L.map(el,{scrollWheelZoom:false,maxZoom:zc?zc+2:18,minZoom:zc?TILE_ZMIN:0}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:zc?zc+2:18,maxNativeZoom:zc||18,minZoom:zc?TILE_ZMIN:0,attribution:'© OpenStreetMap'}).addTo(map); // au-delà de zmax : tuiles préparées agrandies
     const fz=zc||17;
-    el._map=map; const I=OBJ_INFO[o.n];
+    el._map=map; sumMapObj=map; const I=OBJ_INFO[o.n];
     if(g){ const line=L.polyline(g.pts.map(x=>[x[0],x[1]]),{color:'#fb923c',weight:4}).addTo(map); map.fitBounds(line.getBounds(),{padding:[18,18],maxZoom:fz});
     L.marker(g.pts[0]).addTo(map).bindPopup('Départ de la trace'); L.marker(g.pts[g.pts.length-1]).addTo(map).bindPopup('Fin de la trace'); }
     else { L.marker(I.start.ll).addTo(map).bindPopup('Départ : '+esc(I.start.nm)); map.fitBounds([I.sum,I.start.ll],{padding:[30,30],maxZoom:Math.min(15,fz)}); }
@@ -2416,7 +2421,7 @@ function safetyHTML(o,I){ const mon=new Date().getMonth(), v=(SEASON[o.n]||[])[m
   <p class="small" style="margin:8px 0 0">🧭 Une trace GPX n’est pas une navigation GPS en temps réel : emporte une carte, vérifie les conditions et fais preuve de jugement (demi-tour si besoin). Secours : 112.</p></div>`; }
 function renderSummit(n){
   const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I){ return false; }
-  curSum=o.n; const A=advise(o), st=objState(o.n), M=o.multi, mon=new Date().getMonth();
+  freeSumMap(); curSum=o.n; const A=advise(o), st=objState(o.n), M=o.multi, mon=new Date().getMonth();
   const sea=(SEASON[o.n]||[]).map((v,i)=>`<i class="s${v}${i===mon?' now':''}" title="${MOIS_L[i]} : ${['déconseillé','selon conditions','idéal'][v]}">${MOIS_L[i][0].toUpperCase()}</i>`).join('');
   const cl=CLOSURES[o.n]||[], today=todayISO();
   const kp=[[f(o.altSom,0)+' m','sommet'],[f(o.altDep,0)+' m','départ'],['≈ '+f(o.dplus,0)+' m','D+ total'],['≈ '+f(o.dist,o.dist<20?1:0)+' km','distance'],[fmtH(o.h),M?'par étape':'temps total'],[I.type,'type']];
@@ -3419,6 +3424,7 @@ function show(p){
   const wasSheet=document.body.classList.contains('sheet-open'); closeSheet();
   const prev=curPage; const changed=prev!==p||!document.querySelector('.page.on:not(#p-add)'); curPage=p;
   if(prev!=='sum'&&p==='sum') sumFrom=prev; if(IMP.isOpen()&&p!==prev) IMP.close();
+  if(prev==='sum'&&p!=='sum') freeSumMap(); // v30
   if(prev==='sum'&&p!=='sum'&&history.state&&history.state.sum){ try{ history.back(); }catch(e){} } // quitte la fiche par un onglet : retire l'entrée d'historique
   const dir=p==='sum'&&prev!=='sum'?'r':prev==='sum'&&p!=='sum'?'l':tabIdx(p)>tabIdx(prev)?'r':tabIdx(p)<tabIdx(prev)?'l':'u';
   document.querySelectorAll('.page:not(#p-add)').forEach(x=>{ const on=x.id==='p-'+p; if(on&&changed){ x.classList.remove('on'); void x.offsetWidth; x.dataset.dir=dir; } x.classList.toggle('on',on); });
@@ -3431,7 +3437,7 @@ function renderAll(){ renderJournal(); renderObj(); renderPrep(); renderEvo(); r
 let sumFrom='obj';
 function openSummit(n){ if(!renderSummit(n)) return; try{ history.pushState({sum:+n},''); }catch(e){} show('sum'); }
 function openSummitNoPush(n){ if(renderSummit(n)) show('sum'); }
-function closeSummit(){ if(history.state&&history.state.sum){ history.back(); } else show(sumFrom||'obj'); }
+function closeSummit(){ freeSumMap(); if(history.state&&history.state.sum){ history.back(); } else show(sumFrom||'obj'); }
 
 /* ---------- Couche UI (navigation, feuille, animations) — n'altère pas les données ---------- */
 const TABS=['journal','obj','prep','evo','data']; // v24 : les 5 onglets de la barre du bas (balayage) ; Équipement est un sous-onglet de Prépa, Poids d'Évolution
