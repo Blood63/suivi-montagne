@@ -27,7 +27,7 @@ jobs:
           node-version: 22
       - name: Syntaxe (sw.js, suite)
         run: node --check sw.js && node --check tests/suite.js
-      - name: Installer puppeteer-core (sans navigateur : Chrome du runner)
+      - name: "Installer puppeteer-core (sans navigateur, Chrome du runner)"
         run: npm install --no-save --no-package-lock puppeteer-core@25
       - name: Chrome
         run: google-chrome --version
