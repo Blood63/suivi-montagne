@@ -1,0 +1,49 @@
+name: Tests
+# Suite complète (Chrome sans interface, puppeteer-core) sur chaque envoi vers main et chaque demande de fusion, dans deux fuseaux horaires.
+# Données 100 % fictives (aucune donnée personnelle, aucun jeton). Les tests d'OCR sur captures personnelles sont ignorés (SAMPLES non défini).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  suite:
+    name: Suite complète (${{ matrix.tz }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        tz: [UTC, Europe/Paris]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Syntaxe (sw.js, suite)
+        run: node --check sw.js && node --check tests/suite.js
+      - name: Installer puppeteer-core (sans navigateur : Chrome du runner)
+        run: npm install --no-save --no-package-lock puppeteer-core@25
+      - name: Chrome
+        run: google-chrome --version
+      - name: Serveur statique local
+        run: |
+          nohup python3 -m http.server 8767 --bind 127.0.0.1 > server.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8767/index.html > /dev/null && break; sleep 0.5; done
+      - name: Suite (465+ tests)
+        env:
+          TZ: ${{ matrix.tz }}
+          BASE: http://127.0.0.1:8767
+          SERVE_DIR: ${{ github.workspace }}
+          CHROME: /usr/bin/google-chrome
+          FRAME_MAX: '400'   # machines partagées : seuils de fluidité plus larges qu'en local (200 / 100)
+          FRAME_P95: '200'
+        run: node tests/suite.js | tee suite.log
+      - name: Journal de la suite (échecs)
+        if: failure()
+        run: grep -n "✘" suite.log || true
