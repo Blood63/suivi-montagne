@@ -1428,6 +1428,35 @@ function FIXTURE() {
       await cA.close(); await cB.close(); await cC.close(); }
   }
 
+  // ---------- 30. v32 : mises à jour de la veille sommets du 02/11/2026 (six fiches seulement) ----------
+  out.push('30. v32 : veille sommets du 02/11/2026');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    const R = await p.evaluate(() => { const o = n => OBJECTIFS.find(x => x.n === n), txt = n => o(n).note, urls = n => o(n).src.map(x => x[1]);
+      const r = {}; r.ver = [1,3,4,5,6,7].map(n => o(n).verifiedAt); r.autres = OBJECTIFS.filter(x => ![1,3,4,5,6,7].includes(x.n)).map(x => x.n + ':' + x.verifiedAt).join();
+      r.n1 = {note: txt(1), urls: urls(1)}; r.n3 = {note: txt(3), urls: urls(3)}; r.n4 = {note: txt(4)}; r.n5 = {note: txt(5), urls: urls(5)}; r.n6 = {note: txt(6), urls: urls(6)}; r.n7 = {note: txt(7), urls: urls(7)};
+      r.cl = {c5: CLOSURES[5], c6: CLOSURES[6], c7: CLOSURES[7], c1: (CLOSURES[1] || []).length, c3: (CLOSURES[3] || []).length, c8: CLOSURES[8], c12: CLOSURES[12]};
+      r.n12 = o(12).note; r.n8 = o(8).note; r.n13 = o(13).verifiedAt; r.cnt = OBJECTIFS.length;
+      openSummitNoPush(1); r.page1 = document.getElementById('safeBlock').textContent; r.src1 = Array.from(document.querySelectorAll('#view a[href], #safeBlock a, a')).map(a => a.href).join(' ');
+      openSummitNoPush(6); r.page6 = document.body.innerText; return r; });
+    ok(R.ver.every(v => v === '2026-11-02'), '« Vérifié le » = 02/11/2026 sur les fiches 1, 3, 4, 5, 6 et 7', R.ver);
+    ok(R.autres === '2:2026-10-20,8:2026-10-20,9:2026-10-20,10:2026-10-20,11:2026-10-20,12:2026-10-20,13:2026-10-27', 'les autres fiches (Barrhorn, Taillon…) gardent leur date de vérification', R.autres);
+    ok(!/5 au 16\/10|travaux/.test(R.n1.note) && /verglas/.test(R.n1.note) && /neige/.test(R.n1.note), 'Puy de Dôme n°1 : plus de mention des travaux du 5 au 16/10, alerte verglas/neige', R.n1.note);
+    ok(!R.n1.urls.some(u => /puy-de-dome\.ffrandonnee\.fr/.test(u)) && R.n1.urls.includes('https://volcan.puy-de-dome.fr/infos-pratiques/acces-au-sommet.html') && R.n1.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'), 'Puy de Dôme n°1 : lien FFRandonnée mort retiré, sources valides présentes', R.n1.urls);
+    ok(R.cl.c1 === 2, 'Puy de Dôme n°1 : historique des fermetures passées conservé (additif)', R.cl.c1);
+    ok(/domaine skiable du Mont-Dore/.test(R.n3.note) && /ski/.test(R.n3.note) && R.n3.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.cl.c3 === 1, 'Sancy n°3 : interdiction d’hiver, source état des chemins, fermeture du téléphérique conservée', R.n3);
+    ok(/domaine skiable du Mont-Dore/.test(R.n5.note) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5.note) && /crêtes du Sancy non praticables/.test(R.n5.note) && R.n5.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'), 'Sancy n°5 : domaine skiable, Grande Cascade 15/11–01/04, crêtes en saison de ski', R.n5);
+    ok(R.cl.c5.length === 1 && R.cl.c5[0].from === '2026-11-15' && R.cl.c5[0].to === '2027-04-01' && !R.cl.c5[0].block, 'Sancy n°5 : fermeture Grande Cascade du 15/11/2026 au 01/04/2027 (non bloquante)', R.cl.c5);
+    for (const n of [6, 7]) { const c = R.cl['c' + n], nt = R['n' + n];
+      ok(c.length === 1 && c[0].from === '2026-11-02' && c[0].to === '2026-12-04' && !c[0].block, 'Pic du Midi n°' + n + ' : fermeture du 02/11 au 04/12/2026 inclus', c);
+      ok(/Laquets fermés pour maintenance du 02\/11 au 04\/12\/2026/.test(nt.note) && /à pied seulement en été, hors neige/.test(nt.note) && /route du Tourmalet/.test(nt.note), 'Pic du Midi n°' + n + ' : note (maintenance, accès à pied en été, route du Tourmalet)', nt.note);
+      ok(['https://picdumidi.com/fr/horaires-periodes', 'https://picdumidi.com/fr/page/rando', 'https://inforoute.ha-py.fr/'].every(u => nt.urls.includes(u)), 'Pic du Midi n°' + n + ' : trois sources ajoutées', nt.urls); }
+    ok(/Petit train fermé depuis le 01\/11\/2026 jusqu’à la saison 2027/.test(R.n4.note) && !/Descente possible en petit train/.test(R.n4.note), 'La Rhune n°4 : petit train fermé depuis le 01/11 jusqu’à la saison 2027', R.n4.note);
+    ok(R.cnt === 13 && R.cl.c8 === undefined && R.cl.c12 === undefined && !/Laquets|verglas|Petit train|domaine skiable/.test(R.n12 + R.n8), 'Barrhorn, Taillon et autres fiches : aucune fermeture ni note ajoutée', [R.cnt, R.n8, R.n12]);
+    ok(/verglas/.test(R.page1) && /02\/11\/2026/.test(R.page1), 'fiche affichée (Puy de Dôme n°1) : alerte et « Vérifié le 02/11/2026 »', R.page1.slice(0, 300));
+    ok(/Laquets/.test(R.page6), 'fiche affichée (Pic du Midi n°6) : mention des Laquets', R.page6.slice(0, 200));
+    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v32'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v32)');
+    ok(p.errs.length === 0, 'veille sommets : aucune erreur JS', p.errs); await ctx.close(); }
+
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });
