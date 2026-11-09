@@ -1438,13 +1438,14 @@ function FIXTURE() {
       r.n12 = o(12).note; r.n8 = o(8).note; r.n13 = o(13).verifiedAt; r.cnt = OBJECTIFS.length;
       openSummitNoPush(1); r.page1 = document.getElementById('safeBlock').textContent; r.src1 = Array.from(document.querySelectorAll('#view a[href], #safeBlock a, a')).map(a => a.href).join(' ');
       openSummitNoPush(6); r.page6 = document.body.innerText; return r; });
-    ok(R.ver.every(v => v === '2026-11-02'), '« Vérifié le » = 02/11/2026 sur les fiches 1, 3, 4, 5, 6 et 7', R.ver);
+    ok(R.ver[0] === '2026-11-02' && R.ver[2] === '2026-11-02' && R.ver[4] === '2026-11-02' && R.ver[5] === '2026-11-02', '« Vérifié le » = 02/11/2026 sur les fiches 1, 4, 6 et 7 (inchangées en v33)', R.ver);
+    ok(R.ver[1] === '2026-11-09' && R.ver[3] === '2026-11-09', '« Vérifié le » = 09/11/2026 sur les fiches Sancy 3 et 5 (v33)', R.ver);
     ok(R.autres === '2:2026-10-20,8:2026-10-20,9:2026-10-20,10:2026-10-20,11:2026-10-20,12:2026-10-20,13:2026-10-27', 'les autres fiches (Barrhorn, Taillon…) gardent leur date de vérification', R.autres);
     ok(!/5 au 16\/10|travaux/.test(R.n1.note) && /verglas/.test(R.n1.note) && /neige/.test(R.n1.note), 'Puy de Dôme n°1 : plus de mention des travaux du 5 au 16/10, alerte verglas/neige', R.n1.note);
     ok(!R.n1.urls.some(u => /puy-de-dome\.ffrandonnee\.fr/.test(u)) && R.n1.urls.includes('https://volcan.puy-de-dome.fr/infos-pratiques/acces-au-sommet.html') && R.n1.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'), 'Puy de Dôme n°1 : lien FFRandonnée mort retiré, sources valides présentes', R.n1.urls);
     ok(R.cl.c1 === 2, 'Puy de Dôme n°1 : historique des fermetures passées conservé (additif)', R.cl.c1);
-    ok(/domaine skiable du Mont-Dore/.test(R.n3.note) && /ski/.test(R.n3.note) && R.n3.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.cl.c3 === 1, 'Sancy n°3 : interdiction d’hiver, source état des chemins, fermeture du téléphérique conservée', R.n3);
-    ok(/domaine skiable du Mont-Dore/.test(R.n5.note) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5.note) && /crêtes du Sancy non praticables/.test(R.n5.note) && R.n5.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'), 'Sancy n°5 : domaine skiable, Grande Cascade 15/11–01/04, crêtes en saison de ski', R.n5);
+    ok(/domaine skiable du Mont-Dore/.test(R.n3.note) && /19\/12\/2026/.test(R.n3.note) && /21\/03\/2027/.test(R.n3.note) && /sous réserve de neige/.test(R.n3.note) && R.n3.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.n3.urls.includes('https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/') && R.cl.c3 === 1, 'Sancy n°3 : dates domaine skiable 19/12/2026–21/03/2027, sources, téléphérique conservé', R.n3);
+    ok(/domaine skiable du Mont-Dore/.test(R.n5.note) && /19\/12\/2026/.test(R.n5.note) && /21\/03\/2027/.test(R.n5.note) && /sous réserve de neige/.test(R.n5.note) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5.note) && /crêtes du Sancy non praticables/.test(R.n5.note) && R.n5.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.n5.urls.includes('https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/'), 'Sancy n°5 : dates domaine skiable, Grande Cascade, source ski', R.n5);
     ok(R.cl.c5.length === 1 && R.cl.c5[0].from === '2026-11-15' && R.cl.c5[0].to === '2027-04-01' && !R.cl.c5[0].block, 'Sancy n°5 : fermeture Grande Cascade du 15/11/2026 au 01/04/2027 (non bloquante)', R.cl.c5);
     for (const n of [6, 7]) { const c = R.cl['c' + n], nt = R['n' + n];
       ok(c.length === 1 && c[0].from === '2026-11-02' && c[0].to === '2026-12-04' && !c[0].block, 'Pic du Midi n°' + n + ' : fermeture du 02/11 au 04/12/2026 inclus', c);
@@ -1454,8 +1455,31 @@ function FIXTURE() {
     ok(R.cnt === 13 && R.cl.c8 === undefined && R.cl.c12 === undefined && !/Laquets|verglas|Petit train|domaine skiable/.test(R.n12 + R.n8), 'Barrhorn, Taillon et autres fiches : aucune fermeture ni note ajoutée', [R.cnt, R.n8, R.n12]);
     ok(/verglas/.test(R.page1) && /02\/11\/2026/.test(R.page1), 'fiche affichée (Puy de Dôme n°1) : alerte et « Vérifié le 02/11/2026 »', R.page1.slice(0, 300));
     ok(/Laquets/.test(R.page6), 'fiche affichée (Pic du Midi n°6) : mention des Laquets', R.page6.slice(0, 200));
-    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v32'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v32)');
+    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v32'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v33)');
     ok(p.errs.length === 0, 'veille sommets : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // ---------- 31. v33 : dates du domaine skiable du Mont-Dore sur les fiches Sancy (n°3 et n°5 seulement) ----------
+  out.push('31. v33 : Sancy — domaine skiable 19/12/2026–21/03/2027');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    const R = await p.evaluate(() => { const o = n => OBJECTIFS.find(x => x.n === n);
+      const r = {}; r.v3 = o(3).verifiedAt; r.v5 = o(5).verifiedAt; r.n3 = o(3).note; r.n5 = o(5).note;
+      r.u3 = o(3).src.map(x => x[1]); r.u5 = o(5).src.map(x => x[1]);
+      r.autres = [1,2,4,6,7,8,9,10,11,12,13].map(n => n + ':' + o(n).verifiedAt).join();
+      r.n8 = o(8).note; r.n9 = o(9).note;
+      openSummitNoPush(3); r.page3 = document.getElementById('safeBlock').textContent + ' ' + (document.getElementById('view')||document.body).innerText;
+      openSummitNoPush(5); r.page5 = document.getElementById('safeBlock').textContent + ' ' + (document.getElementById('view')||document.body).innerText;
+      return r; });
+    const skiUrl = 'https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/';
+    ok(R.v3 === '2026-11-09' && R.v5 === '2026-11-09', 'Sancy n°3 et n°5 : Vérifié le 09/11/2026', [R.v3, R.v5]);
+    ok(/19\/12\/2026/.test(R.n3) && /21\/03\/2027/.test(R.n3) && /sous réserve de neige/.test(R.n3) && /domaine skiable du Mont-Dore/.test(R.n3), 'Sancy n°3 : note avec dates du domaine skiable', R.n3);
+    ok(/19\/12\/2026/.test(R.n5) && /21\/03\/2027/.test(R.n5) && /sous réserve de neige/.test(R.n5) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5), 'Sancy n°5 : note avec dates + Grande Cascade conservée', R.n5);
+    ok(R.u3.includes(skiUrl) && R.u5.includes(skiUrl), 'Sancy n°3 et n°5 : source station de ski du Mont-Dore ajoutée', [R.u3, R.u5]);
+    ok(R.autres === '1:2026-11-02,2:2026-10-20,4:2026-11-02,6:2026-11-02,7:2026-11-02,8:2026-10-20,9:2026-10-20,10:2026-10-20,11:2026-10-20,12:2026-10-20,13:2026-10-27', 'aucune autre fiche (Barrhorn n°8, Grande Sassière n°9…) n’a changé de date', R.autres);
+    ok(!/19\/12\/2026|21\/03\/2027|domaine skiable du Mont-Dore \(prévu/.test(R.n8 + R.n9), 'Barrhorn et Grande Sassière : notes inchangées', [R.n8, R.n9]);
+    ok(/09\/11\/2026/.test(R.page3) && /19\/12\/2026/.test(R.page3), 'fiche affichée n°3 : date vérifiée et dates ski', R.page3.slice(0, 400));
+    ok(/09\/11\/2026/.test(R.page5) && /21\/03\/2027/.test(R.page5), 'fiche affichée n°5 : date vérifiée et dates ski', R.page5.slice(0, 400));
+    ok(/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v33');
+    ok(p.errs.length === 0, 'v33 Sancy : aucune erreur JS', p.errs); await ctx.close(); }
 
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
