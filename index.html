@@ -354,7 +354,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v34 : l’indice de préparation additionne les séances d’un même jour (champ date) pour A (D+ max), C (durée) et le D− max ; journal et séances individuelles inchangés ; cache SW v34 ; v33 : fiches Sancy n°3 et n°5 — dates du domaine skiable du Mont-Dore (19/12/2026 → 21/03/2027, sous réserve de neige) + source sancy.com ; vérifié le 09/11/2026 ; cache SW v33 ; v25 : Puy de la Vache ajouté (n° 1 affiché, clé interne 13 ; site en travaux signalé), Barrhorn en 2 jours sans escalade (n° 12) et Grande Sassière la plus difficile (n° 13), vue détaillée de l’activité quotidienne (appui sur la carte du Journal : période, indicateur, moyennes, graphiques interactifs, jour par jour), animations des graphiques plafonnées pour les longues périodes (cache v25) ; v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v35 : fiches Barrhorn n°8 et Grande Sassière n°9 (vérifié le 10/11/2026) ; CLOSURES Sancy n°3 (interdiction à pied domaine skiable) et La Rhune n°4 (petit train, marche possible) ; journal « Journée » si plusieurs séances ; meilleure journée en km et enchaînement 2 jours (indication) ; sac 25–40 L ; cache SW v35 ; v34 : l’indice de préparation additionne les séances d’un même jour (champ date) pour A (D+ max), C (durée) et le D− max ; journal et séances individuelles inchangés ; cache SW v34 ; v33 : fiches Sancy n°3 et n°5 — dates du domaine skiable du Mont-Dore (19/12/2026 → 21/03/2027, sous réserve de neige) + source sancy.com ; vérifié le 09/11/2026 ; cache SW v33 ; v25 : Puy de la Vache ajouté (n° 1 affiché, clé interne 13 ; site en travaux signalé), Barrhorn en 2 jours sans escalade (n° 12) et Grande Sassière la plus difficile (n° 13), vue détaillée de l’activité quotidienne (appui sur la carte du Journal : période, indicateur, moyennes, graphiques interactifs, jour par jour), animations des graphiques plafonnées pour les longues périodes (cache v25) ; v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -546,7 +546,7 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
     <b>B – Volume</b> = D+ hebdo moyen (total 28 j ÷ 4) ÷ D+ cible, plafonné à 100 %.<br>
     <b>C – Endurance</b> = durée totale de ta plus longue journée (somme des séances du même jour) ÷ (60 % de la durée de l’objectif).<br>
     <b>D – Régularité</b> = nombre de séances sur 28 jours ÷ 12 (3 par semaine).<br>
-    <b>Indice</b> = 35 % A + 30 % B + 20 % C + 15 % D. Itinérance (GR 441) : cible = D+ moyen d’une étape, volume hebdo visé = 1,5 × ce D+. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
+    <b>Indice</b> = 35 % A + 30 % B + 20 % C + 15 % D (calculé sur les <b>28 derniers jours</b>). Le plan du sommet compte pour 30 % de la préparation et se base sur <b>90 jours</b>. Itinérance (GR 441) : cible = D+ moyen d’une étape, volume hebdo visé = 1,5 × ce D+. Distance de la meilleure journée et enchaînement de deux jours : indications, hors indice. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
     ⚠️ Altitude : sommet ≥ 2 500 m → prévoir acclimatation, météo, vêtements chauds ; l’indice ne mesure pas cela.</div></details>
   </div>
   <div id="prepList"></div>
@@ -741,12 +741,12 @@ const OBJECTIFS = [
  {n:7,verifiedAt:'2026-11-02',sommet:'Pic du Midi de Bigorre',iti:'Voie d’Artigues-Campan (chemin des Muletiers)',depart:'Parking d’Artigues',altDep:1190,altSom:2877,dplus:1690,dist:19,duree:'≈ 3 h 45–4 h montée · 7 h A/R',h:7,diff:'Difficile (T3, longueur et D+)',conf:'Moyenne',
   note:'Topos : 1 600–1 700 m D+, 19–20 km A/R. Certains départs (virage des Arizes) sont à ≈ 1 280 m. ⛔ Site et hôtellerie des Laquets fermés pour maintenance du 02/11 au 04/12/2026 (inclus). Accès à pied seulement en été, hors neige. Fermeture hivernale de la route du Tourmalet à venir (novembre–décembre) : vérifier l’ouverture de la route avant de partir.',
   src:[['Rando-marche – Pic du Midi, chemin des Muletiers','https://www.rando-marche.fr/rando_fiche.php?id=732&rubid=165'],['Randozone – trace GPS Artigues','https://www.randozone.com/traces-gps/trace-gps-21'],['Ma petite rando – sentier des Muletiers','https://mapetiterando.fr/randonnee/ce-sentier-historique-mene-au-sommet-du-pic-du-midi-1700-m-de-denivele-et-une-vue-a-couper-le-souffle/'],['Pic du Midi – horaires et périodes d’ouverture','https://picdumidi.com/fr/horaires-periodes'],['Pic du Midi – randonnées / accès à pied','https://picdumidi.com/fr/page/rando'],['Inforoute 65 – état des routes (Hautes-Pyrénées)','https://inforoute.ha-py.fr/']]},
- {n:8,verifiedAt:'2026-10-20',sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'2 jours : J1 Sänntum → Turtmannhütte ≈ 2 h 30–3 h (+650 m) · J2 sommet et retour ≈ 8 h (+1 100 m / −1 700 m)',h:8,multi:{jours:2,dpJ:1100,distJ:16,hJ:8,txt:'En 2 jours avec nuit à la Turtmannhütte (2 519 m) : J1 ≈ 4,5 km et +650 m jusqu’à la cabane ; J2 ≈ 15,5 km, +1 100 m jusqu’au sommet puis −1 700 m jusqu’à Sänntum. Cible de préparation : la journée 2 (≈ 1 100 m D+, ≈ 8 h).'},diff:'Difficile (T3 sans escalade, mains courantes au Gässi ; très physique, altitude)',conf:'Moyenne',
-  note:'Longtemps présenté comme le plus haut sommet randonnable des Alpes (un sentier vers le Gross Bigerhorn, 3 625 m, existe depuis 2024). Sources : 1 660–1 980 m D+, 18,6–21,2 km. Prévu en 2 jours avec nuit à la Turtmannhütte (2 519 m) : aucune escalade nécessaire, acclimatation et journée du sommet raccourcie.',
+ {n:8,verifiedAt:'2026-11-10',sommet:'Barrhorn (Üssers Barrhorn)',iti:'Via la Turtmannhütte et le Gässi',depart:'Parking de Sänntum (Turtmanntal)',altDep:1905,altSom:3610,dplus:1800,dist:20,duree:'2 jours : J1 Sänntum → Turtmannhütte ≈ 2 h 30–3 h (+650 m) · J2 sommet et retour ≈ 8 h (+1 100 m / −1 700 m)',h:8,multi:{jours:2,dpJ:1100,distJ:16,hJ:8,txt:'En 2 jours avec nuit à la Turtmannhütte (2 519 m) : J1 ≈ 4,5 km et +650 m jusqu’à la cabane ; J2 ≈ 15,5 km, +1 100 m jusqu’au sommet puis −1 700 m jusqu’à Sänntum. Cible de préparation : la journée 2 (≈ 1 100 m D+, ≈ 8 h).'},diff:'Difficile (T3 sans escalade, mains courantes au Gässi ; très physique, altitude)',conf:'Moyenne',
+  note:'Longtemps présenté comme le plus haut sommet randonnable des Alpes (un sentier vers le Gross Bigerhorn, 3 625 m, existe depuis 2024). Sources : 1 660–1 980 m D+, 18,6–21,2 km. Prévu en 2 jours avec nuit à la Turtmannhütte (2 519 m) : aucune escalade nécessaire, acclimatation et journée du sommet raccourcie. ⛔ Cabane actuellement non gardée : seul le local d’hiver est ouvert ; réouverture gardée prévue le 19/03/2027 (réservation SAC).',
   src:[['Gipfelbuch.online – Barrhorn depuis Senntum','https://www.gipfelbuch.online/wanderung-barrhorn-von-parkplatz-senntum-turtmanntal-turtmann-unterems/'],['Bergwelten – Sänntum, Turtmannhütte, Barrhorn','https://www.bergwelten.com/t/w/35097'],['Novo-monde – Monter au Barrhorn','https://www.novo-monde.com/ascension-barrhorn-valais-suisse/'],['CAS – Turtmannhütte','https://www.sac-cas.ch/fr/cabanes-et-courses/portail-des-courses-du-cas/turtmannhuette-sac-2147000281/']]},
- {n:9,verifiedAt:'2026-10-20',sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',h:7.5,diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
-  note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable.',
-  src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – la Grande Sassière','https://www.tignes.net/decouvrir/la-station/grande-sassiere'],['Parc national de la Vanoise – réserve de la Grande Sassière','https://www.vanoise-parcnational.fr/fr/des-actions/gerer-et-proteger-les-patrimoines/les-reserves-naturelles-nationales/la-reserve-0']]},
+ {n:9,verifiedAt:'2026-11-10',sommet:'Aiguille de la Grande Sassière',iti:'Voie normale Ouest (arête SE)',depart:'Barrage du Saut, Tignes',altDep:2280,altSom:3747,dplus:1500,dist:12,duree:'≈ 4–4 h 30 montée · 7 h 30 A/R',h:7.5,diff:'Difficile (pente finale raide, crampons si neige/gel)',conf:'Élevée',
+  note:'Réserve naturelle. Piolet/crampons si final enneigé ou gelé ; faire par beau temps stable. ⛔ Route du Saut et accès à la passerelle fermés depuis le 06/11/2026 jusqu’à nouvel ordre (mairie de Tignes, 05/11/2026) : le départ habituel au barrage du Saut n’est plus accessible en voiture tant que la route reste fermée.',
+  src:[['Altituderando – Grande Sassière','https://www.altituderando.com/Aiguille-de-la-Grande-Sassiere-3747m'],['Tignes.net – la Grande Sassière','https://www.tignes.net/decouvrir/la-station/grande-sassiere'],['Parc national de la Vanoise – réserve de la Grande Sassière','https://www.vanoise-parcnational.fr/fr/des-actions/gerer-et-proteger-les-patrimoines/les-reserves-naturelles-nationales/la-reserve-0'],['Mairie de Tignes – fermeture route du Saut et passerelle (05/11/2026)','https://station.illiwap.com/fr/public/73296/actu/fermetures-passerelle-et-sassiere']]},
  // GR 441 ajouté en dernière position (n° 10) : itinérance de 6 jours, de nature différente des ascensions à la journée ; les numéros 1–9 restent inchangés (l'état « fait / prévu » est stocké par numéro).
  {n:10,verifiedAt:'2026-10-20',sommet:'GR 441 – Tour de la Chaîne des Puys',iti:'Boucle en 6 étapes au départ de Volvic',depart:'Volvic (573 m)',altDep:573,altSom:1465,dplus:2900,dist:114,duree:'6 jours (étapes de 15 à 23 km, 4 h–5 h 40)',h:5.7,multi:{jours:6,dpJ:520,distJ:23,hJ:5.7},diff:'Moyenne (itinérance, étapes longues)',conf:'Moyenne-élevée',
   note:'114–115 km, ≈ 2 750–3 050 m D+ cumulé selon les tracés ; point culminant le puy de Dôme (1 465 m) si le tracé passe au sommet (certains topos donnent 1 415 m). D+ moyen ≈ 460–510 m par jour (estimation : total ÷ 6).',
@@ -779,7 +779,10 @@ const CLOSURES = {
  5:[{from:'2026-11-15',to:'2027-04-01',txt:'Grande Cascade interdite d’accès du 15/11 au 01/04 (arrêté municipal du Mont-Dore) : la boucle par la Grande Cascade n’est pas praticable. Montée et descente à pied aussi interdites pendant l’ouverture du domaine skiable ; crêtes du Sancy non praticables en saison de ski. État des chemins : Puy-de-Dôme Tourisme.'}],
  6:[{from:'2026-11-02',to:'2026-12-04',txt:'Site du Pic du Midi et hôtellerie des Laquets fermés pour maintenance (02/11 → 04/12 inclus). Accès à pied seulement en été, hors neige ; route du Tourmalet bientôt fermée pour l’hiver (vérifier inforoute.ha-py.fr).'}],
  7:[{from:'2026-11-02',to:'2026-12-04',txt:'Site du Pic du Midi et hôtellerie des Laquets fermés pour maintenance (02/11 → 04/12 inclus). Accès à pied seulement en été, hors neige ; route du Tourmalet bientôt fermée pour l’hiver (vérifier inforoute.ha-py.fr).'}],
- 3:[{from:'2026-08-31',to:'2026-12-18',txt:'Téléphérique du Sancy fermé pour maintenance (la boucle à pied reste possible hors neige ; pas de descente en cabine).'}]
+ 3:[{from:'2026-08-31',to:'2026-12-18',txt:'Téléphérique du Sancy fermé pour maintenance (la boucle à pied reste possible hors neige ; pas de descente en cabine).',short:'téléphérique fermé (marche possible hors neige)'},
+    {from:'2026-12-19',to:'2027-03-21',txt:'Montée et descente à pied interdites pendant l’ouverture du domaine skiable du Mont-Dore (prévu du 19/12/2026 au 21/03/2027, sous réserve de neige) ; les crêtes du Sancy ne sont pas praticables en saison de ski.',short:'interdiction à pied (domaine skiable)'}],
+ 4:[{from:'2026-11-01',to:'2027-11-01',until:'la saison 2027',info:true,txt:'Petit train fermé depuis le 01/11/2026 jusqu’à la saison 2027 : la montée et la descente à pied restent possibles (plus de descente en train).',short:'petit train fermé ; la marche reste possible'}],
+ 9:[{from:'2026-11-06',to:'2027-11-10',until:'nouvel ordre',txt:'Route du Saut et accès à la passerelle fermés depuis le 06/11/2026 jusqu’à nouvel ordre (mairie de Tignes, 05/11/2026). Accès véhicule au barrage du Saut (départ habituel) impraticable tant que la route reste fermée ; vérifier la signalisation sur place.',short:'route du Saut fermée (accès au barrage)'}]
 };
 // Matériel conseillé (clés de GEAR) par objectif
 const OBJ_GEAR = {
@@ -808,7 +811,7 @@ const GEAR = {
  lunettes:{l:'Lunettes de soleil (cat. 3)',re:/lunettes de soleil/i,cat:/v[êe]tements/i},
  glacier:{l:'Lunettes de glacier (cat. 4)',re:/lunettes de glacier/i,cat:/haute montagne/i},
  eau:{l:'Gourdes / poche à eau (≥ 2 L)',re:/gourde|poche [àa] eau/i,cat:/sac/i},
- sac:{l:'Sac à dos 25–30 L',re:/sac [àa] dos 25/i,cat:/sac/i},
+ sac:{l:'Sac à dos 25–40 L',re:/sac [àa] dos (?:2[5-9]|3\d|40)/i,cat:/sac/i},
  sac45:{l:'Sac à dos 40–50 L (itinérance)',re:/sac [àa] dos 4\d/i,cat:/bivouac/i},
  batons:{l:'Bâtons télescopiques',re:/b[âa]tons/i,cat:/b[âa]tons/i},
  frontale:{l:'Lampe frontale',re:/frontale/i,cat:/s[ée]curit[ée]/i},
@@ -817,7 +820,7 @@ const GEAR = {
  carte:{l:'Carte + boussole ou GPS hors-ligne',re:/carte ign|appli gps|boussole/i,cat:/s[ée]curit[ée]/i},
  creme:{l:'Crème solaire',re:/cr[èe]me solaire/i,cat:/s[ée]curit[ée]/i},
  assurance:{l:'Assurance secours en montagne',re:/assurance/i,cat:/s[ée]curit[ée]/i},
- cabane:{l:'Réservation Turtmannhütte',re:/turtmann/i,cat:/haute montagne/i},
+ cabane:{l:'Nuit à la Turtmannhütte (local d’hiver hors saison gardée ; réouverture gardée le 19/03/2027)',re:/turtmann/i,cat:/haute montagne/i},
  casque:{l:'Casque (chutes de pierres)',re:/casque/i,cat:/haute montagne/i},
  crampons:{l:'Crampons / micro-crampons',re:/^(micro-)?crampons/i,cat:/haute montagne/i},
  piolet:{l:'Piolet',re:/piolet/i,cat:/haute montagne/i},
@@ -903,15 +906,15 @@ const OBJ_INFO = {
   parking:'Parking de Sänntum (≈ 1 900 m), au bout de la route du Turtmanntal (≈ 22 km depuis Tourtemagne) ; payant (≈ 4 CHF / 12 h selon un récit ⚠︎).',
   access:'Route du Turtmanntal depuis Turtmann (vallée du Rhône). Transports publics quasi inexistants ⚠︎ (car postal estival jusqu’à Gruben à vérifier).',
   route:['De Sänntum, monter au lac et au barrage de Tourtemagne (gorges ou sentier panoramique).','Rejoindre la Turtmannhütte (2 519 m) par le Steinmannliweg (moins raide) ou le Sommerweg.','Passer le couloir du Gässi (vires équipées de mains courantes, T3), puis la longue moraine du vallon de Barr (≈ 2 km).','Pentes d’éboulis puis montée finale très raide (> 40 %) jusqu’à l’Üssers Barrhorn (3 610 m). Retour possible par le Schöllijoch, puis même chemin.'],
-  water:'Eau à la Turtmannhütte (gardiennée) ; rien de fiable au-dessus : 2–3 L depuis la cabane.',
-  refuges:'Turtmannhütte CAS (2 519 m) : gardiennée du 1er week-end de juin au 3e week-end de septembre (et au printemps pour le ski) ; réservation conseillée. Nuit + demi-pension ≈ 80–90 CHF ⚠︎.',
+  water:'Eau à la Turtmannhütte surtout en période gardée ; hors gardiennage (local d’hiver) : pas d’eau courante — prévoir 2–3 L depuis Sänntum. Rien de fiable au-dessus.',
+  refuges:'Turtmannhütte CAS (2 519 m) : actuellement non gardée, seul le local d’hiver est ouvert (≈ 14 places). Réouverture gardée prévue le 19/03/2027 (réservation SAC). En saison : souvent du 1er week-end de juin au 3e week-end de septembre (et au printemps pour le ski). Nuit + demi-pension ≈ 80–90 CHF ⚠︎.',
   dangers:['Altitude 3 610 m : essoufflement, risque de mal aigu des montagnes ; nuit à la cabane conseillée.','Gässi : passage aérien équipé (pied sûr nécessaire) ; à éviter par pluie, vent ou orage.','Éboulis instables, névés tardifs (crampons utiles en début de saison), chutes de pierres.','Grande falaise derrière la croix sommitale. Secours en Suisse payants (REGA) : assurance indispensable.'],
   winter:'Haute montagne enneigée hors été : réservé au ski de randonnée.',
   seasonTxt:'Mi-juillet à mi-septembre (cabane gardiennée, neige fondue).',
   uncertain:['Prix du parking de Sänntum','Bus jusqu’à Gruben','Tarifs de la cabane']},
  9:{type:'Aller-retour',sum:[45.5050,6.9998],start:{nm:'Parking du Saut (barrage du Saut, Tignes)',ll:[45.4861,6.9675],q:'Parking du Saut, Tignes'},
   parking:'Parking du Saut (≈ 2 280 m), gratuit mais limité (plein en fin de matinée en août) ; stationnement interdit le long de la route.',
-  access:'Route du Saut depuis Tignes-les-Brévières (≈ 8 km, étroite, non déneigée) : ouverte en général de juin à fin octobre (fermée dès les premières neiges).',
+  access:'Route du Saut depuis Tignes-les-Brévières (≈ 8 km, étroite, non déneigée) : ouverte en général de juin à fin octobre (fermée dès les premières neiges). Fermée depuis le 06/11/2026 jusqu’à nouvel ordre (mairie de Tignes).',
   route:['Du parking, entrer dans la réserve naturelle et suivre le sentier de la Grande Sassière vers l’ouest du sommet.','Longue montée en lacets dans les pierriers et les cairns (≈ 1 500 m D+).','Pente finale raide (éboulis, parfois neige ou glace) puis courte arête jusqu’au sommet (3 747 m).','Descente par le même itinéraire.'],
   water:'Pas d’eau fiable au-dessus des alpages : 2–3 L. Rien à acheter au parking (chalet d’alpage vendant du fromage l’été).',
   refuges:'Aucun refuge sur l’itinéraire. Bivouac uniquement sur l’aire dédiée en rive gauche du barrage, de juin à août, 19 h – 7 h.',
@@ -985,7 +988,7 @@ OBJ_INFO[13]={type:'Boucle',sum:[45.7054,2.9633],start:{nm:'Parking « Puy de la
  [5,{tech:'Sentier de crête balisé (GR 4 / GR 30), sans passage technique ; la difficulté est la longueur.',ign:'IGN TOP 25 2432 ET Massif du Sancy ⚠︎',variants:['Boucle plus courte du Val d’Enfer / Val de Courre (objectif 3).'],tips:['Prévoir 2–3 L d’eau : rien sur les crêtes.','Renoncer par brouillard ou orage : crêtes très exposées.']}],
  [6,{tech:'Piste puis sentier en lacets, éboulis sur les 100 derniers mètres ; aucun passage d’escalade.',ign:'IGN TOP 25 1748 ET Néouvielle – Vallée d’Aure ⚠︎',variants:['Départ de la cabane de Toue (1 940 m, au-dessus de Barèges).','Voie d’Artigues par le chemin des Muletiers (objectif 7), bien plus longue.'],tips:['Bon test d’altitude (2 877 m) avant le Taillon et les 3 000 alpins.','Vérifier l’accès piéton Sencours → sommet (travaux) avant de partir.']}],
  [7,{tech:'T3 : sentier historique, sans passage technique ; difficulté = longueur et ≈ 1 700 m de D+.',ign:'IGN TOP 25 1748 ET Néouvielle – Vallée d’Aure ⚠︎',variants:['Départ au virage des Arizes (≈ 1 280 m) pour gagner ≈ 100 m.','Voie du Tourmalet (objectif 6), deux fois moins de D+.'],tips:['Le meilleur entraînement « gros D+ » des Pyrénées avant le Barrhorn.','Bâtons indispensables pour la longue descente.']}],
- [8,{tech:'T3 : vires du Gässi équipées de mains courantes, éboulis et moraine, pente finale > 40 %.',ign:'Carte nationale suisse 1:25 000 (map.geo.admin.ch)',variants:['En 1 jour (≈ 1 800 m D+, 8 h 30–10 h) : seulement pour randonneur très entraîné et acclimaté — non retenu ici.','Retour par le Schöllijoch puis même chemin.'],tips:['Organisation retenue : J1 montée tranquille à la cabane (après-midi), nuit et dîner ; J2 départ à la frontale vers 5 h, sommet vers 9 h, retour à Sänntum l’après-midi.','Pas d’escalade : le Gässi est une vire équipée de mains courantes (pied sûr, pas de vertige) ; renoncer par pluie, neige ou verglas.','Réserver la cabane tôt (gardiennée de juin à septembre).','Assurance secours indispensable : interventions héliportées payantes en Suisse.'],secours:'144 (urgences, Suisse) ou 112 ; REGA 1414.'}],
+ [8,{tech:'T3 : vires du Gässi équipées de mains courantes, éboulis et moraine, pente finale > 40 %.',ign:'Carte nationale suisse 1:25 000 (map.geo.admin.ch)',variants:['En 1 jour (≈ 1 800 m D+, 8 h 30–10 h) : seulement pour randonneur très entraîné et acclimaté — non retenu ici.','Retour par le Schöllijoch puis même chemin.'],tips:['Organisation retenue : J1 montée tranquille à la cabane (après-midi), nuit et dîner ; J2 départ à la frontale vers 5 h, sommet vers 9 h, retour à Sänntum l’après-midi.','Pas d’escalade : le Gässi est une vire équipée de mains courantes (pied sûr, pas de vertige) ; renoncer par pluie, neige ou verglas.','Hors saison gardée : seul le local d’hiver est ouvert (réouverture gardée prévue le 19/03/2027) ; réserver dès que la cabane est gardiennée.','Assurance secours indispensable : interventions héliportées payantes en Suisse.'],secours:'144 (urgences, Suisse) ou 112 ; REGA 1414.'}],
  [9,{tech:'Pente finale raide (éboulis, parfois neige ou glace) puis courte arête ; piolet et crampons si enneigé ou gelé.',variants:['Bivouac sur l’aire dédiée au barrage du Saut (juin–août, 19 h – 7 h) pour partir à l’aube.'],tips:['Le plus haut et le plus difficile des objectifs (3 747 m, pente finale raide, crampons/piolet possibles) : à faire en dernier, après le Taillon et le Barrhorn.','Être redescendu en début d’après-midi (orages).']}],
  [10,{tech:'Aucune difficulté technique ; la difficulté est la répétition de 6 étapes de 15 à 23 km.',ign:'IGN TOP 25 2531 ET Chaîne des Puys ⚠︎',tips:['Faire au préalable 2 jours de randonnée d’affilée avec le sac chargé.','Réserver les hébergements en saison ; feux interdits, réchaud à gaz seulement.']}]
 ].forEach(([n,x])=>Object.assign(OBJ_INFO[n],x));
@@ -1113,10 +1116,10 @@ function defaultEquip(withBivouac=true){
   return [
    C('Chaussures',[['Chaussures de randonnée tige haute','semelle crantée type Vibram, imperméables'],'Chaussettes de randonnée (×3 paires)',['Guêtres','pierriers, neige, boue'],['Chaussures d’approche / trail','optionnel, pour les sorties courtes']]),
    C('Vêtements (système 3 couches)',[['Couche 1 : t-shirt technique respirant','mérinos ou synthétique, pas de coton'],'Couche 1 : sous-vêtement thermique manches longues',['Couche 2 : polaire','ou doudoune légère'],['Couche 3 : veste imperméable-respirante','type Gore-Tex, avec capuche'],'Pantalon de randonnée déperlant','Surpantalon imperméable','Bonnet','Gants fins','Casquette / buff',['Lunettes de soleil','catégorie 3 minimum']]),
-   C('Sac & hydratation',['Sac à dos 25–30 L avec ceinture ventrale','Housse de pluie pour le sac',['Poche à eau ou gourdes','≥ 2 L pour les longues sorties'],'Thermos','Boîte à encas (barres, fruits secs)']),
+   C('Sac & hydratation',['Sac à dos 25–40 L avec ceinture ventrale','Housse de pluie pour le sac',['Poche à eau ou gourdes','≥ 2 L pour les longues sorties'],'Thermos','Boîte à encas (barres, fruits secs)']),
    C('Bâtons',['Paire de bâtons télescopiques',['Rondelles neige','pour bâtons']]),
    C('Sécurité & orientation',['Trousse de premiers secours (+ pansements ampoules)','Couverture de survie','Lampe frontale + piles de rechange','Carte IGN / Swisstopo + boussole',['Appli GPS hors-ligne + traces GPX','ex. IGNrando, Visorando, SwitzerlandMobility'],'Batterie externe + câble','Crème solaire indice 50 + stick lèvres','Sifflet','Couteau / multi-outil',['Assurance secours en montagne','indispensable en Suisse (hélicoptère payant)']]),
-   C('Haute montagne (Barrhorn, Grande Sassière)',[['Crampons','compatibles avec les chaussures ; micro-crampons au minimum'],['Piolet','si pente finale enneigée ou gelée'],['Casque','chutes de pierres'],'Chaussures semi-rigides compatibles crampons',['Doudoune chaude','au-delà de 3 500 m il peut geler en été'],'Gants chauds imperméables',['Lunettes de glacier','catégorie 4'],['Réservation Turtmannhütte','si le Barrhorn se fait en 2 jours']])
+   C('Haute montagne (Barrhorn, Grande Sassière)',[['Crampons','compatibles avec les chaussures ; micro-crampons au minimum'],['Piolet','si pente finale enneigée ou gelée'],['Casque','chutes de pierres'],'Chaussures semi-rigides compatibles crampons',['Doudoune chaude','au-delà de 3 500 m il peut geler en été'],'Gants chauds imperméables',['Lunettes de glacier','catégorie 4'],['Nuit à la Turtmannhütte','local d’hiver hors saison gardée ; réouverture gardée prévue le 19/03/2027']])
   ].concat(withBivouac?[bivouacCat(),roadtripCat()]:[]);
 }
 function seed(){
@@ -1467,16 +1470,20 @@ function sessRow(s){
     return `<div class="sess" data-id="${s.id}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
       <div class="b"><span class="tag">${esc(s.type)}</span>${s.ref?' <span class="tag ref" title="Sortie de référence">⛰︎ réf.</span>':''}${ascObj(s)?` <span class="tag asc" title="Séance de l’objectif ${ascObj(s).n}">🏁 ${esc(ascObj(s).sommet)}</span>`:''} ${s.lieu?`<b class="small">📍 ${esc(s.lieu)}</b> `:''}<span class="small mut">${dFR(s.date)}${s.heure?' '+esc(s.heure):''} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
       <div class="acts"><button class="btn sec sm" data-dup="${s.id}" aria-label="Refaire cette séance aujourd’hui" title="Refaire aujourd’hui">⧉</button><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`;; }
+function daySumLine(date,L){ const dplus=L.reduce((t,s)=>t+(+s.dplus||0),0), dist=L.reduce((t,s)=>t+(+s.dist||0),0), dur=L.reduce((t,s)=>t+(+s.dur||0),0);
+  return `<div class="daytot small" data-day="${date}" style="padding:8px 4px 2px;color:var(--mut)"><b>Journée</b> ${dFR(date)} : <b>${f(dplus,0)} m D+</b> · ${f(dist,1)} km · ${fmtDur(dur)}</div>`; }
+function sessRows(L){ const by={}; for(const s of L) (by[s.date]=by[s.date]||[]).push(s); let html='', prev=null;
+  for(const s of L){ if(s.date!==prev){ const g=by[s.date]; if(g.length>1) html+=daySumLine(s.date,g); prev=s.date; } html+=sessRow(s); } return html; }
 function renderJList(){ const F=jFilters(), list=jList(F), box=$('sessList'), flt=F.flt, any=F.flt||F.q||F.p, ymNow=todayISO().slice(0,7);
   if(!J.open){ J.open=new Set([ymNow]); const last=DB.sessions.map(s=>s.date).sort().pop(); if(last&&!DB.sessions.some(s=>s.date.slice(0,7)===ymNow)) J.open.add(last.slice(0,7)); }
   const jc=$('jCount'); if(jc) jc.textContent=any?(list.length+' séance'+(list.length>1?'s':'')+' trouvée'+(list.length>1?'s':'')):'';
   if(!list.length){ box.innerHTML= any&&DB.sessions.length ? `<div class="empty"><h3>Aucune séance ne correspond</h3><p class="small mut">Change la recherche, le type ou la période.</p></div>` : `<div class="empty"><svg viewBox="0 0 120 80" aria-hidden="true"><circle cx="92" cy="22" r="10" fill="#fb923c" opacity=".8"/><path d="M4 74l30-40 14 18 16-24 28 46z" fill="#8b9a97" opacity=".55"/><path d="M34 34l-8 11 6-2 3 4 4-5 5 3z" fill="#f3f7f6"/><path d="M0 74h120v6H0z" fill="#1f6f54"/></svg><h3>${flt?'Aucune séance « '+esc(flt)+' »':'Aucune séance pour l’instant'}</h3><p class="small mut">Chaque montée compte. Ajoute ta première séance.</p><button class="btn" data-open-add>Ajouter une séance</button></div>`; return; }
   const by=new Map(); for(const s of list){ const ym=s.date.slice(0,7); if(!by.has(ym)) by.set(ym,[]); by.get(ym).push(s); }
   let html=''; for(const [ym,L] of by){ const a=agg(L), [y,m]=ym.split('-'), op=!!F.q||J.open.has(ym);
-    html+=`<details class="mgrp" data-ym="${ym}"${op?' open':''}><summary class="month"><b>${MOIS[+m-1]} ${y}</b><span class="small mut">${L.length} séance${L.length>1?'s':''} · ${f(a.dist)} km · ${f(a.dplus,0)} m D+ · ${fmtDur(a.dur)}</span></summary><div class="mbody">${op?L.map(sessRow).join(''):''}</div></details>`; }
+    html+=`<details class="mgrp" data-ym="${ym}"${op?' open':''}><summary class="month"><b>${MOIS[+m-1]} ${y}</b><span class="small mut">${L.length} séance${L.length>1?'s':''} · ${f(a.dist)} km · ${f(a.dplus,0)} m D+ · ${fmtDur(a.dur)}</span></summary><div class="mbody">${op?sessRows(L):''}</div></details>`; }
   box.innerHTML=html; }
 function jToggle(e){ const d=e.target; if(!d.classList||!d.classList.contains('mgrp')) return; const ym=d.dataset.ym; if(!J.open) J.open=new Set();
-  if(d.open){ J.open.add(ym); const b=d.querySelector('.mbody'); if(b&&!b.children.length) b.innerHTML=jList(jFilters()).filter(s=>s.date.slice(0,7)===ym).map(sessRow).join(''); } else J.open.delete(ym); }
+  if(d.open){ J.open.add(ym); const b=d.querySelector('.mbody'); if(b&&!b.children.length) b.innerHTML=sessRows(jList(jFilters()).filter(s=>s.date.slice(0,7)===ym)); } else J.open.delete(ym); }
 function jExpandAll(on){ J.open=new Set(on===false?[]:DB.sessions.map(s=>s.date.slice(0,7))); renderJList(); }
 
 /* ---------- Form ---------- */
@@ -1529,7 +1536,7 @@ function renderObj(){ try{ JEU.render(); }catch(e){ console.warn('bandeau',e); }
       <div class="kpi"><b>${f(o.altDep,0)} m</b><small>alt. départ</small></div><div class="kpi"><b>${f(o.altSom,0)} m</b><small>alt. sommet</small></div><div class="kpi"><b>≈ ${f(o.dplus,0)} m</b><small>D+ estimé</small></div>
       <div class="kpi"><b>≈ ${f(o.dist,1)} km</b><small>distance</small></div><div class="kpi" style="grid-column:span 2"><b style="font-size:13.5px">${esc(o.duree)}</b><small>durée estimée</small></div></div></div>
     <div class="small"><span class="mut">Difficulté :</span> ${esc(o.diff)} · <span class="mut">Confiance :</span> ${esc(o.conf)}</div>
-    <div class="small mut" style="margin:3px 0 8px">${esc(o.note)}</div>${(CLOSURES[o.n]||[]).filter(c=>c.to>=todayISO()).map(c=>`<div class="warnl" style="margin:0 0 8px">⛔ ${c.from<=todayISO()?'Fermé':'Fermeture'} du ${dFR(c.from)} au ${dFR(c.to)}</div>`).join('')}
+    <div class="small mut" style="margin:3px 0 8px">${esc(o.note)}</div>${(CLOSURES[o.n]||[]).filter(c=>c.to>=todayISO()).map(c=>closureCardHTML(c)).join('')}
     ${ASC.mini(o)}
     <div class="grid">
       <div><label>Statut</label><select data-obj="${o.n}" data-k="statut">${STATUTS.map(x=>`<option${x===st.statut?' selected':''}>${x}</option>`).join('')}</select></div>
@@ -1750,12 +1757,13 @@ function readinessWindow(){ const end=new Date(); const start=new Date(end.getFu
 function renderPrep(){
   const ta=$('prepTrain'); if(ta) ta.innerHTML=trainingAdviceHTML();
   const [A,B]=readinessWindow(); const st=trainStats(new Date());
-  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse journée <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue journée <b>${fmtH(st.longest/3600)}</b>`;
+  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse journée <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue journée <b>${fmtH(st.longest/3600)}</b> · meilleure journée <b>${f(st.maxKm,1)} km</b>${st.bestKm?' ('+dFR(st.bestKm.date)+')':''}`;
   $('prepList').innerHTML=OBJ_BY_DIFF.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
     return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0"><div class="prep">${ringSVG(R.r,78)}
     <div style="flex:1;min-width:0"><h3 style="margin:0">${diffRank(o.n)}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
     ${barsHTML(R)}
     <div class="small mut" style="margin-top:4px">${f(st.maxD,0)} / ${f(0.65*R.T,0)} m · ${f(st.wk,0)} / ${f(o.multi?1.5*R.T:R.T,0)} m/sem · ${fmtH(st.longest/3600)} / ${fmtH(0.6*R.H)} · ${st.n28} / 12 séances</div>
+    <div class="small mut" style="margin-top:4px">${dayGoalHTML(o,st)}</div>
     <div class="small" style="margin-top:4px">${o.altSom>=2500?'<span class="alt">⚠️ Sommet &gt; 2 500 m : acclimatation, météo, matériel</span> ':''}<span class="chip">${esc(st2.statut)}</span>${st2.datePrevue?'<span class="chip">prévu '+dFR(st2.datePrevue)+'</span>':''}</div></div></div>`; }).join('');
   const nx=nextObjective();
   if(!nx){ $('prepHero').innerHTML=`<div class="card hero-card"><div class="eyebrow2">Tous les objectifs</div><h2 style="margin:4px 0 0">Bravo, les ${OBJECTIFS.length} objectifs sont faits 🎉</h2></div>`; return; }
@@ -2080,6 +2088,16 @@ function dayTotals(list){
   }
   return Object.values(by);
 }
+// v35 : meilleur enchaînement de deux jours civils consécutifs (indication, hors indice)
+function bestStreak2(days){ const by={}; for(const d of days||[]) if(d&&d.date) by[d.date]=d; let best=null;
+  for(const d of days||[]){ if(!d||!d.date) continue; const nx=by[addDays(d.date,1)]; if(!nx) continue;
+    const tot={from:d.date,to:nx.date,dplus:(+d.dplus||0)+(+nx.dplus||0),dist:(+d.dist||0)+(+nx.dist||0),dur:(+d.dur||0)+(+nx.dur||0)};
+    if(!best||tot.dplus>best.dplus||(tot.dplus===best.dplus&&tot.dist>best.dist)) best=tot; }
+  return best; }
+function dayGoalHTML(o,st){ const kmT=o.multi?o.multi.distJ:o.dist;
+  let s=`Meilleure journée : <b>${f(st.maxKm,1)} km</b>${kmT?` / ${f(kmT,1)} km`:''}`;
+  if(o.multi) s+=st.pair?` · deux jours d’affilée : <b>${f(st.pair.dplus,0)} m D+</b> · ${f(st.pair.dist,1)} km (${dFR(st.pair.from)}–${dFR(st.pair.to)})`:` · deux jours d’affilée : pas encore d’enchaînement sur 28 jours`;
+  return s; }
 function trainStats(ref){
   ref=ref||new Date(); const day=k=>toISO(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()-k));
   const T=toISO(ref), A28=day(27), A7=day(6), A14=day(13), A56=day(55);
@@ -2087,11 +2105,13 @@ function trainStats(ref){
   const sum=(l,k)=>l.reduce((t,s)=>t+(+s[k]||0),0), mx=(l,f)=>Math.max(0,...l.map(f));
   const days28=dayTotals(w28);
   const maxD=mx(days28,d=>d.dplus||0), best=days28.find(d=>(d.dplus||0)===maxD&&maxD>0)||null;
+  const maxKm=mx(days28,d=>d.dist||0), bestKm=days28.find(d=>(d.dist||0)===maxKm&&maxKm>0)||null;
+  const pair=bestStreak2(days28);
   const last=S.map(s=>s.date).sort().pop()||null;
   // FC moyenne à allure comparable (séances de marche / tapis avec FC et vitesse) : 14 derniers jours vs 14 précédents
   const hr=l=>{ const x=l.filter(s=>WALK_TYPES.test(s.type)&&s.bpm&&speed(s)); if(x.length<2) return null; return {bpm:x.reduce((t,s)=>t+s.bpm,0)/x.length, v:x.reduce((t,s)=>t+speed(s),0)/x.length, n:x.length}; };
   return { ref:T, n28:w28.length, n7:w7.length, dp28:sum(w28,'dplus'), wk:sum(w28,'dplus')/4, dp7:sum(w7,'dplus'), dp14:sum(l14,'dplus'), dpP14:sum(p14,'dplus'),
-    maxD, best, longest:mx(days28,d=>d.dur||0), dur28:sum(w28,'dur'), km28:sum(w28,'dist'), last, daysSince:last?Math.round((parseISO(T)-parseISO(last))/864e5):null,
+    maxD, best, maxKm, bestKm, pair, longest:mx(days28,d=>d.dur||0), dur28:sum(w28,'dur'), km28:sum(w28,'dist'), last, daysSince:last?Math.round((parseISO(T)-parseISO(last))/864e5):null,
     sacMax:mx(S.filter(s=>s.date>=A56),s=>s.sac||0), maxDm:mx(days28,d=>d.dminus||0),
     hrNow:hr(l14), hrPrev:hr(p14), muscu28:w28.filter(s=>s.type==='Musculation').length };
 }
@@ -2114,6 +2134,13 @@ function nextObjective(){ const today=todayISO(), open=OBJ_BY_DIFF.filter(o=>obj
   const avail=open.filter(o=>!closuresFor(o,today,today).some(c=>c.block));
   return planned[0]||avail[0]||open[0]||null; }
 function closuresFor(o, fromISO, toISO_){ return (CLOSURES[o.n]||[]).filter(c=>c.to>=fromISO && c.from<=toISO_); }
+function closureWhen(c, today){ today=today||todayISO(); if(c.until) return (c.from<=today?'depuis le ':'dès le ')+dFR(c.from)+' jusqu’à '+c.until; return 'du '+dFR(c.from)+' au '+dFR(c.to); }
+function closureCardHTML(c, today){ today=today||todayISO(); const when=closureWhen(c,today);
+  if(c.info) return `<div class="warnl" style="margin:0 0 8px">ℹ️ À noter : ${esc(c.short||c.txt)} (${when})</div>`;
+  return `<div class="warnl" style="margin:0 0 8px">⛔ ${c.from<=today?'Fermé':'Fermeture'} ${when}${c.short?' — '+esc(c.short):''}</div>`; }
+function closureSafeHTML(c, today){ today=today||todayISO();
+  if(c.info) return `<div class="warnl">ℹ️ <b>À noter</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`;
+  return `<div class="warnl">⛔ <b>${c.block?'Fermé':(c.from<=today?'Fermeture en cours':'Fermeture')}</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`; }
 // Conseils concrets pour un objectif
 function advise(o, ref){
   ref=ref||new Date(); const st=trainStats(ref), R=readiness(o,st), I=OBJ_INFO[o.n]||{}, S=objState(o.n), M=o.multi;
@@ -2149,7 +2176,7 @@ function advise(o, ref){
     if(DS.active7<4&&DS.known7>=5) tips.push({ic:'📆',t:`Régularité : ${DS.active7} journée${DS.active7>1?'s':''} active${DS.active7>1?'s':''} sur 7. Vise <b>5 jours actifs par semaine</b> (une séance, ou ${ACT_MIN} min d’activité, ou ${f(G,0)} pas).`}); }
   if(DS&&DS.trainRun>=6) tips.push({ic:'🛌',t:`${DS.trainRun} jours de séance d’affilée : place un jour de repos (marche légère) pour bien récupérer.`});
   if(st.muscu28===0 && R.r<0.8) tips.push({ic:'🏋️',t:'Renforcement : aucune séance de musculation en 4 semaines. 2 × 30 min/sem (squats, fentes, step-ups, gainage, mollets) protègent genoux et chevilles.'});
-  if(R.r>=0.8){ tips.unshift({ic:'✅',t:`Tu as le niveau pour cet objectif : entretiens (2–3 séances/sem) et allège la semaine précédente${when?' (dernière grosse séance 4–5 jours avant le '+dFR(when)+')':''}.`});
+  if(R.r>=0.8){ tips.unshift({ic:'✅',t:`Tu as le niveau pour cet objectif : entretiens (2–3 séances/sem) et allège la semaine précédente${when?' (dernière grosse journée 4–5 jours avant le '+dFR(when)+')':''}.`});
     const nx2=OBJ_BY_DIFF.find(x=>x.n!==o.n&&OBJ_BY_DIFF.indexOf(x)>OBJ_BY_DIFF.indexOf(o)&&objState(x.n).statut!=='Fait');
     if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)}&nbsp;%. ${R2.a<1?'Monte progressivement ta grosse journée vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
   // Saison, météo, fermetures, jour
@@ -2157,7 +2184,7 @@ function advise(o, ref){
   if(sea===0) warn.push(`Saison : ${MOIS_L[m]} est hors saison pour cet itinéraire. ${I.winter||''} Période conseillée : ${I.seasonTxt||'—'}`);
   else if(sea===1) warn.push(`Saison : ${MOIS_L[m]} est une période « selon conditions ». ${I.winter||''}`);
   const cl=closuresFor(o, today, when||toISO(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()+14)));
-  cl.forEach(c=>warn.push(`Fermeture du ${dFR(c.from)} au ${dFR(c.to)} : ${c.txt}`));
+  cl.forEach(c=>warn.push(`${c.info?'À noter':'Fermeture'} ${closureWhen(c,today)} : ${c.txt}`));
   if(I.start){ const s=sunTimes(whenD,I.start.ll[0],I.start.ll[1]); if(s){ const H=(o.h||3)+1, dep=new Date(s.set.getTime()-H*36e5);
     warn.push(`Lumière${when?' le '+dFR(when):' aujourd’hui'} : lever ${hhmm(s.rise)}, coucher ${hhmm(s.set)} → pars au plus tard vers <b>${hhmm(dep)}</b> (${fmtH(o.h||3)} de marche + 1 h de marge)${m>=9||m<=2?' ; frontale dans le sac (jours courts)':''}.`); } }
   if(o.altSom>=3000) warn.push('Altitude > 3 000 m : nuit en refuge ou à ≥ 2 000 m la veille, monte lentement, bois beaucoup ; redescends si maux de tête, nausées ou vertiges.');
@@ -2431,7 +2458,7 @@ function safetyHTML(o,I){ const mon=new Date().getMonth(), v=(SEASON[o.n]||[])[m
   const grade=((o.diff+' '+(I.tech||'')).match(/\bT[1-6]\b/)||[])[0], cl=(CLOSURES[o.n]||[]).filter(c=>c.from<=today&&c.to>=today);
   const now=v==null?'':` <span class="tag s${v}">ce mois-ci : ${['déconseillé','selon conditions','idéal'][v]}</span>`;
   return `<div class="card safec" id="safeBlock"><h3>🛟 Sécurité</h3>
-  ${cl.map(c=>`<div class="warnl">⛔ <b>${c.block?'Fermé':'Fermeture en cours'}</b> jusqu’au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
+  ${cl.map(c=>closureSafeHTML(c,today)).join('')}
   <div class="kv"><b>Difficulté</b><span>${esc(o.diff)}${grade?` · cotation <b>${grade}</b>`:''}</span>
   <b>Saison</b><span>${uncMark(I.seasonTxt)}${now}</span>
   <b>Risques</b><span><ul class="steps" style="margin:0">${I.dangers.slice(0,3).map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul>${I.dangers.length>3?`<span class="small mut">+ ${I.dangers.length-3} autre${I.dangers.length>4?'s':''} dans « Dangers et précautions ».</span>`:''}</span>
@@ -2478,7 +2505,7 @@ function renderSummit(n){
     <p class="small" style="margin:8px 0 0">${uncMark(I.seasonTxt)}</p>${I.winter?`<p class="small mut" style="margin:4px 0 0">❄️ ${uncMark(I.winter)}</p>`:''}</div>
   <div class="card"><h3>⚠️ Dangers et précautions</h3><ul class="steps">${I.dangers.map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul></div>
   ${I.tips&&I.tips.length?`<div class="card"><h3>👍 Bons plans</h3><ul class="steps">${I.tips.map(d=>`<li>${uncMark(d)}</li>`).join('')}</ul></div>`:''}
-  <div class="card"><h3>🎯 Ta préparation</h3><div class="prep">${ringSVG(A.R.r,78)}<div style="flex:1"><b>${rLabel(A.R.r)}</b><div class="small mut">${f(A.st.maxD,0)} m de D+ max · ${f(A.st.wk,0)} m/sem · sortie la plus longue ${fmtH(A.st.longest/3600)} (28 j)</div></div></div>${barsHTML(A.R)}
+  <div class="card"><h3>🎯 Ta préparation</h3><div class="prep">${ringSVG(A.R.r,78)}<div style="flex:1"><b>${rLabel(A.R.r)}</b><div class="small mut">${f(A.st.maxD,0)} m de D+ max · ${f(A.st.wk,0)} m/sem · sortie la plus longue ${fmtH(A.st.longest/3600)} (28 j)</div><div class="small mut">${dayGoalHTML(o,A.st)}</div></div></div>${barsHTML(A.R)}
     ${cmpHTML(o,A.cmp,false).replace('adv-sec','adv-sec sumcmp')}
     <h4 class="h4">💡 Conseils</h4>${A.tips.map(t=>`<div class="tipl"><span>${t.ic}</span><div>${t.t}</div></div>`).join('')}
     <h4 class="h4">🌤️ Le jour J</h4>${A.warn.map(w=>`<div class="warnl">${w}</div>`).join('')}
