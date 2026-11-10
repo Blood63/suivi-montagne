@@ -157,7 +157,7 @@ function FIXTURE() {
     ok(r.set === '19h07' && r.rise === '08h00', 'coucher du soleil au col de Ceyssat le 13/10 ≈ 19h07', [r.rise, r.set]);
     ok(/hors saison/.test(r.w8) && /3 000 m/.test(r.w8), 'Barrhorn en octobre : hors saison + altitude', r.w8); ok(r.r8 < 0.8, 'Barrhorn : pas encore prêt', r.r8);
     ok(['tente','duvet','matelas','rechaud'].every(k => r.g10.includes(k)), 'GR 441 : matériel de bivouac demandé');
-    ok(r.Er === 0 && /Grosse séance/.test(r.E) && /Régularité/.test(r.E), 'sans séance : indice 0 et conseils de base', r.E.slice(0, 200));
+    ok(r.Er === 0 && /Grosse journée/.test(r.E) && /Régularité/.test(r.E), 'sans séance : indice 0 et conseils de base', r.E.slice(0, 200));
     ok(r.all, 'conseils cohérents pour tous les objectifs'); ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 7. Fiches sommet ----------
@@ -549,7 +549,7 @@ function FIXTURE() {
       svg.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,clientX:r.left+r.width*0.55,clientY:r.top+40,pointerId:1}));
       out.afterTouch=$('chWt')._sel; out.touchTxt=$('chWt').querySelector('.chart-detail').textContent;
       show('evo'); out.evoTxt=$('chW1').querySelector('.chart-detail').textContent; out.evoN=$('chW1')._c.n;
-      const A=trainingAdvice(); out.lines=A.lines.map(x=>x.t.replace(/<[^>]+>/g,'')).join(' | '); out.plan=A.plan.length;
+      const A=trainingAdvice(new Date(2026, 9, 13)); out.lines=A.lines.map(x=>x.t.replace(/<[^>]+>/g,'')).join(' | '); out.plan=A.plan.length;
       show('prep'); out.prep= $('prepTrain').textContent.includes('Conseils entraînement'); show('evo'); out.evoAdv=$('evoTrain').textContent.includes('Pour la semaine qui vient');
       return out; });
     ok(ch.n>=4 && ch.defSel===ch.n-1 && /kg/.test(ch.defTxt), 'poids : détail par défaut = dernière pesée', ch);
@@ -1455,7 +1455,7 @@ function FIXTURE() {
     ok(R.cnt === 13 && R.cl.c8 === undefined && R.cl.c12 === undefined && !/Laquets|verglas|Petit train|domaine skiable/.test(R.n12 + R.n8), 'Barrhorn, Taillon et autres fiches : aucune fermeture ni note ajoutée', [R.cnt, R.n8, R.n12]);
     ok(/verglas/.test(R.page1) && /02\/11\/2026/.test(R.page1), 'fiche affichée (Puy de Dôme n°1) : alerte et « Vérifié le 02/11/2026 »', R.page1.slice(0, 300));
     ok(/Laquets/.test(R.page6), 'fiche affichée (Pic du Midi n°6) : mention des Laquets', R.page6.slice(0, 200));
-    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v32'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v33)');
+    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v34)');
     ok(p.errs.length === 0, 'veille sommets : aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 31. v33 : dates du domaine skiable du Mont-Dore sur les fiches Sancy (n°3 et n°5 seulement) ----------
@@ -1478,8 +1478,55 @@ function FIXTURE() {
     ok(!/19\/12\/2026|21\/03\/2027|domaine skiable du Mont-Dore \(prévu/.test(R.n8 + R.n9), 'Barrhorn et Grande Sassière : notes inchangées', [R.n8, R.n9]);
     ok(/09\/11\/2026/.test(R.page3) && /19\/12\/2026/.test(R.page3), 'fiche affichée n°3 : date vérifiée et dates ski', R.page3.slice(0, 400));
     ok(/09\/11\/2026/.test(R.page5) && /21\/03\/2027/.test(R.page5), 'fiche affichée n°5 : date vérifiée et dates ski', R.page5.slice(0, 400));
-    ok(/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v33');
+    ok(/PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v34');
     ok(p.errs.length === 0, 'v33 Sancy : aucune erreur JS', p.errs); await ctx.close(); }
+
+
+  // ---------- 32. v34 : totaux d’une journée (toutes les séances du même jour) pour la préparation ----------
+  out.push('32. v34 : préparation sur le total d’une journée');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const R = await p.evaluate(() => {
+      const mk = (id, date, extra) => Object.assign({id, date, type:'Marche', dist:5, dplus:0, dminus:null, dur:3600, bpm:null, bpmMax:null, pas:null, sac:null, sauts:null, ress:null, exos:'', notes:'', updatedAt:0}, extra);
+      const ref = new Date(2026, 10, 10);
+      const o = {n:99, dplus:1000, h:5, altSom:1500, dist:12};
+      const prev = DB.sessions;
+      const run = sessions => { DB.sessions = sessions; const st = trainStats(ref); return {st, R: readiness(o, st)}; };
+      const same = run([mk('a','2026-11-08',{dplus:400,dur:3600,dist:5,dminus:380}), mk('b','2026-11-08',{dplus:300,dur:2700,dist:4,dminus:290})]);
+      const split = run([mk('a','2026-11-07',{dplus:400,dur:3600,dist:5,dminus:380}), mk('b','2026-11-08',{dplus:300,dur:2700,dist:4,dminus:290})]);
+      const single = run([mk('a','2026-11-08',{dplus:700,dur:6300,dist:9,dminus:670})]);
+      const empty = run([]);
+      const obj = OBJECTIFS[0];
+      const T = obj.multi ? obj.multi.dpJ : obj.dplus;
+      const need = Math.max(10, Math.round(.65 * T / 10) * 10);
+      const half = Math.ceil(need / 2), rest = need - half;
+      DB.sessions = [mk('p1','2026-11-08',{dplus:half,dur:4000}), mk('p2','2026-11-08',{dplus:rest,dur:4000})];
+      const Psame = planStatus(obj);
+      DB.sessions = [mk('p1','2026-11-07',{dplus:half,dur:4000}), mk('p2','2026-11-08',{dplus:rest,dur:4000})];
+      const Psplit = planStatus(obj);
+      DB.sessions = [mk('p1','2026-11-08',{dplus:need,dur:8000})];
+      const Psingle = planStatus(obj);
+      DB.sessions = prev; show('prep'); show('journal'); show('obj'); show('evo'); show('data');
+      return {
+        same:{maxD:same.st.maxD, longest:same.st.longest, maxDm:same.st.maxDm, n28:same.st.n28, a:same.R.a, best:same.st.best && same.st.best.date, dp28:same.st.dp28},
+        split:{maxD:split.st.maxD, longest:split.st.longest, maxDm:split.st.maxDm, n28:split.st.n28, a:split.R.a},
+        single:{maxD:single.st.maxD, longest:single.st.longest, a:single.R.a},
+        empty:{maxD:empty.st.maxD, longest:empty.st.longest, n28:empty.st.n28},
+        plan:{need, half, rest, p1same:!!Psame.items.find(x=>x.k==='p1').ok, p1split:!!Psplit.items.find(x=>x.k==='p1').ok, p1single:!!Psingle.items.find(x=>x.k==='p1').ok, p1t:Psame.items.find(x=>x.k==='p1').t, p0same:!!Psame.items.find(x=>x.k==='p0').ok},
+        expl:(document.querySelector('#p-prep details') || {}).innerText || '',
+        win:($('prepWin') || {}).innerText || '',
+        v:DATA_VERSION
+      };
+    });
+    ok(R.same.maxD === 700 && R.same.longest === 6300 && R.same.maxDm === 670 && R.same.best === '2026-11-08', '400 + 300 m le même jour : D+ 700, durée 6300 s, D− 670', R.same);
+    ok(R.same.a === 1 && R.same.n28 === 2 && R.same.dp28 === 700, 'critère A saturé (700 ≥ 650) ; régularité = 2 séances ; volume inchangé', R.same);
+    ok(R.split.maxD === 400 && R.split.longest === 3600 && R.split.maxDm === 380 && Math.abs(R.split.a - 400/650) < 1e-9 && R.split.n28 === 2, 'jours différents : on ne combine pas (max 400 m / 3600 s)', R.split);
+    ok(R.single.maxD === 700 && R.single.longest === 6300 && R.single.a === 1, 'une seule séance de 700 m : même résultat qu’avant', R.single);
+    ok(R.empty.maxD === 0 && R.empty.longest === 0 && R.empty.n28 === 0, 'aucune séance : totaux à 0', R.empty);
+    ok(R.plan.p1same && !R.plan.p1split && R.plan.p1single && /journée/.test(R.plan.p1t), 'plan p1 : 400+300 le même jour valide la cible, pas sur deux jours ; libellé « journée »', R.plan);
+    ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
+    ok(/somme des séances du même jour/.test(R.expl) && /plus grosse journée/.test(R.win), 'textes Prépa : légende et fenêtre parlent de journée', [R.expl.slice(0, 200), R.win]);
+    ok(/PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v34');
+    ok(p.errs.length === 0, 'v34 journée : aucune erreur JS', p.errs); await ctx.close(); }
 
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);

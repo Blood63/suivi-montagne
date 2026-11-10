@@ -354,7 +354,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 .snaprow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.snaprow:first-of-type{border-top:0}.snaprow .nm{flex:1}
 @media (prefers-reduced-motion:reduce){#p-imp{transition:none!important}}
 .grid>div{min-width:0}input[type=date],input[type=time]{min-width:0;max-width:100%;display:block}
-/* v33 : fiches Sancy n°3 et n°5 — dates du domaine skiable du Mont-Dore (19/12/2026 → 21/03/2027, sous réserve de neige) + source sancy.com ; vérifié le 09/11/2026 ; cache SW v33 ; v25 : Puy de la Vache ajouté (n° 1 affiché, clé interne 13 ; site en travaux signalé), Barrhorn en 2 jours sans escalade (n° 12) et Grande Sassière la plus difficile (n° 13), vue détaillée de l’activité quotidienne (appui sur la carte du Journal : période, indicateur, moyennes, graphiques interactifs, jour par jour), animations des graphiques plafonnées pour les longues périodes (cache v25) ; v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
+/* v34 : l’indice de préparation additionne les séances d’un même jour (champ date) pour A (D+ max), C (durée) et le D− max ; journal et séances individuelles inchangés ; cache SW v34 ; v33 : fiches Sancy n°3 et n°5 — dates du domaine skiable du Mont-Dore (19/12/2026 → 21/03/2027, sous réserve de neige) + source sancy.com ; vérifié le 09/11/2026 ; cache SW v33 ; v25 : Puy de la Vache ajouté (n° 1 affiché, clé interne 13 ; site en travaux signalé), Barrhorn en 2 jours sans escalade (n° 12) et Grande Sassière la plus difficile (n° 13), vue détaillée de l’activité quotidienne (appui sur la carte du Journal : période, indicateur, moyennes, graphiques interactifs, jour par jour), animations des graphiques plafonnées pour les longues périodes (cache v25) ; v24 : revue — heures du soleil toujours à l’heure de Paris quel que soit le fuseau de l’appareil, balayage limité aux 5 onglets de la barre du bas, carte hors-ligne bridée aux zooms préparés (tuiles agrandies au-delà), restauration d’une copie datée du jour pour que la trace GPX survive à la synchro, tests autonomes (fixtures commitées) (cache v24) ; v23 : bloc « Jour J » hors-ligne sur chaque fiche (soleil, météo heure par heure avec risque d’orage l’après-midi, heure de départ conseillée, matériel, GPX, carte préparée à la demande ≤ 180 tuiles OSM zoom ≤ 15, horodatage du cache) ; météo en cache affichée hors-ligne (cache v23) ; v22 : revue — import JSON « Fusionner » ou « Remplacer partout » (pierres tombales, copie téléchargée, synchro en pause), résumé de synchro (reçu / envoyé), journal (mois repliés, recherche, période, rendu à la demande), 5 onglets (Équipement dans Prépa, Poids dans Évolution), copies locales sans GPX et stockage plein sans tout effacer, SRI sur Leaflet/Tesseract, cache recréé si effacé par une autre appli, code mort retiré (cache v22) ; v21 : import Mi Fitness — deux séances du même type à des heures éloignées ne sont plus fusionnées par défaut ; v20 : synchro plus réactive entre appareils (retour dans l'appli dès 30 s, vérification toutes les 2 min) ; v19 : photo de chaque sommet (Wikimedia Commons, crédits affichés) sur les cartes Objectifs et en tête des fiches ; v18 : numéros affichés = rang de difficulté (1 = Muletiers … 12 = Barrhorn), stockage inchangé (clés DB.objectifs, objN, gpx) ; tri « Par numéro » retiré ; v17 : Pic du Cabaliros (n° 11) et Pic du Taillon (n° 12), fiches enrichies (variantes, technique, carte IGN, secours, bons plans), classement des objectifs par difficulté (numéros inchangés) ; v16 : poids de base de l’équipement (articles cochés), trace GPX interactive + profil altimétrique sur les fiches sommet, météo Open-Meteo au sommet ; v15 : premier chargement OCR expliqué, doublons même jour explicites ; v14 : graphiques interactifs, semaines affichées, conseils entraînement, lien d'achat */
 .bw{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(52,179,138,.10);border:1px solid rgba(52,179,138,.32);font-size:14px}.bw .miss{color:var(--warn)}
 .mapf.leaf{height:300px;background:#10201d}.leaflet-container{font:12px var(--font)}
 .wxgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.wxday{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}.wxday b{font-size:14px}
@@ -542,9 +542,9 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
     <div id="prepWin" class="mut"></div>
     <details style="margin-top:8px"><summary>Comment l’indice est calculé</summary>
     <div class="mut" style="margin-top:6px">Fenêtre : 4 dernières semaines (28 jours jusqu’à aujourd’hui).<br>
-    <b>A – Grosse séance</b> = D+ max d’une séance ÷ (65 % du D+ cible), plafonné à 100 %.<br>
+    <b>A – Grosse journée</b> = D+ max d’une journée (somme des séances du même jour) ÷ (65 % du D+ cible), plafonné à 100 %.<br>
     <b>B – Volume</b> = D+ hebdo moyen (total 28 j ÷ 4) ÷ D+ cible, plafonné à 100 %.<br>
-    <b>C – Endurance</b> = durée de ta plus longue séance ÷ (60 % de la durée de l’objectif).<br>
+    <b>C – Endurance</b> = durée totale de ta plus longue journée (somme des séances du même jour) ÷ (60 % de la durée de l’objectif).<br>
     <b>D – Régularité</b> = nombre de séances sur 28 jours ÷ 12 (3 par semaine).<br>
     <b>Indice</b> = 35 % A + 30 % B + 20 % C + 15 % D. Itinérance (GR 441) : cible = D+ moyen d’une étape, volume hebdo visé = 1,5 × ce D+. <span class="red">● &lt; 50 %</span> · <span class="orange">● 50–79 %</span> · <span class="green">● ≥ 80 %</span><br>
     ⚠️ Altitude : sommet ≥ 2 500 m → prévoir acclimatation, météo, vêtements chauds ; l’indice ne mesure pas cela.</div></details>
@@ -1646,13 +1646,16 @@ function trainPlan(o){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3, D=
   const a=r10(.4*T), ah=q(.4*H), b=r10(.65*T), c=q(.6*H), d=r10(.8*T), e=r10(.5*T);
   return [
     {k:'p0',t:`${f(a,0)} m D+ en moins de ${fmtHm(ah)}`,d:'côte ou tapis incliné, allure « je peux parler »',m:s=>s.dplus>=a&&s.dur>0&&s.dur<=ah*3600},
-    {k:'p1',t:`${f(b,0)} m D+ en une sortie`,d:'la « grosse séance » de la préparation',m:s=>s.dplus>=b},
-    {k:'p2',t:`Sortie longue de ${fmtHm(c)}`,d:`≈ ${f(Math.max(1,Math.round(.6*D)),0)} km avec du dénivelé`,m:s=>s.dur>=c*3600},
-    {k:'p3',t:`${f(d,0)} m D+ avec un sac de 6–8 kg`,d:'test du matériel complet',m:s=>s.dplus>=d&&s.sac>=6},
+    {k:'p1',t:`${f(b,0)} m D+ en une journée`,d:'la « grosse journée » de la préparation (séances du même jour additionnées)',day:1,m:s=>s.dplus>=b},
+    {k:'p2',t:`Journée longue de ${fmtHm(c)}`,d:`≈ ${f(Math.max(1,Math.round(.6*D)),0)} km avec du dénivelé`,day:1,m:s=>s.dur>=c*3600},
+    {k:'p3',t:`${f(d,0)} m D+ avec un sac de 6–8 kg`,d:'test du matériel complet (D+ des séances du jour faites avec un sac ≥ 6 kg)',day:1,m:s=>s.packDplus>=d&&s.packSac>=6},
     {k:'p4',t:`${f(e,0)} m de descente continue`,d:'quadriceps : fentes et step-downs avant',m:s=>s.dminus>=e}]; }
 function planStatus(o){ const P=trainPlan(o), st=objState(o.n), man=st.plan&&typeof st.plan==='object'?st.plan:{}, from=toISO(new Date(Date.now()-PLAN_DAYS*864e5));
-  const ss=(DB.sessions||[]).filter(s=>s&&typeof s.date==='string'&&s.date>=from).map(s=>({date:s.date,dplus:+s.dplus||0,dur:+s.dur||0,sac:+s.sac||0,dminus:+s.dminus||0}));
-  let n=0; P.forEach(x=>{ let hit=null; for(const s of ss) if(x.m(s)&&(!hit||s.date>hit.date)) hit=s; x.auto=hit; x.man=!!man[x.k]; x.ok=!!(hit||x.man); if(x.ok) n++; });
+  const raw=(DB.sessions||[]).filter(s=>s&&typeof s.date==='string'&&s.date>=from);
+  const ss=raw.map(s=>({date:s.date,dplus:+s.dplus||0,dur:+s.dur||0,sac:+s.sac||0,dminus:+s.dminus||0}));
+  const days=dayTotals(raw).map(d=>{ const packed=raw.filter(s=>s.date===d.date&&(+s.sac||0)>=6);
+    return Object.assign({},d,{packDplus:packed.reduce((t,s)=>t+(+s.dplus||0),0),packSac:packed.reduce((m,s)=>Math.max(m,+s.sac||0),0)}); });
+  let n=0; P.forEach(x=>{ let hit=null; const pool=x.day?days:ss; for(const s of pool) if(x.m(s)&&(!hit||s.date>hit.date)) hit=s; x.auto=hit; x.man=!!man[x.k]; x.ok=!!(hit||x.man); if(x.ok) n++; });
   return {items:P,done:n,pct:n/P.length}; }
 function planToggle(n,k){ const st=objState(n), p=Object.assign({},st.plan&&typeof st.plan==='object'?st.plan:{}); if(p[k]) delete p[k]; else p[k]=Date.now();
   st.plan=p; st.updatedAt=Date.now(); DB.objectifs[n]=st; save(); }
@@ -1660,10 +1663,10 @@ function planHTML(o){ const P=planStatus(o), R=readiness(o,trainStats(new Date()
   return `<div class="card" id="planCard"><div class="row" style="justify-content:space-between"><h3 style="margin:0">🏋️ Plan pour ce sommet</h3><span class="tag">${P.done}/${P.items.length}</span></div>
   <div class="small mut">Cibles tirées du sommet : ${f(M?M.dpJ:o.dplus,0)} m D+ · ${f(M?o.dist/M.jours:o.dist,1)} km · ≈ ${fmtH(M?M.hJ:o.h)}${M?' par jour':''}</div>
   <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="${P.items.length}" aria-valuenow="${P.done}" aria-label="Plan d’entraînement"><i style="width:${Math.round(P.pct*100)}%"></i></div>
-  ${P.items.map(x=>`<button type="button" class="ptk${x.ok?' ok':''}${x.auto?' auto':''}" data-plan="${x.k}" aria-pressed="${x.ok}"><i aria-hidden="true">${x.ok?'✓':''}</i><span><b>${esc(x.t)}</b><small>${esc(x.d)}${x.auto?` · <em>fait le ${dFR(x.auto.date)} (séance)</em>`:x.man?' · coché à la main':''}</small></span></button>`).join('')}
-  <div class="small" style="margin-top:8px">Le plan compte pour 30 % de la préparation : <b>${Math.round(Math.min(1,R.r)*100)} %</b> aujourd’hui. Une séance qui atteint la cible coche la case toute seule.</div></div>`; }
+  ${P.items.map(x=>`<button type="button" class="ptk${x.ok?' ok':''}${x.auto?' auto':''}" data-plan="${x.k}" aria-pressed="${x.ok}"><i aria-hidden="true">${x.ok?'✓':''}</i><span><b>${esc(x.t)}</b><small>${esc(x.d)}${x.auto?` · <em>fait le ${dFR(x.auto.date)}${x.day?' (journée)':' (séance)'}</em>`:x.man?' · coché à la main':''}</small></span></button>`).join('')}
+  <div class="small" style="margin-top:8px">Le plan compte pour 30 % de la préparation : <b>${Math.round(Math.min(1,R.r)*100)} %</b> aujourd’hui. Les séances d’un même jour s’additionnent pour le D+ et la durée ; une cible atteinte coche la case toute seule.</div></div>`; }
 function planClick(e){ const b=e.target.closest('[data-plan]'); if(!b||!curSum) return; const o=OBJECTIFS.find(x=>x.n===curSum), x=planStatus(o).items.find(i=>i.k===b.dataset.plan); if(!x) return;
-  if(x.auto){ toast('Déjà validé par ta séance du '+dFR(x.auto.date)); return; }
+  if(x.auto){ toast('Déjà validé le '+dFR(x.auto.date)); return; }
   const y=scrollY; planToggle(curSum,x.k); renderAll(); scrollTo(0,y); toast(x.man?'Séance décochée':'Séance cochée : préparation mise à jour'); }
 
 /* ---------- v29 : « Ta prochaine étape » en tête du Journal (prochain sommet, ce qui manque, séance du jour, 2 actions) ---------- */
@@ -1747,7 +1750,7 @@ function readinessWindow(){ const end=new Date(); const start=new Date(end.getFu
 function renderPrep(){
   const ta=$('prepTrain'); if(ta) ta.innerHTML=trainingAdviceHTML();
   const [A,B]=readinessWindow(); const st=trainStats(new Date());
-  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse séance <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue <b>${fmtH(st.longest/3600)}</b>`;
+  $('prepWin').innerHTML=`Du ${dFR(A)} au ${dFR(B)} : ${st.n28} séances · D+ total ${f(st.dp28,0)} m · D+ hebdo moyen <b>${f(st.wk,0)} m</b> · plus grosse journée <b>${f(st.maxD,0)} m</b>${st.best?' ('+dFR(st.best.date)+')':''} · plus longue journée <b>${fmtH(st.longest/3600)}</b>`;
   $('prepList').innerHTML=OBJ_BY_DIFF.map(o=>{ const R=readiness(o,st), st2=objState(o.n);
     return `<div class="card"><div class="sumlink" data-sum="${o.n}" role="button" tabindex="0"><div class="prep">${ringSVG(R.r,78)}
     <div style="flex:1;min-width:0"><h3 style="margin:0">${diffRank(o.n)}. ${esc(o.sommet)}<span class="go">fiche ›</span></h3><div class="small mut">Niveau ${diffRank(o.n)}/${OBJECTIFS.length} · ${esc(o.iti)}</div><div class="small mut">D+ cible ≈ ${f(R.T,0)} m${o.multi?' / étape':''} · sommet ${f(o.altSom,0)} m · ${fmtH(R.H)}${o.multi?' / jour':''}</div></div></div>
@@ -2064,21 +2067,35 @@ const PARIS_HM=(()=>{ try{ const F=new Intl.DateTimeFormat('en-GB',{timeZone:'Eu
 const hourP=d=>{ const [h,m]=PARIS_HM(d); return h+m/60; };
 const hhmm=d=>{ const [h,m]=PARIS_HM(d); return String(h).padStart(2,'0')+'h'+String(m).padStart(2,'0'); };
 const WALK_TYPES=/^(Marche|Randonnée|Trail|Tapis)/;
+// v34 : totaux d’un jour civil d’après le champ date de chaque séance (YYYY-MM-DD saisi, calendrier local / Europe/Paris).
+// Sert à évaluer A (D+), C (durée) et le D− max sur la meilleure journée, sans modifier le stockage.
+function dayTotals(list){
+  const by={};
+  for(const s of list||[]){
+    const k=s&&s.date; if(!k) continue;
+    const t=by[k]||(by[k]={date:k,dplus:0,dur:0,dist:0,dminus:0,n:0});
+    t.dplus+=(+s.dplus||0); t.dur+=(+s.dur||0); t.dist+=(+s.dist||0);
+    t.dminus+=s.dminus!=null?(+s.dminus||0):(isTapis(s.type)?0:(+s.dplus||0));
+    t.n++;
+  }
+  return Object.values(by);
+}
 function trainStats(ref){
   ref=ref||new Date(); const day=k=>toISO(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()-k));
   const T=toISO(ref), A28=day(27), A7=day(6), A14=day(13), A56=day(55);
   const S=DB.sessions.filter(s=>s.date<=T), w28=S.filter(s=>s.date>=A28), w7=S.filter(s=>s.date>=A7), l14=S.filter(s=>s.date>=A14), p14=w28.filter(s=>s.date<A14);
   const sum=(l,k)=>l.reduce((t,s)=>t+(+s[k]||0),0), mx=(l,f)=>Math.max(0,...l.map(f));
-  const maxD=mx(w28,s=>s.dplus||0), best=w28.find(s=>(s.dplus||0)===maxD&&maxD>0)||null;
+  const days28=dayTotals(w28);
+  const maxD=mx(days28,d=>d.dplus||0), best=days28.find(d=>(d.dplus||0)===maxD&&maxD>0)||null;
   const last=S.map(s=>s.date).sort().pop()||null;
   // FC moyenne à allure comparable (séances de marche / tapis avec FC et vitesse) : 14 derniers jours vs 14 précédents
   const hr=l=>{ const x=l.filter(s=>WALK_TYPES.test(s.type)&&s.bpm&&speed(s)); if(x.length<2) return null; return {bpm:x.reduce((t,s)=>t+s.bpm,0)/x.length, v:x.reduce((t,s)=>t+speed(s),0)/x.length, n:x.length}; };
   return { ref:T, n28:w28.length, n7:w7.length, dp28:sum(w28,'dplus'), wk:sum(w28,'dplus')/4, dp7:sum(w7,'dplus'), dp14:sum(l14,'dplus'), dpP14:sum(p14,'dplus'),
-    maxD, best, longest:mx(w28,s=>s.dur||0), dur28:sum(w28,'dur'), km28:sum(w28,'dist'), last, daysSince:last?Math.round((parseISO(T)-parseISO(last))/864e5):null,
-    sacMax:mx(S.filter(s=>s.date>=A56),s=>s.sac||0), maxDm:mx(w28,s=>s.dminus!=null?s.dminus:(isTapis(s.type)?0:(s.dplus||0))),
+    maxD, best, longest:mx(days28,d=>d.dur||0), dur28:sum(w28,'dur'), km28:sum(w28,'dist'), last, daysSince:last?Math.round((parseISO(T)-parseISO(last))/864e5):null,
+    sacMax:mx(S.filter(s=>s.date>=A56),s=>s.sac||0), maxDm:mx(days28,d=>d.dminus||0),
     hrNow:hr(l14), hrPrev:hr(p14), muscu28:w28.filter(s=>s.type==='Musculation').length };
 }
-// Indice de préparation : A grosse séance (35 %), B volume hebdo (30 %), C endurance (20 %), D régularité (15 %)
+// Indice de préparation : A grosse journée (35 %), B volume hebdo (30 %), C endurance (20 %), D régularité (15 %)
 function readiness(o,st){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3;
   const a=Math.min(1,st.maxD/(0.65*T)), b=Math.min(1,st.wk/(M?1.5*T:T)), c=Math.min(1,st.longest/(0.6*H*3600)), d=Math.min(1,st.n28/12);
   const r0=0.35*a+0.3*b+0.2*c+0.15*d, P=planStatus(o); // v29 : le plan du sommet compte pour 30 %
@@ -2103,15 +2120,15 @@ function advise(o, ref){
   const today=toISO(ref), when=S.datePrevue&&S.datePrevue>=today? S.datePrevue : null, whenD=when?parseISO(when):ref;
   const tips=[], warn=[], plan=[];
   const T=R.T, big=Math.round(0.65*T/10)*10, kmT=x=>Math.max(1,Math.round(x/120*2)/2); // km de tapis à 12 % pour x m
-  // 1. grosse séance
-  if(R.a<1) tips.push({ic:'⛰️',t:`Grosse séance : vise au moins <b>${f(big,0)} m de D+</b> en une sortie (meilleure des 4 dernières semaines : ${f(st.maxD,0)} m). Ex. tapis à 12 % : ${f(kmT(big),1)} km ≈ ${f(big,0)} m, ou répétitions de côte.`});
+  // 1. grosse journée
+  if(R.a<1) tips.push({ic:'⛰️',t:`Grosse journée : vise au moins <b>${f(big,0)} m de D+</b> sur une journée (meilleure des 4 dernières semaines : ${f(st.maxD,0)} m ; plusieurs séances le même jour s’additionnent). Ex. tapis à 12 % : ${f(kmT(big),1)} km ≈ ${f(big,0)} m, ou répétitions de côte.`});
   // 2. volume
   const wkT=M?1.5*T:T;
   if(R.b<1){ const next=st.wk>0? Math.min(wkT, Math.round(st.wk*1.15/10)*10) : Math.round(0.3*wkT/10)*10;
     tips.push({ic:'📈',t:`Volume : passe de ${f(st.wk,0)} à <b>≈ ${f(next,0)} m de D+ cette semaine</b> (cible ${f(wkT,0)} m/sem ; +10–15 % par semaine maximum pour éviter la blessure).`}); }
   // 3. endurance
   if(R.c<1){ const goal=0.6*R.H, next=Math.min(goal, st.longest/3600*1.2+0.25);
-    tips.push({ic:'⏱️',t:`Endurance : allonge ta sortie la plus longue à <b>${fmtH(next)}</b> (actuellement ${fmtH(st.longest/3600)} ; objectif ${fmtH(goal)} avant le jour J${M?', puis deux jours d’affilée':''}).`}); }
+    tips.push({ic:'⏱️',t:`Endurance : allonge ta journée la plus longue à <b>${fmtH(next)}</b> (actuellement ${fmtH(st.longest/3600)} ; objectif ${fmtH(goal)} avant le jour J${M?', puis deux jours d’affilée':''}).`}); }
   // 4. régularité
   if(R.d<1) tips.push({ic:'📅',t:`Régularité : ${st.n28} séances en 4 semaines. Vise <b>3 séances par semaine</b> (une longue, une en côte, une de renforcement).`});
   // 5. descente
@@ -2134,7 +2151,7 @@ function advise(o, ref){
   if(st.muscu28===0 && R.r<0.8) tips.push({ic:'🏋️',t:'Renforcement : aucune séance de musculation en 4 semaines. 2 × 30 min/sem (squats, fentes, step-ups, gainage, mollets) protègent genoux et chevilles.'});
   if(R.r>=0.8){ tips.unshift({ic:'✅',t:`Tu as le niveau pour cet objectif : entretiens (2–3 séances/sem) et allège la semaine précédente${when?' (dernière grosse séance 4–5 jours avant le '+dFR(when)+')':''}.`});
     const nx2=OBJ_BY_DIFF.find(x=>x.n!==o.n&&OBJ_BY_DIFF.indexOf(x)>OBJ_BY_DIFF.indexOf(o)&&objState(x.n).statut!=='Fait');
-    if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)}&nbsp;%. ${R2.a<1?'Monte progressivement ta grosse séance vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
+    if(nx2){ const R2=readiness(nx2,st), T2=nx2.multi?nx2.multi.dpJ:nx2.dplus; tips.push({ic:'🔭',t:`Et après : <b>${esc(nx2.sommet)}</b> par ${esc(nx2.iti.replace(/\s*\(.*\)$/,''))} (${f(T2,0)} m D+${nx2.multi?'/jour':''}) — préparation ${f(R2.r*100,0)}&nbsp;%. ${R2.a<1?'Monte progressivement ta grosse journée vers '+f(Math.round(0.65*T2/10)*10,0)+' m.':R2.b<1?'Augmente le volume hebdo vers '+f(nx2.multi?1.5*T2:T2,0)+' m.':'Tu es déjà bien parti.'}`}); } }
   // Saison, météo, fermetures, jour
   const m=whenD.getMonth(), sea=(SEASON[o.n]||[])[m];
   if(sea===0) warn.push(`Saison : ${MOIS_L[m]} est hors saison pour cet itinéraire. ${I.winter||''} Période conseillée : ${I.seasonTxt||'—'}`);
@@ -2161,7 +2178,7 @@ function fmtH(h){ if(h==null||!isFinite(h)) return '–'; const m=Math.round(h*6
 function ringSVG(r,size,o={}){ const big=size>100, R=big?52:33, W=big?124:78, C=2*Math.PI*R, col=o.col||rCol(r), c=o.cls!=null?o.cls:rCls(r), suf=o.suf!=null?o.suf:'%', v=Math.max(0,Math.min(1,r));
   return `<div class="ring${big?' big':''}" role="img" aria-label="${o.label||'Préparation'} ${f(r*100,0)} ${suf}"><svg viewBox="0 0 ${W} ${W}"><circle class="trk" cx="${W/2}" cy="${W/2}" r="${R}"/><circle class="val" cx="${W/2}" cy="${W/2}" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${(C*(1-v)).toFixed(2)}"/></svg><div class="lbl ${c}"><span data-count="${Math.round(r*100)}">${f(r*100,0)}</span><small>${suf}</small></div></div>`; }
 function barsHTML(R){ const row=(l,v,g)=>`<span>${l}</span><div class="bar pre"><i style="--v:${v.toFixed(3)};background:${g}"></i></div><b>${f(v*100,0)} %</b>`;
-  return `<div class="mini">${row('A · grosse séance',R.a,'linear-gradient(90deg,#4aa8d4,#7cc8ea)')}${row('B · volume hebdo',R.b,'linear-gradient(90deg,#f97316,#fdba74)')}${row('C · endurance',R.c,'linear-gradient(90deg,#1f6f54,#34b38a)')}${row('D · régularité',R.d,'linear-gradient(90deg,#8b9a97,#c9d6d3)')}</div>`; }
+  return `<div class="mini">${row('A · grosse journée',R.a,'linear-gradient(90deg,#4aa8d4,#7cc8ea)')}${row('B · volume hebdo',R.b,'linear-gradient(90deg,#f97316,#fdba74)')}${row('C · endurance',R.c,'linear-gradient(90deg,#1f6f54,#34b38a)')}${row('D · régularité',R.d,'linear-gradient(90deg,#8b9a97,#c9d6d3)')}</div>`; }
 function trainingAdvice(ref){ ref=ref||new Date(); const T=toISO(ref), D=k=>addDays(T,-k);
   const sum=(L,k)=>L.reduce((t,x)=>t+(+x[k]||0),0);
   const inR=(a,b)=>DB.sessions.filter(x=>x.date>=a&&x.date<=b);
@@ -2170,7 +2187,7 @@ function trainingAdvice(ref){ ref=ref||new Date(); const T=toISO(ref), D=k=>addD
   const a14={dplus:sum(L14,'dplus'),dist:sum(L14,'dist')}, ap14={dplus:sum(Lprev14,'dplus'),dist:sum(Lprev14,'dist')};
   const G=stepGoal(), DS=(DB.daily||[]).length?dailyStats(ref):null;
   const last=DB.sessions.map(x=>x.date).filter(d=>d<=T).sort().pop()||null, since=last?Math.round((parseISO(T)-parseISO(last))/864e5):null;
-  const longest7=L7.length?Math.max(0,...L7.map(x=>x.dur||0)):0;
+  const longest7=Math.max(0,...dayTotals(L7).map(d=>d.dur||0));
   const wkAvg=L28.length?sum(L28,'dplus')/4:0;
   const trend=(now,prev)=>prev>0?Math.round((now-prev)/prev*100):null;
   const td=trend(a14.dplus,ap14.dplus), tk=trend(a14.dist,ap14.dist);
