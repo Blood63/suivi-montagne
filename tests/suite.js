@@ -1438,12 +1438,12 @@ function FIXTURE() {
       r.n12 = o(12).note; r.n8 = o(8).note; r.n13 = o(13).verifiedAt; r.cnt = OBJECTIFS.length;
       openSummitNoPush(1); r.page1 = document.getElementById('safeBlock').textContent; r.src1 = Array.from(document.querySelectorAll('#view a[href], #safeBlock a, a')).map(a => a.href).join(' ');
       openSummitNoPush(6); r.page6 = document.body.innerText; return r; });
-    ok(R.ver[0] === '2026-11-02' && R.ver[2] === '2026-11-02' && R.ver[4] === '2026-11-16' && R.ver[5] === '2026-11-16', '« Vérifié le » = 02/11/2026 sur les fiches 1 et 4 ; 16/11/2026 sur Pic du Midi 6 et 7 (v36)', R.ver);
+    ok(R.ver[0] === '2026-11-16' && R.ver[2] === '2026-11-02' && R.ver[4] === '2026-11-16' && R.ver[5] === '2026-11-16', '« Vérifié le » = 16/11/2026 sur Muletiers n°1 (v37), 02/11/2026 sur La Rhune n°4 ; 16/11/2026 sur Pic du Midi 6 et 7 (v36)', R.ver);
     ok(R.ver[1] === '2026-11-09' && R.ver[3] === '2026-11-09', '« Vérifié le » = 09/11/2026 sur les fiches Sancy 3 et 5 (v33)', R.ver);
     ok(R.autres === '2:2026-11-16,8:2026-11-10,9:2026-11-16,10:2026-10-20,11:2026-10-20,12:2026-10-20,13:2026-10-27', 'fiches hors veille du 02/11 : Barrhorn n°8 et Grande Sassière n°9 au 10/11/2026 (v35), les autres inchangées', R.autres);
     ok(!/5 au 16\/10|travaux/.test(R.n1.note) && /verglas/.test(R.n1.note) && /neige/.test(R.n1.note), 'Puy de Dôme n°1 : plus de mention des travaux du 5 au 16/10, alerte verglas/neige', R.n1.note);
     ok(!R.n1.urls.some(u => /puy-de-dome\.ffrandonnee\.fr/.test(u)) && R.n1.urls.includes('https://volcan.puy-de-dome.fr/infos-pratiques/acces-au-sommet.html') && R.n1.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/'), 'Puy de Dôme n°1 : lien FFRandonnée mort retiré, sources valides présentes', R.n1.urls);
-    ok(R.cl.c1 === 2, 'Puy de Dôme n°1 : historique des fermetures passées conservé (additif)', R.cl.c1);
+    ok(R.cl.c1 === 4, 'Puy de Dôme n°1 : historique des fermetures passées conservé + 2 bandeaux Panoramique (additif)', R.cl.c1);
     ok(/domaine skiable du Mont-Dore/.test(R.n3.note) && /19\/12\/2026/.test(R.n3.note) && /21\/03\/2027/.test(R.n3.note) && /sous réserve de neige/.test(R.n3.note) && R.n3.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.n3.urls.includes('https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/') && R.cl.c3 === 2, 'Sancy n°3 : dates domaine skiable 19/12/2026–21/03/2027, sources, téléphérique + interdiction à pied (v35)', R.n3);
     ok(/domaine skiable du Mont-Dore/.test(R.n5.note) && /19\/12\/2026/.test(R.n5.note) && /21\/03\/2027/.test(R.n5.note) && /sous réserve de neige/.test(R.n5.note) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5.note) && /crêtes du Sancy non praticables/.test(R.n5.note) && R.n5.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.n5.urls.includes('https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/'), 'Sancy n°5 : dates domaine skiable, Grande Cascade, source ski', R.n5);
     ok(R.cl.c5.length === 1 && R.cl.c5[0].from === '2026-11-15' && R.cl.c5[0].to === '2027-04-01' && !R.cl.c5[0].block, 'Sancy n°5 : fermeture Grande Cascade du 15/11/2026 au 01/04/2027 (non bloquante)', R.cl.c5);
@@ -1453,9 +1453,9 @@ function FIXTURE() {
       ok(['https://picdumidi.com/fr/horaires-periodes', 'https://picdumidi.com/fr/page/rando', 'https://inforoute.ha-py.fr/'].every(u => nt.urls.includes(u)), 'Pic du Midi n°' + n + ' : trois sources ajoutées', nt.urls); }
     ok(/Petit train fermé depuis le 01\/11\/2026 jusqu’à la saison 2027/.test(R.n4.note) && !/Descente possible en petit train/.test(R.n4.note), 'La Rhune n°4 : petit train fermé depuis le 01/11 jusqu’à la saison 2027', R.n4.note);
     ok(R.cnt === 13 && R.cl.c8 === undefined && R.cl.c12 === undefined && !/Laquets|verglas|Petit train|domaine skiable/.test(R.n12 + R.n8), 'Barrhorn, Taillon et autres fiches : aucune fermeture ni note ajoutée', [R.cnt, R.n8, R.n12]);
-    ok(/verglas/.test(R.page1) && /02\/11\/2026/.test(R.page1), 'fiche affichée (Puy de Dôme n°1) : alerte et « Vérifié le 02/11/2026 »', R.page1.slice(0, 300));
+    ok(/verglas/.test(R.page1) && /16\/11\/2026/.test(R.page1), 'fiche affichée (Puy de Dôme n°1) : alerte et « Vérifié le 16/11/2026 » (v37)', R.page1.slice(0, 300));
     ok(/Laquets/.test(R.page6), 'fiche affichée (Pic du Midi n°6) : mention des Laquets', R.page6.slice(0, 200));
-    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v35'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) === false && /PREFIX \+ 'v36'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v36)');
+    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v35'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) === false && /PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v37)');
     ok(p.errs.length === 0, 'veille sommets : aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 31. v33 : dates du domaine skiable du Mont-Dore sur les fiches Sancy (n°3 et n°5 seulement) ----------
@@ -1474,11 +1474,11 @@ function FIXTURE() {
     ok(/19\/12\/2026/.test(R.n3) && /21\/03\/2027/.test(R.n3) && /sous réserve de neige/.test(R.n3) && /domaine skiable du Mont-Dore/.test(R.n3), 'Sancy n°3 : note avec dates du domaine skiable', R.n3);
     ok(/19\/12\/2026/.test(R.n5) && /21\/03\/2027/.test(R.n5) && /sous réserve de neige/.test(R.n5) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5), 'Sancy n°5 : note avec dates + Grande Cascade conservée', R.n5);
     ok(R.u3.includes(skiUrl) && R.u5.includes(skiUrl), 'Sancy n°3 et n°5 : source station de ski du Mont-Dore ajoutée', [R.u3, R.u5]);
-    ok(R.autres === '1:2026-11-02,2:2026-11-16,4:2026-11-02,6:2026-11-16,7:2026-11-16,8:2026-11-10,9:2026-11-16,10:2026-10-20,11:2026-10-20,12:2026-10-20,13:2026-10-27', 'hors Sancy : Barrhorn n°8 et Grande Sassière n°9 au 10/11/2026 (v35), les autres dates inchangées', R.autres);
+    ok(R.autres === '1:2026-11-16,2:2026-11-16,4:2026-11-02,6:2026-11-16,7:2026-11-16,8:2026-11-10,9:2026-11-16,10:2026-10-20,11:2026-10-20,12:2026-10-20,13:2026-10-27', 'hors Sancy : Barrhorn n°8 et Grande Sassière n°9 au 10/11/2026 (v35), les autres dates inchangées', R.autres);
     ok(!/19\/12\/2026|21\/03\/2027|domaine skiable du Mont-Dore \(prévu/.test(R.n8 + R.n9), 'Barrhorn et Grande Sassière : notes inchangées', [R.n8, R.n9]);
     ok(/09\/11\/2026/.test(R.page3) && /19\/12\/2026/.test(R.page3), 'fiche affichée n°3 : date vérifiée et dates ski', R.page3.slice(0, 400));
     ok(/09\/11\/2026/.test(R.page5) && /21\/03\/2027/.test(R.page5), 'fiche affichée n°5 : date vérifiée et dates ski', R.page5.slice(0, 400));
-    ok(/PREFIX \+ 'v36'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v36');
+    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
     ok(p.errs.length === 0, 'v33 Sancy : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1525,7 +1525,7 @@ function FIXTURE() {
     ok(R.plan.p1same && !R.plan.p1split && R.plan.p1single && /journée/.test(R.plan.p1t), 'plan p1 : 400+300 le même jour valide la cible, pas sur deux jours ; libellé « journée »', R.plan);
     ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
     ok(/somme des séances du même jour/.test(R.expl) && /plus grosse journée/.test(R.win), 'textes Prépa : légende et fenêtre parlent de journée', [R.expl.slice(0, 200), R.win]);
-    ok(/PREFIX \+ 'v36'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v36');
+    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
     ok(p.errs.length === 0, 'v34 journée : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1623,7 +1623,7 @@ function FIXTURE() {
     ok(R.R0.a === R.R1.a && R.R0.b === R.R1.b && R.R0.c === R.R1.c && R.R0.d === R.R1.d && R.R0.r0 === R.R1.r0, 'distance / 2 jours : indication seulement, pas de nouveau coefficient dans l’indice', [R.R0, R.R1]);
     ok(/Meilleure journée/.test(R.day8) && /18/.test(R.day8) && /deux jours d’affilée/.test(R.day8) && /Meilleure journée/.test(R.day1) && !/deux jours d’affilée/.test(R.day1), 'repère km sur tous les objectifs ; « deux jours d’affilée » seulement si multi-jours', [R.day8, R.day1]);
     ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
-    ok(/PREFIX \+ 'v36'/.test(sw) && /"short_name": "Suivi Montagne"/.test(man) && !/<\/html>[\s\S]*<html/.test(idx), 'SW à jour, manifeste valide, index.html non découpé');
+    ok(/PREFIX \+ 'v37'/.test(sw) && /"short_name": "Suivi Montagne"/.test(man) && !/<\/html>[\s\S]*<html/.test(idx), 'SW à jour, manifeste valide, index.html non découpé');
     ok(p.errs.length === 0, 'v35 : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1652,8 +1652,45 @@ function FIXTURE() {
     { const a = await p.evaluate(() => { show('obj'); show('journal'); return {n:document.querySelectorAll('#objList [data-k]').length, unl:Array.from(document.querySelectorAll('#objList [data-k]')).filter(e => !e.getAttribute('aria-label')).length, flt:document.getElementById('fltType').getAttribute('aria-label')}; });
       ok(a.unl === 0 && a.flt === 'Type de séance', 'champs des objectifs (statut, dates) et filtre du journal : nom accessible', a); }
     ok(R.cnt === 13, '13 objectifs, numéros inchangés', R.cnt);
-    ok(/PREFIX \+ 'v36'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v36');
+    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
     ok(p.errs.length === 0, 'v36 : aucune erreur JS', p.errs); await ctx.close(); }
+
+
+  // ---------- 35. v37 : musculation hors endurance ; Muletiers n°1 : horaires du Panoramique ----------
+  out.push('35. v37 : musculation hors endurance, Muletiers n°1');
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const R = await p.evaluate(() => {
+      const mk = (id, date, type, extra) => Object.assign({id, date, type, dist:null, dplus:0, dminus:null, dur:3600, bpm:null, bpmMax:null, pas:null, sac:null, sauts:null, ress:null, exos:'', notes:'', updatedAt:0}, extra);
+      const ref = new Date(2026, 10, 10), o = {n:99, dplus:1000, h:5, altSom:1500, dist:12}, prev = DB.sessions;
+      const run = L => { DB.sessions = L; const st = trainStats(ref); return {longest:st.longest, maxD:st.maxD, n28:st.n28, maxKm:st.maxKm, c:readiness(o, st).c, muscu28:st.muscu28}; };
+      const walkMuscu = run([mk('a','2026-11-08','Marche',{dur:3600, dplus:300, dist:5}), mk('b','2026-11-08','Musculation',{dur:3600}), mk('c','2026-11-08','Randonnée',{dur:1800, dplus:200, dist:3})]);
+      const walkOnly = run([mk('a','2026-11-08','Marche',{dur:3600, dplus:300, dist:5}), mk('c','2026-11-08','Randonnée',{dur:1800, dplus:200, dist:3})]);
+      const muscuOnly = run([mk('b','2026-11-08','Musculation',{dur:7200})]);
+      const corde = run([mk('a','2026-11-08','Marche',{dur:3600}), mk('d','2026-11-08','Corde à sauter',{dur:600})]);
+      const obj = OBJECTIFS[0], P = (obj.multi ? obj.multi.hJ : obj.h) || 3, c = Math.max(.25, Math.round(.6 * P * 4) / 4), T0 = todayISO();
+      DB.sessions = [mk('m',T0,'Musculation',{dur:Math.ceil(c * 3600) + 600})]; const p2m = !!planStatus(obj).items.find(x => x.k === 'p2').auto;
+      DB.sessions = [mk('w',T0,'Marche',{dur:Math.ceil(c * 3600) + 600})]; const p2w = !!planStatus(obj).items.find(x => x.k === 'p2').auto;
+      DB.sessions = [mk('w1',T0,'Marche',{dur:Math.ceil(c * 1800) + 300}), mk('w2',T0,'Marche',{dur:Math.ceil(c * 1800) + 300}), mk('m',T0,'Musculation',{dur:3600})]; const p2day = !!planStatus(obj).items.find(x => x.k === 'p2').auto;
+      DB.sessions = [mk('w1',T0,'Marche',{dur:Math.ceil(c * 1800)}), mk('m',T0,'Musculation',{dur:Math.ceil(c * 1800) + 3600})]; const p2mix = !!planStatus(obj).items.find(x => x.k === 'p2').auto;
+      const dt = dayTotals([mk('a','2026-11-08','Marche',{dur:100}), mk('b','2026-11-08','Musculation',{dur:50})])[0];
+      DB.sessions = prev; show('prep');
+      const det = document.querySelector('#p-prep details'), expl = det ? (det.querySelector('.mut') || det).textContent : '';
+      const x = OBJECTIFS.find(z => z.n === 1); openSummitNoPush(1); const page1 = (document.getElementById('view') || document.body).innerText;
+      return {walkMuscu, walkOnly, muscuOnly, corde, p2m, p2w, p2day, p2mix, dt, expl, v1:x.verifiedAt, n1:x.note, u1:x.src.map(s => s[1]), c1:CLOSURES[1],
+        s1:CLOSURES[1].slice(2).map(c => closureSafeHTML(c, '2026-11-17')).join(' '), card1:closureCardHTML(CLOSURES[1][3], '2026-11-21'), page1, v:DATA_VERSION, block1:closuresFor(x, '2026-11-17', '2026-11-17').some(c => c.block)}; });
+    ok(R.walkMuscu.longest === 5400 && R.walkOnly.longest === 5400, 'marche 1 h + rando 30 min + muscu 1 h le même jour : endurance = 1 h 30 (muscu exclue, somme du jour conservée)', [R.walkMuscu, R.walkOnly]);
+    ok(R.walkMuscu.c === R.walkOnly.c && R.walkMuscu.maxD === 500 && R.walkMuscu.n28 === 3 && R.walkMuscu.muscu28 === 1, 'critère C identique avec ou sans muscu ; D+ du jour (500) et régularité (3 séances) inchangés', R.walkMuscu);
+    ok(R.muscuOnly.longest === 0 && R.muscuOnly.c === 0 && R.muscuOnly.n28 === 1, 'journée de muscu seule : 0 en endurance, mais comptée en régularité', R.muscuOnly);
+    ok(R.corde.longest === 4200, 'autres types (corde à sauter) toujours additionnés à la journée', R.corde);
+    ok(!R.p2m && R.p2w && R.p2day && !R.p2mix, 'plan « Journée longue » : muscu exclue, marches du même jour additionnées', [R.p2m, R.p2w, R.p2day, R.p2mix]);
+    ok(R.dt.dur === 150 && R.dt.durEnd === 100, 'dayTotals : durée totale gardée (journal) + durée d’endurance hors muscu', R.dt);
+    ok(/hors musculation/.test(R.expl), 'légende : critère C « hors musculation »', R.expl.slice(0, 400));
+    ok(R.v1 === '2026-11-16' && /16 au 20\/11\/2026/.test(R.n1) && /17 h 30/.test(R.n1) && /lundis et mardis/.test(R.n1) && R.u1.includes('https://www.panoramiquedesdomes.fr/fermeture-maintenance-annuelle/'), 'Muletiers n°1 : horaires d’hiver du Panoramique, source, vérifié le 16/11/2026', R.n1);
+    ok(R.c1.length === 4 && R.c1.slice(2).every(c => c.info && !c.block) && R.c1[2].from === '2026-11-16' && R.c1[2].to === '2026-11-20' && !R.block1, 'Muletiers n°1 : 2 bandeaux informatifs ajoutés, historique conservé, rien de bloquant', R.c1);
+    ok(/ℹ️/.test(R.s1) && !/⛔/.test(R.s1) && /17 h 30/.test(R.card1) && /16\/11\/2026/.test(R.page1), 'Muletiers n°1 : bandeaux ℹ️ et fiche affichée à jour', [R.s1.slice(0, 200), R.card1]);
+    ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
+    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
+    ok(p.errs.length === 0, 'v37 : aucune erreur JS', p.errs); await ctx.close(); }
 
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
