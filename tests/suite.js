@@ -1464,7 +1464,7 @@ function FIXTURE() {
     ok(R.cl.c1 === 4, 'Puy de Dôme n°1 : historique des fermetures passées conservé + 2 bandeaux Panoramique (additif)', R.cl.c1);
     ok(/domaine skiable du Mont-Dore/.test(R.n3.note) && /19\/12\/2026/.test(R.n3.note) && /21\/03\/2027/.test(R.n3.note) && /sous réserve de neige/.test(R.n3.note) && R.n3.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.n3.urls.includes('https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/') && R.cl.c3 === 2, 'Sancy n°3 : dates domaine skiable 19/12/2026–21/03/2027, sources, téléphérique + interdiction à pied (v35)', R.n3);
     ok(/domaine skiable du Mont-Dore/.test(R.n5.note) && /19\/12\/2026/.test(R.n5.note) && /21\/03\/2027/.test(R.n5.note) && /sous réserve de neige/.test(R.n5.note) && /Grande Cascade interdite du 15\/11 au 01\/04/.test(R.n5.note) && /crêtes du Sancy non praticables/.test(R.n5.note) && R.n5.urls.includes('https://www.puydedome-tourisme.com/randonnees/etat-chemins-randonnee/') && R.n5.urls.includes('https://www.sancy.com/fr/fiche/domaine-skiable/station-de-ski-du-mont-dore-mont-dore_TFO4768380/'), 'Sancy n°5 : dates domaine skiable, Grande Cascade, source ski', R.n5);
-    ok(R.cl.c5.length === 1 && R.cl.c5[0].from === '2026-11-15' && R.cl.c5[0].to === '2027-04-01' && !R.cl.c5[0].block, 'Sancy n°5 : fermeture Grande Cascade du 15/11/2026 au 01/04/2027 (non bloquante)', R.cl.c5);
+    ok(R.cl.c5.length === 3 && R.cl.c5[0].from === '2026-11-15' && R.cl.c5[1].block && R.cl.c5[1].from === '2026-12-19' && R.cl.c5[1].to === '2027-03-21' && R.cl.c5[2].to === '2027-04-01', 'Sancy n°5 : Cascade + interdiction à pied (block) + Cascade fin', R.cl.c5);
     for (const n of [6, 7]) { const c = R.cl['c' + n], nt = R['n' + n];
       ok(c.length >= 1 && c[0].from === '2026-11-02' && c[0].to === '2026-12-04' && !c[0].block, 'Pic du Midi n°' + n + ' : fermeture du 02/11 au 04/12/2026 inclus', c);
       ok(/Laquets fermés pour maintenance du 02\/11 au 04\/12\/2026/.test(nt.note) && /à pied seulement en été, hors neige/.test(nt.note) && /route du Tourmalet/.test(nt.note), 'Pic du Midi n°' + n + ' : note (maintenance, accès à pied en été, route du Tourmalet)', nt.note);
@@ -1724,7 +1724,8 @@ function FIXTURE() {
       const caches = { open: async n => { store[n] = store[n] || new Map(); return cache(n); }, has: async n => !!store[n], keys: async () => Object.keys(store), delete: async n => delete store[n],
         match: async r => { for (const n of Object.keys(store)) { const m = store[n].get(abs(r)); if (m) return m.clone(); } } };
       const self = { addEventListener: (t, f) => H[t] = f, registration: {scope:SCOPE}, location: {origin:ORI}, skipWaiting: () => {}, clients: {claim: async () => {}} };
-      vm.runInNewContext(src, {self, caches, fetch: (r) => net(abs(r)), URL, Response, Promise, setTimeout, console});
+      function Request(u, init){ this.url = typeof u === 'string' ? u : (u && u.url); this.cache = init && init.cache; }
+      vm.runInNewContext(src, {self, caches, fetch: (r) => net(abs(r)), URL, Response, Request, Promise, setTimeout, console});
       const ev = async (t, extra) => { let p = null; await H[t](Object.assign({waitUntil: x => p = x, respondWith: x => p = x}, extra)); return p; };
       return {ev, fetch: async (url, mode) => { const r = await ev('fetch', {request: {method:'GET', url: new URL(url, SCOPE).href, mode: mode || 'no-cors'}}); return r; }}; };
     const swCache = 'suivi-montagne-' + src.match(/PREFIX \+ '(v\d+(?:\.\d+)?)'/)[1];
@@ -1781,8 +1782,8 @@ function FIXTURE() {
       for (const pg of ['journal','obj','prep','evo','poids','equip','data']) { show(pg); await new Promise(r => setTimeout(r, 250)); }
       if (typeof jExpandAll === 'function') { show('journal'); jExpandAll(); }
       openSummitNoPush(1); await new Promise(r => setTimeout(r, 200)); ANA.open(sid); await new Promise(r => setTimeout(r, 200)); const ana = $('anaBox').textContent; ANA.close(); show('journal');
-      return {xss: window.__xss === 1, bad: document.querySelectorAll('img[src="x"]').length, kept: !!s && s.bpm === '120' + X && s.notes === X, wk: !!w && w.weight === '80' + X, ana: ana.length > 300 }; }, X);
-    ok(!xs.xss && xs.bad === 0 && xs.kept && xs.wk && xs.ana, 'v38 XSS via import JSON : id / FC / poids / matériel échappés partout (Journal, Données, Matériel, fiche, analyse), données gardées telles quelles', xs);
+      return {xss: window.__xss === 1, bad: document.querySelectorAll('img[src="x"]').length, kept: !!s && s.id === sid && s.notes === X && s.bpm === null && s.bpmMax === null && s.cadence === null, wk: !!w && w.weight === '80' + X, ana: ana.length > 300 }; }, X);
+    ok(!xs.xss && xs.bad === 0 && xs.kept && xs.wk && xs.ana, 'v38 XSS via import JSON : id / notes / matériel échappés, NUM_S non numériques à null (DATA-1), aucune exécution', xs);
     ok(p.errs.length === 0, 'v38 correctifs : aucune erreur JS', p.errs); await ctx.close(); }
   { // 36f. Jour J : seul le compte à rebours est réécrit (le reste de l'écran, dont le focus dans la liste du sac, est conservé)
     const [ctx, p] = await fresh(BASE + '/index.html');
@@ -2107,6 +2108,114 @@ function FIXTURE() {
     ok(rq.open && rq.st && rq.closed && alive === url0, 'v39 rejoue v38.1 : ouvrir/fermer analyse 20×, page intacte', [rq, alive]);
     ok(p.errs.length === 0, 'v39 UX-1 : aucune erreur JS', p.errs); await ctx.close(); }
 
+
+  // ---------- 39. v39.1 : DATA-1, TER-1, IMP-1, PWA-1/2, TER-2, UX-2, TEST-2/3, dates futures ----------
+  out.push('39. v39.1 : fiabilité, fermetures, import, PWA, Jour J, dates futures');
+  ok(SWV >= 39.1, 'cache SW = ' + SWC + ' (≥ v39.1)');
+
+  // DATA-1
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => {
+      DB.sessions = [{id:'x1',date:todayISO(),type:'Randonnée',dist:'5 km',dplus:'300 m',dur:3600,updatedAt:1},{id:'x2',date:todayISO(),type:'Marche',dist:2,dplus:100,dur:1800,updatedAt:1}];
+      normalizeDB(DB); const a = agg(DB.sessions.filter(s => s.date.slice(0,7) === todayISO().slice(0,7)));
+      return {t1:typeof DB.sessions[0].dist, nullDist:DB.sessions[0].dist===null, nullDplus:DB.sessions[0].dplus===null, dist:a.dist, dplus:a.dplus, n:a.n};
+    });
+    ok(r.nullDist && r.nullDplus && r.dist === 2 && r.dplus === 100 && r.n === 2, 'v39.1 DATA-1 : chaînes non numériques → null, totaux sains', r);
+    ok(p.errs.length === 0, 'v39.1 DATA-1 : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // TER-1 : labels + block
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => {
+      const c3 = (CLOSURES[3] || []).find(c => c.from === '2026-12-19');
+      const c3tele = (CLOSURES[3] || []).find(c => c.from === '2026-08-31');
+      const c5 = (CLOSURES[5] || []).find(c => c.block);
+      const cardPart = closureCardHTML({from:'2026-08-31',to:'2026-12-18',txt:'x',short:'téléphérique'}, '2026-11-19');
+      const cardBlock = closureCardHTML({from:'2026-12-19',to:'2027-03-21',block:true,txt:'x',short:'pied'}, '2027-01-10');
+      // nextObjective in ski season with 4 done
+      const fakeToday = '2027-01-10';
+      const _t = todayISO; // keep
+      // inject via closuresFor/block directly
+      const blocked = OBJECTIFS.filter(o => (CLOSURES[o.n]||[]).some(c => c.block && c.from <= fakeToday && c.to >= fakeToday)).map(o => o.n);
+      return {c3block:!!(c3&&c3.block), c3tele:!c3tele.block, c5block:!!c5, cardPart, cardBlock, blocked};
+    });
+    ok(r.c3block && r.c3tele && r.c5block, 'v39.1 TER-1 : interdictions à pied en block, téléphérique non block', r);
+    ok(/Fermeture partielle/.test(r.cardPart) && /Fermé/.test(r.cardBlock) && !/Fermeture partielle/.test(r.cardBlock), 'v39.1 TER-1 : libellés Fermeture partielle vs Fermé', [r.cardPart, r.cardBlock]);
+    ok(r.blocked.includes(3) && r.blocked.includes(5) && r.blocked.includes(13), 'v39.1 TER-1 : n°3/5/13 bloqués le 10/01/2027', r.blocked);
+    ok(p.errs.length === 0, 'v39.1 TER-1 : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // IMP-1 batch dup
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => {
+      DB.sessions = []; save();
+      const mk = () => ({kind:'workout',activity:{v:'Randonnée',conf:95},fields:{date:{v:'2026-11-18',conf:95},heure:{v:'09:12',conf:95},dur:{v:5400,conf:95},dist:{v:7.42,conf:95},dplus:{v:512,conf:95},bpm:{v:121,conf:95},kcal:{v:640,conf:95}}});
+      IMP.items = [];
+      for (const n of ['a.jpg','a (copie).jpg']) { const it = {id:uid(),objN:null,file:null,name:n,status:'reading',prog:0,msg:''}; IMP.items.push(it); IMP.prepare(it, mk()); }
+      // first save ok
+      const e1 = IMP.saveOne(IMP.items[0], true);
+      // second should hit findDup exact
+      const e2 = IMP.saveOne(IMP.items[1], true);
+      return {e1, e2, n:DB.sessions.filter(s => s.date === '2026-11-18').length, mode2:IMP.items[1].mode, dup2:!!IMP.items[1].dupExact};
+    });
+    ok(!r.e1 && r.e2 && r.e2[0] === 'doublon exact' && r.n === 1 && r.dup2, 'v39.1 IMP-1 : 2e capture identique refusée (1 séance)', r);
+    ok(p.errs.length === 0, 'v39.1 IMP-1 : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // TER-2 Jour J reopen
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    await p.evaluate(() => { localStorage.setItem(KEY+'.jourj', JSON.stringify({n:4,start:Date.now()-3600e3,sum:null,adj:0,bag:{}})); });
+    await p.reload({waitUntil:'networkidle0'}); await W(500);
+    const r = await p.evaluate(() => ({open:!$('jjMode').hidden, n:(jjState()||{}).n, body:document.body.classList.contains('jj-on')}));
+    ok(r.open && r.n === 4 && r.body, 'v39.1 TER-2 : Jour J rouvert au démarrage si sortie < 18 h', r);
+    ok(p.errs.length === 0, 'v39.1 TER-2 : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // UX-2 Escape
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    await p.evaluate(() => { openSummit(4); }); await W(300);
+    await p.evaluate(() => jjOpen(4)); await W(200);
+    await p.focus('#jjMode'); await p.keyboard.press('Escape'); await W(400);
+    const r = await p.evaluate(() => ({jj:$('jjMode').hidden, page:curPage}));
+    ok(r.jj && r.page === 'sum', 'v39.1 UX-2 : Échap ferme Jour J sans quitter la fiche', r);
+    ok(p.errs.length === 0, 'v39.1 UX-2 : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // TEST-2 : logique sur CLOSURES fictives + forme des vraies données
+  { const [ctx, p] = await fresh(BASE + '/index.html');
+    const r = await p.evaluate(() => {
+      CLOSURES[99] = [{from:'2026-01-01',to:'2026-12-31',block:true,txt:'test block'},{from:'2026-06-01',to:'2026-06-30',info:true,txt:'info',short:'i'}];
+      const o = {n:99}; const today = '2026-06-15';
+      const blocks = closuresFor(o, today, today).filter(c => c.block);
+      const infos = closuresFor(o, today, today).filter(c => c.info);
+      const form = Object.entries(CLOSURES).every(([n, L]) => Array.isArray(L) && L.every(c => c.from <= c.to && /^\d{4}-\d{2}-\d{2}$/.test(c.from) && /^\d{4}-\d{2}-\d{2}$/.test(c.to) && (!c.info || c.short)));
+      return {blocks:blocks.length, infos:infos.length, form, n3block:(CLOSURES[3]||[]).some(c=>c.block)};
+    });
+    // PWA-2 check from node side
+    const sw = require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8');
+    ok(r.blocks === 1 && r.infos === 1 && r.form && r.n3block, 'v39.1 TEST-2 : CLOSURES[99] logique + forme des vraies données', r);
+    ok(/cache:\s*'reload'/.test(sw) && (sw.match(/cache:\s*'reload'/g)||[]).length >= 2, 'v39.1 PWA-2 : addAll avec cache reload', (sw.match(/cache:\s*'reload'/g)||[]).length);
+    ok(p.errs.length === 0, 'v39.1 TEST-2 : aucune erreur JS', p.errs); await ctx.close(); }
+
+  // Dates futures J+60 / J+180 via evaluateOnNewDocument (horloge simulée)
+  for (const days of [60, 180]) {
+    const [ctx, p] = await fresh();
+    await p.evaluateOnNewDocument((d) => {
+      const Real = Date; const offset = d * 864e5;
+      const Fake = class extends Real { constructor(...a){ if(a.length===0) super(Real.now()+offset); else super(...a);} static now(){ return Real.now()+offset; } };
+      Fake.parse = Real.parse; Fake.UTC = Real.UTC;
+      Date = Fake;
+    }, days);
+    await p.goto(BASE + '/index.html', {waitUntil:'networkidle0'});
+    await withFix(p);
+    const r = await p.evaluate(() => {
+      const ref = new Date(2026, 9, 13); // absolute
+      const A = advise(OBJECTIFS[0], new Date(2026, 9, 13));
+      const P = planStatus(OBJECTIFS[0], '2026-11-10');
+      return {today:todayISO(), r1:A.R.r, p1:!!P.items.find(x=>x.k==='p1'), v:DATA_VERSION, swOk: true};
+    });
+    ok(r.v === 4 && r.r1 >= 0.8, 'v39.1 date +' + days + ' j : advise(ref) et DATA_VERSION stables (today=' + r.today + ')', r);
+    ok(p.errs.length === 0, 'v39.1 date +' + days + ' : aucune erreur JS', p.errs); await ctx.close();
+  }
+
+  // plancher de tests (TEST-3)
+  ok(pass >= 580, 'v39.1 TEST-3 : plancher de tests (≥ 580)', pass);
+
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
-})().catch(e => { console.error(e); process.exit(2); });
+})().catch(e => { console.error(e); try { console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués (crash)`); } catch (_) {} process.exit(2); }); // v39.1 TEST-3

@@ -2,7 +2,7 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v39';            // fichiers de l'appli (renouvelé à chaque version)
+const CACHE = PREFIX + 'v39.1';            // fichiers de l'appli (renouvelé à chaque version)
 const EXT = PREFIX + 'ext-v2';          // polices + moteur OCR Tesseract + Leaflet (stables ; v2 : réponses CORS pour la vérification d'intégrité)
 const TILES = PREFIX + 'tiles-v1';       // v23 : tuiles OSM préparées à la demande (« Préparer hors-ligne »), remplies par la page
 const IMG = PREFIX + 'img-v1';           // v38 : photos des sommets + décors du bandeau, gardées d'une version à l'autre (changer le nom d'une image, ou passer à img-v2, pour la renouveler)
@@ -17,12 +17,12 @@ const IMG_ASSETS = ASSETS.filter(isImg), APP_ASSETS = ASSETS.filter(a => !isImg(
 const fillImg = () => caches.open(IMG).then(c => Promise.all(IMG_ASSETS.map(a => c.match(a).then(h => h ? null : a))).then(miss => { miss = miss.filter(Boolean); return miss.length ? c.addAll(miss) : null; }));
 const EXT_HOSTS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'];
 self.addEventListener('install', e => {
-  e.waitUntil(Promise.all([caches.open(CACHE).then(c => c.addAll(APP_ASSETS)), fillImg()]).then(() => self.skipWaiting()));
+  e.waitUntil(Promise.all([caches.open(CACHE).then(c => c.addAll(APP_ASSETS.map(a => new Request(a, {cache:'reload'})))), fillImg()]).then(() => self.skipWaiting()));
 });
 // v22 : si une autre appli du site a vidé les caches, on recrée le nôtre (message envoyé par la page au démarrage)
 self.addEventListener('message', e => {
   if (e.data !== 'ensure-cache') return;
-  e.waitUntil(Promise.all([caches.has(CACHE).then(ok => ok ? null : caches.open(CACHE).then(c => c.addAll(APP_ASSETS))), fillImg()]).catch(() => {}));
+  e.waitUntil(Promise.all([caches.has(CACHE).then(ok => ok ? null : caches.open(CACHE).then(c => c.addAll(APP_ASSETS.map(a => new Request(a, {cache:'reload'}))))), fillImg()]).catch(() => {}));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()

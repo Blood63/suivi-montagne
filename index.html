@@ -824,7 +824,9 @@ const CLOSURES = {
     {from:'2026-11-16',to:'2026-11-20',info:true,txt:'Panoramique des Dômes (train) fermé du 16 au 20/11/2026 inclus pour maintenance annuelle : pas de descente en train ; la montée et la descente à pied par le chemin des Muletiers restent possibles.',short:'train fermé (maintenance) ; la marche reste possible'},
     {from:'2026-11-21',to:'2027-11-21',until:'nouvel ordre',info:true,txt:'Horaires d’hiver du Panoramique des Dômes : du mercredi au dimanche, départs toutes les heures de 10 h à 17 h, dernière descente du sommet à 17 h 30 ; fermé les lundis et mardis.',short:'train mer.→dim., dernière descente 17 h 30'}],
  10:[{from:'2026-10-05',to:'2026-10-16',txt:'Tronçon col de Ceyssat → sommet du puy de Dôme (chemin des Muletiers) fermé pour travaux : variante par le chemin des Chèvres.'}],
- 5:[{from:'2026-11-15',to:'2027-04-01',txt:'Grande Cascade interdite d’accès du 15/11 au 01/04 (arrêté municipal du Mont-Dore) : la boucle par la Grande Cascade n’est pas praticable. Montée et descente à pied aussi interdites pendant l’ouverture du domaine skiable ; crêtes du Sancy non praticables en saison de ski. État des chemins : Puy-de-Dôme Tourisme.'}],
+ 5:[{from:'2026-11-15',to:'2026-12-18',txt:'Grande Cascade interdite d’accès du 15/11 au 01/04 (arrêté municipal du Mont-Dore) : la boucle par la Grande Cascade n’est pas praticable. État des chemins : Puy-de-Dôme Tourisme.',short:'Grande Cascade fermée'},
+    {from:'2026-12-19',to:'2027-03-21',block:true,txt:'Montée et descente à pied interdites pendant l’ouverture du domaine skiable du Mont-Dore (prévu du 19/12/2026 au 21/03/2027, sous réserve de neige) ; crêtes du Sancy non praticables. Grande Cascade également fermée (15/11–01/04).',short:'interdiction à pied (domaine skiable)'},
+    {from:'2027-03-22',to:'2027-04-01',txt:'Grande Cascade interdite d’accès jusqu’au 01/04 (arrêté municipal du Mont-Dore) : la boucle par la Grande Cascade n’est pas praticable.',short:'Grande Cascade fermée'}],
  6:[{from:'2026-11-02',to:'2026-12-04',txt:'Site du Pic du Midi et hôtellerie des Laquets fermés pour maintenance (02/11 → 04/12 inclus). Accès à pied seulement en été, hors neige ; route du Tourmalet fermée pour l’hiver (depuis début novembre, à confirmer sur inforoute.ha-py.fr).',short:'site fermé (maintenance)'},
     {from:'2026-12-05',to:'2027-04-11',info:true,txt:'Site du Pic du Midi rouvert tous les jours du 05/12/2026 au 11/04/2027 (téléphérique, départs 9 h 30–16 h, fermé 12 h 30–14 h, dernier retour 17 h ; selon météo). L’itinéraire à pied reste enneigé : hors de portée en randonnée.',short:'site rouvert (téléphérique) ; itinéraire à pied enneigé'}],
  7:[{from:'2026-11-02',to:'2026-12-04',txt:'Site du Pic du Midi et hôtellerie des Laquets fermés pour maintenance (02/11 → 04/12 inclus). Accès à pied seulement en été, hors neige ; route du Tourmalet fermée pour l’hiver (depuis début novembre, à confirmer sur inforoute.ha-py.fr).',short:'site fermé (maintenance)'},
@@ -832,7 +834,7 @@ const CLOSURES = {
  2:[{from:'2026-11-16',to:'2026-11-20',info:true,txt:'Panoramique des Dômes (train) fermé du 16 au 20/11/2026 inclus pour maintenance annuelle ; la montée à pied par le chemin des Chèvres reste possible (pas de descente en train).',short:'train fermé (maintenance) ; la marche reste possible'},
     {from:'2026-11-21',to:'2027-11-21',until:'nouvel ordre',info:true,txt:'Horaires d’hiver du Panoramique des Dômes : du mercredi au dimanche, départs toutes les heures de 10 h à 17 h, dernière descente du sommet à 17 h 30 ; fermé les lundis et mardis.',short:'train mer.→dim., dernière descente 17 h 30'}],
  3:[{from:'2026-08-31',to:'2026-12-18',txt:'Téléphérique du Sancy fermé pour maintenance (la boucle à pied reste possible hors neige ; pas de descente en cabine).',short:'téléphérique fermé (marche possible hors neige)'},
-    {from:'2026-12-19',to:'2027-03-21',txt:'Montée et descente à pied interdites pendant l’ouverture du domaine skiable du Mont-Dore (prévu du 19/12/2026 au 21/03/2027, sous réserve de neige) ; les crêtes du Sancy ne sont pas praticables en saison de ski.',short:'interdiction à pied (domaine skiable)'}],
+    {from:'2026-12-19',to:'2027-03-21',block:true,txt:'Montée et descente à pied interdites pendant l’ouverture du domaine skiable du Mont-Dore (prévu du 19/12/2026 au 21/03/2027, sous réserve de neige) ; les crêtes du Sancy ne sont pas praticables en saison de ski.',short:'interdiction à pied (domaine skiable)'}],
  4:[{from:'2026-11-01',to:'2027-11-01',until:'la saison 2027',info:true,txt:'Petit train fermé depuis le 01/11/2026 jusqu’à la saison 2027 : la montée et la descente à pied restent possibles (plus de descente en train).',short:'petit train fermé ; la marche reste possible'}],
  9:[{from:'2026-11-06',to:'2027-11-10',until:'nouvel ordre',txt:'Route du Saut et accès à la passerelle fermés depuis le 06/11/2026 jusqu’à nouvel ordre (mairie de Tignes, 05/11/2026). Accès véhicule au barrage du Saut (départ habituel) impraticable tant que la route reste fermée ; vérifier la signalisation sur place.',short:'route du Saut fermée (accès au barrage)'},
     {from:'2026-10-23',to:'2027-10-23',until:'nouvel ordre',txt:'Route de la Sassière fermée depuis le 23/10/2026 jusqu’à nouvel ordre (mauvaises conditions météo, mairie de Tignes) ; la vallée de la Sassière est enneigée : hors de portée en randonnée jusqu’au printemps.',short:'route de la Sassière fermée (météo)'}]
@@ -1120,7 +1122,7 @@ function safeUrl(u){ if(u==null) return ''; const t=String(u).trim(); if(!t) ret
   const full=/^[a-z][a-z0-9+.-]*:/i.test(t)? t : 'https://'+t; let x; try{ x=new URL(full); }catch(e){ return null; }
   if(x.protocol!=='http:'&&x.protocol!=='https:') return null; if(!x.hostname||(x.hostname.indexOf('.')<0&&x.hostname!=='localhost')) return null; return x.href; }
 function normalizeDB(db){
-  if(Array.isArray(db.sessions)) db.sessions.forEach(x=>{ if(x&&typeof x==='object') numify(x,NUM_S); });
+  if(Array.isArray(db.sessions)) db.sessions.forEach(x=>{ if(x&&typeof x==='object'){ numify(x,NUM_S); for(const k of NUM_S){ const v=x[k]; if(v!=null&&!(typeof v==='number'&&isFinite(v))) x[k]=null; } } }); // v39.1 DATA-1
   db.tomb=Object.assign(newTomb(),db.tomb||{}); for(const k of ['s','c','i','w','d']) if(!db.tomb[k]||typeof db.tomb[k]!=='object') db.tomb[k]={};
   if(!Array.isArray(db.weights)) db.weights=[];
   db.weights=db.weights.filter(w=>w&&typeof w==='object'&&typeof w.date==='string');
@@ -2228,7 +2230,7 @@ function closuresFor(o, fromISO, toISO_){ return (CLOSURES[o.n]||[]).filter(c=>c
 function closureWhen(c, today){ today=today||todayISO(); if(c.until) return (c.from<=today?'depuis le ':'dès le ')+dFR(c.from)+' jusqu’à '+c.until; return 'du '+dFR(c.from)+' au '+dFR(c.to); }
 function closureCardHTML(c, today){ today=today||todayISO(); const when=closureWhen(c,today);
   if(c.info) return `<div class="warnl" style="margin:0 0 8px">ℹ️ À noter : ${esc(c.short||c.txt)} (${when})</div>`;
-  return `<div class="warnl" style="margin:0 0 8px">⛔ ${c.from<=today?'Fermé':'Fermeture'} ${when}${c.short?' — '+esc(c.short):''}</div>`; }
+  return `<div class="warnl" style="margin:0 0 8px">⛔ ${c.block?(c.from<=today?'Fermé':'Fermeture'):(c.from<=today?'Fermeture partielle':'Fermeture')} ${when}${c.short?' — '+esc(c.short):''}</div>`; }
 function closureSafeHTML(c, today){ today=today||todayISO();
   if(c.info) return `<div class="warnl">ℹ️ <b>À noter</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`;
   return `<div class="warnl">⛔ <b>${c.block?'Fermé':(c.from<=today?'Fermeture en cours':'Fermeture')}</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`; }
@@ -2579,7 +2581,7 @@ function renderSummit(n){
   ${planHTML(o)}
   ${ASC.card(o)}
   <div class="card"><h3>🗓️ Jour J <span class="small mut">(disponible hors-ligne)</span></h3><button class="btn jjbig" type="button" data-jjopen="${o.n}">🚀 Mode Jour J (plein écran)</button><div id="sumDayJ"></div></div>
-  ${cl.filter(c=>c.to>=today&&!c.info).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`).join('')}
+  ${cl.filter(c=>c.to>=today&&!c.info).map(c=>`<div class="card warnc">⛔ <b>${c.block?(c.from<=today?'Fermé actuellement':'Fermeture prévue'):(c.from<=today?'Fermeture partielle':'Fermeture prévue')}</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`).join('')}
   <div class="card"><h3>🗺️ Carte</h3><div class="mapf" id="sumStaticMap"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
     <div class="links">${mapLinks(o,I).map(([t,u])=>`<a class="btn sec sm" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
     <div class="small mut" style="margin-top:6px">Sommet : ${I.sum[0].toFixed(4)}, ${I.sum[1].toFixed(4)} · Départ : ${I.start.ll[0].toFixed(4)}, ${I.start.ll[1].toFixed(4)} (coordonnées OSM approximatives)</div>
@@ -3764,6 +3766,10 @@ const IMP={ items:[], running:false, target:null, skipPop:false,
   saveOne(it,silent){
     if(it.kind==='weigh') return this.saveWeigh(it,silent);
     if(it.kind==='daily') return this.saveDaily(it,silent);
+    // v39.1 IMP-1 : recalculer les doublons avant enregistrement ; refuser le doublon d’un même lot ; respecter « Ajouter quand même »
+    const chosen=it.mode, knewExact=!!it.dupExact; this.findDup(it);
+    if(it.dupExact&&chosen==='new'&&!knewExact){ if(!silent){ this.render(); toast('Capture déjà présente : choisis « Compléter » plutôt que créer un doublon'); } return ['doublon exact']; }
+    if(knewExact&&(chosen==='new'||chosen==='merge'||chosen==='replace')) it.mode=chosen;
     const {s,errs}=this.buildSession(it); if(errs.length){ if(!silent) alert('Valeurs invalides : '+errs.join(', ')); return errs; }
     const now=Date.now(); let msg;
     const dupNow=it.dup&&DB.sessions.find(x=>x.id===it.dup.id);
@@ -3880,7 +3886,7 @@ function initUI(){
   // feuille : fond, croix, glisser vers le bas, Échap
   $('sheetBg').addEventListener('click',()=>{ if(IMP.isOpen()){ IMP.close(); return; } fillForm(null); show(curPage); });
   $('btnSheetX').addEventListener('click',()=>{ fillForm(null); show(curPage); });
-  addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const c=e.target.closest&&e.target.closest('[data-day-open]'); if(c&&e.target===c){ e.preventDefault(); DAYV.open(); } return; } if(e.key!=='Escape') return; if(ANA.isOpen()){ ANA.close(); return; } if(DAYV.isOpen()){ DAYV.close(); return; } if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
+  addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const c=e.target.closest&&e.target.closest('[data-day-open]'); if(c&&e.target===c){ e.preventDefault(); DAYV.open(); } return; } if(e.key!=='Escape') return; if(ANA.isOpen()){ ANA.close(); return; } if(DAYV.isOpen()){ DAYV.close(); return; } if(IMP.isOpen()){ IMP.close(); return; } if($('jjMode')&&!$('jjMode').hidden){ e.preventDefault(); jjClose(); return; } /* v39.1 UX-2 */ if($('ascDlg')&&$('ascDlg').classList.contains('on')){ e.preventDefault(); ASC.closeDlg(); return; } /* v39.1 UX-2 */ if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
   addEventListener('popstate',()=>{ const hs=history.state;
     if(ANA.skipPop){ ANA.skipPop=false; if(ANA.isOpen()&&!(hs&&hs.ana)) try{ history.pushState({ana:1},''); }catch(e){} return; } /* v38 / v38.1 */
     if(IMP.skipPop){ IMP.skipPop=false; if(IMP.isOpen()&&!(hs&&hs.imp)) try{ history.pushState({imp:1},''); }catch(e){} return; } // v39
@@ -3941,13 +3947,13 @@ function init(){
   ['f_dist','f_incline'].forEach(id=>$(id).addEventListener('input',()=>{ autoTapisDplus(); updAuto(); }));
   // fiches sommet : cartes Objectifs, Prépa, conseil du Journal
   const sumClick=e=>{ if(e.target.closest('select,input,textarea,a,summary,label,details>div')) return; const t=e.target.closest('[data-sum]'); if(t){ openSummit(t.dataset.sum); } };
-  $('jStep').addEventListener('click',stepClick,true); $('jjMode').addEventListener('click',jjClick); $('jjMode').addEventListener('keydown',e=>{ if(e.key==='Escape') jjClose(); });
+  $('jStep').addEventListener('click',stepClick,true); $('jjMode').addEventListener('click',jjClick); $('jjMode').addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); jjClose(); } });
   $('sumBody').addEventListener('click',e=>{ const j=e.target.closest('[data-jjopen]'); if(j){ jjOpen(+j.dataset.jjopen); return; } planClick(e); });
   ['objList','prepList','prepHero','jAdv','jStep'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
   $('objSort').addEventListener('click',e=>{ const b=e.target.closest('[data-osort]'); if(!b) return; try{ localStorage.setItem('sm-objsort',b.dataset.osort); }catch(_){} renderObj(); });
   $('anaDlg').addEventListener('click',e=>ANA.click(e)); // v38 : analyse ; boutons 📊 du journal et de « Mon ascension »
   document.addEventListener('click',e=>{ const b=e.target.closest('[data-ana],[data-ana-sum]'); if(!b||b.closest('#anaDlg')) return; e.stopPropagation(); ANA.list=null; if(b.dataset.anaSum) ANA.openSummit(+b.dataset.anaSum); else ANA.open(b.dataset.ana); },true);
-  $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-offprep]')){ prepOffline(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
+  $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')){ e.preventDefault(); e.stopPropagation(); ASC.closeDlg(); } }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-offprep]')){ prepOffline(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
   $('sumBody').addEventListener('change',e=>{ if(e.target.id==='sumGpxFile'){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) handleGpxFile(curSum,f); } });
   $('poidsBody').addEventListener('click',poidsClick);
   document.addEventListener('click',e=>{ if(e.target.closest('[data-w-new]')&&!e.target.closest('#poidsBody')){ IMP.manualWeigh(); } });
@@ -4010,6 +4016,8 @@ function init(){
     const v=num(raw); if(v==null||isNaN(v)||v<2||v>104||Math.round(v)!==v){ alert('Semaines affichées : entre un nombre entier entre 2 et 104.'); return; }
     DB.prefs=DB.prefs||{}; DB.prefs.chartWeeks={v:Math.round(v),updatedAt:Date.now()}; save(); renderPrefs(); renderAll(); toast('Graphiques : '+Math.round(v)+' semaines affichées'); });
   fillForm(null); renderAll(); show('journal');
+  // v39.1 TER-2 : reprendre le Jour J si une sortie est en cours (< 18 h)
+  try{ const js=jjState(); if(js&&js.start&&(Date.now()-js.start)<18*3600e3){ jjOpen.skipPop=true; jjOpen(js.n); jjOpen.skipPop=false; } }catch(e){}
   initSync(); initSyncBadge(); appReady=true;
   initUI();
   // rappel doux, une fois par matin, si les statistiques d'hier manquent (seulement si la fonction est utilisée)
@@ -4021,7 +4029,7 @@ function init(){
     navigator.serviceWorker.ready.then(r=>{ if(r.active) r.active.postMessage('ensure-cache'); }).catch(()=>{});
     // nouvelle version active : rechargement automatique seulement si rien n'est en cours de saisie
     navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(!hadCtl||reloaded) return;
-      const busy=document.body.classList.contains('sheet-open')||IMP.isOpen()||IMP.running||syncing;
+      const busy=document.body.classList.contains('sheet-open')||IMP.isOpen()||IMP.running||syncing||(!$('jjMode').hidden)||ANA.isOpen()||DAYV.isOpen()||!$('impDlg').hidden||($('ascDlg')&&$('ascDlg').classList.contains('on')); // v39.1
       if(busy){ toast('Nouvelle version installée : elle s’appliquera à la prochaine ouverture'); return; } reloaded=true; location.reload(); });
   }
 }
