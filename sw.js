@@ -2,7 +2,7 @@
 // Plusieurs applis partagent l'origine blood63.github.io (ex. « Ma bibliothèque ») : on ne touche QU'AUX caches
 // préfixés « suivi-montagne- » (jamais aux caches des autres applis).
 const PREFIX = 'suivi-montagne-';
-const CACHE = PREFIX + 'v38.1';            // fichiers de l'appli (renouvelé à chaque version)
+const CACHE = PREFIX + 'v39';            // fichiers de l'appli (renouvelé à chaque version)
 const EXT = PREFIX + 'ext-v2';          // polices + moteur OCR Tesseract + Leaflet (stables ; v2 : réponses CORS pour la vérification d'intégrité)
 const TILES = PREFIX + 'tiles-v1';       // v23 : tuiles OSM préparées à la demande (« Préparer hors-ligne »), remplies par la page
 const IMG = PREFIX + 'img-v1';           // v38 : photos des sommets + décors du bandeau, gardées d'une version à l'autre (changer le nom d'une image, ou passer à img-v2, pour la renouveler)
