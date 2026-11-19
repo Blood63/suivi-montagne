@@ -381,6 +381,49 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 #ascDlg{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}
 #ascDlg.on{display:flex}#ascDlg .box{background:#183430;border-top:1px solid rgba(124,200,234,.25);box-shadow:0 -10px 40px rgba(0,0,0,.5);width:100%;max-width:520px;max-height:86vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 #ascDlg .box .btn{width:100%;margin-top:8px}
+/* v38 : analyse complète de séance / bilan d’ascension (feuille du bas, pensée pour ~400 px de large) */
+#anaDlg{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}#anaDlg[hidden]{display:none}
+#anaDlg .ash{background:#10231f;border-top:1px solid rgba(124,200,234,.25);box-shadow:0 -10px 40px rgba(0,0,0,.5);width:100%;max-width:560px;max-height:94vh;max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:22px 22px 0 0;padding:0 12px calc(12px + env(safe-area-inset-bottom));animation:anaUp .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes anaUp{from{transform:translateY(48px);opacity:.5}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#anaDlg .ash{animation:none}}
+body.ana-open{overflow:hidden}
+#anaDlg .ahd{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 2px 10px;background:linear-gradient(180deg,#10231f 82%,rgba(16,35,31,0))}
+#anaDlg .ahd h2{margin:0;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.an-sec h3{font-size:15px;margin:0 0 8px}
+.an-sum{border-color:rgba(251,146,60,.45);background:linear-gradient(160deg,rgba(251,146,60,.13),rgba(20,38,35,.85) 45%)}
+.an-sub{font-size:12px;font-weight:600;color:var(--glacier);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px}
+.an-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.an-k{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center;min-width:0}
+.an-k b{display:block;font-size:15.5px;font-weight:650;line-height:1.2;overflow-wrap:anywhere}
+.an-k small{display:block;color:var(--mut);font-size:11px;line-height:1.2;margin-top:2px}
+.an-k.warn b{color:var(--warn)}
+.an-hd{margin-bottom:8px}.an-hd .tag{vertical-align:1px}
+.an-rec{display:flex;flex-wrap:wrap;gap:6px}
+.an-rec span{background:linear-gradient(180deg,rgba(251,146,60,.26),rgba(251,146,60,.1));border:1px solid rgba(251,146,60,.45);border-radius:12px;padding:5px 9px;font-size:12.5px;line-height:1.3}
+.an-rec i{color:var(--mut);font-style:normal}
+.an-t{width:100%;border-collapse:collapse;font-size:12.5px}.an-t th,.an-t td{padding:5px 3px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.an-t th:first-child,.an-t td:first-child{text-align:left;white-space:normal}.an-t th{color:var(--mut);font-weight:500;font-size:11px}
+.an-t .an-tot td{font-weight:650;border-bottom:0}
+.an-sec .up{color:#4ade80}.an-sec .dn{color:#fca5a5}
+.an-l{display:flex;gap:8px;padding:4px 0;font-size:13.5px;line-height:1.4}.an-l>span:first-child{flex:none;width:20px;text-align:center}
+.an-l .btn{margin-top:6px}
+.an-new{color:#86efac}
+.an-note{margin-top:6px}
+.an-exos{margin-top:8px;white-space:pre-line}
+.an-bar{margin-top:8px}
+.an-prep{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.an-pil{display:grid;grid-template-columns:118px minmax(0,1fr) 78px;gap:8px;align-items:center;font-size:12.5px;padding:3px 0}.an-pil>b{text-align:right}
+.an-pil>b{font-size:12px;white-space:nowrap}
+.an-pb{position:relative;height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.an-pb i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}.an-pb i.a{background:#a7f3d0}.an-pb i.b{background:linear-gradient(90deg,#1f6f54,#34b38a);z-index:1}
+.an-foot{position:sticky;bottom:0;display:flex;gap:8px;padding:10px 0 2px;background:linear-gradient(0deg,#10231f 78%,rgba(16,35,31,0));z-index:3}.an-foot .btn{flex:1;min-height:46px;padding:10px 8px}
+.an-pick{display:block;width:100%;text-align:left;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px;font:inherit}
+.an-pick.main{border-color:rgba(251,146,60,.5)}.an-pick b{display:block;font-size:14.5px}.an-pick small{color:var(--mut);font-size:12.5px}
+.anab{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--txt);border-radius:9px;min-width:32px;height:28px;padding:0 6px;font-size:14px;line-height:1;vertical-align:middle;margin-left:4px}
+.anab:active{transform:scale(.94)}
+.asc-ana{margin-left:auto}
+
 .imp-obj{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(52,179,138,.1)}
 
 /* v25 : vue détaillée de l'activité quotidienne (feuille plein écran, animée en transform uniquement) */
@@ -693,6 +736,7 @@ body.pg-obj header:not(.scrolled) small{color:#dfe9e6}
 </section>
 <div id="dayDlg" role="dialog" aria-modal="true" aria-labelledby="dayDlgT" hidden><div class="dsh" id="dayBox"></div></div>
 <div id="ascDlg" role="dialog" aria-modal="true" aria-labelledby="ascDlgT"><div class="box" id="ascBox"></div></div>
+<div id="anaDlg" role="dialog" aria-modal="true" aria-labelledby="anaT" hidden><div class="ash" id="anaBox"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1257,6 +1301,8 @@ function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.
 // toast avec bouton « Annuler » (suppressions) : 6 s pour revenir en arrière
 function toastUndo(m,undo){ const t=document.getElementById('toast'); t.textContent=m+' '; const b=document.createElement('button'); b.className='tbtn'; b.type='button'; b.textContent='Annuler';
   b.addEventListener('click',()=>{ t.classList.remove('show','act'); clearTimeout(toast._t); undo(); }); t.appendChild(b); t.classList.add('show','act'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show','act'),6000); }
+function toastAct(m,label,fn){ const t=document.getElementById('toast'); t.textContent=m+' '; const b=document.createElement('button'); b.className='tbtn'; b.type='button'; b.textContent=label; // v38 : toast avec une action (ex. « 📊 Analyse »)
+  b.addEventListener('click',()=>{ t.classList.remove('show','act'); clearTimeout(toast._t); fn(); }); t.appendChild(b); t.classList.add('show','act'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show','act'),6000); }
 // remet un élément supprimé : plus récent que sa pierre tombale, donc gagnant à la prochaine synchro
 function undoDelete(kind,list,obj){ const now=Date.now(); delete DB.tomb[kind][obj.id]; obj.updatedAt=now; list.push(obj); save(); renderAll(); toast('Suppression annulée'); }
 function todayISO(){ return toISO(new Date()); }
@@ -1476,9 +1522,9 @@ function sessRow(s){
       sp!=null?f(sp,2)+' km/h':null, va!=null&&s.dplus>0?f(va,0)+' m/h':null, s.bpm?'♥ '+s.bpm+(s.bpmMax?' / '+s.bpmMax:''):null,
       s.pas?f(s.pas,0)+' pas':null, s.sac?'🎒 '+f(s.sac)+' kg':null, s.sauts?'🪢 '+f(s.sauts,0):null, s.ress?'ressenti '+s.ress+'/10':null,
       isTapis(s.type)&&s.incline!=null&&s.type==='Tapis'?'pente '+f(s.incline,1)+' %':null, s.kcal?'🔥 '+f(s.kcal,0)+' kcal':null, s.te?'TE '+f(s.te,1):null ].filter(Boolean);
-    return `<div class="sess" data-id="${s.id}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
-      <div class="b"><span class="tag">${esc(s.type)}</span>${s.ref?' <span class="tag ref" title="Sortie de référence">⛰︎ réf.</span>':''}${ascObj(s)?` <span class="tag asc" title="Séance de l’objectif ${ascObj(s).n}">🏁 ${esc(ascObj(s).sommet)}</span>`:''} ${s.lieu?`<b class="small">📍 ${esc(s.lieu)}</b> `:''}<span class="small mut">${dFR(s.date)}${s.heure?' '+esc(s.heure):''} · S${isoWeek(d)}</span><div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
-      <div class="acts"><button class="btn sec sm" data-dup="${s.id}" aria-label="Refaire cette séance aujourd’hui" title="Refaire aujourd’hui">⧉</button><button class="btn sec sm" data-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${s.id}" aria-label="Supprimer">🗑️</button></div></div>`;; }
+    return `<div class="sess" data-id="${esc(s.id)}"><div class="d">${String(d.getDate()).padStart(2,'0')}<small>${['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]}</small></div>
+      <div class="b"><span class="tag">${esc(s.type)}</span>${s.ref?' <span class="tag ref" title="Sortie de référence">⛰︎ réf.</span>':''}${ascObj(s)?` <span class="tag asc" title="Séance de l’objectif ${ascObj(s).n}">🏁 ${esc(ascObj(s).sommet)}</span>`:''} ${s.lieu?`<b class="small">📍 ${esc(s.lieu)}</b> `:''}<span class="small mut">${dFR(s.date)}${s.heure?' '+esc(s.heure):''} · S${isoWeek(d)}</span><button class="anab" type="button" data-ana="${esc(s.id)}" aria-label="Analyse complète de la séance du ${dFR(s.date)}" title="Analyse complète">📊</button><div>${chips.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>${s.exos?`<div class="small" style="margin-top:3px;white-space:pre-line">🏋️ ${esc(s.exos)}</div>`:''}${s.notes?`<div class="small mut" style="margin-top:3px">${esc(s.notes)}</div>`:''}</div>
+      <div class="acts"><button class="btn sec sm" data-dup="${esc(s.id)}" aria-label="Refaire cette séance aujourd’hui" title="Refaire aujourd’hui">⧉</button><button class="btn sec sm" data-edit="${esc(s.id)}" aria-label="Modifier">✏️</button><button class="btn bad sm" data-del="${esc(s.id)}" aria-label="Supprimer">🗑️</button></div></div>`;; }
 function daySumLine(date,L){ const dplus=L.reduce((t,s)=>t+(+s.dplus||0),0), dist=L.reduce((t,s)=>t+(+s.dist||0),0), dur=L.reduce((t,s)=>t+(+s.dur||0),0);
   return `<div class="daytot small" data-day="${date}" style="padding:8px 4px 2px;color:var(--mut)"><b>Journée</b> ${dFR(date)} : <b>${f(dplus,0)} m D+</b> · ${f(dist,1)} km · ${fmtDur(dur)}</div>`; }
 function sessRows(L){ const by={}; for(const s of L) (by[s.date]=by[s.date]||[]).push(s); let html='', prev=null;
@@ -1666,9 +1712,9 @@ function trainPlan(o){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3, D=
     {k:'p2',t:`Journée longue de ${fmtHm(c)}`,d:`≈ ${f(Math.max(1,Math.round(.6*D)),0)} km avec du dénivelé`,day:1,m:s=>(s.durEnd!=null?s.durEnd:s.dur)>=c*3600},
     {k:'p3',t:`${f(d,0)} m D+ avec un sac de 6–8 kg`,d:'test du matériel complet (D+ des séances du jour faites avec un sac ≥ 6 kg)',day:1,m:s=>s.packDplus>=d&&s.packSac>=6},
     {k:'p4',t:`${f(e,0)} m de descente continue`,d:'quadriceps : fentes et step-downs avant',m:s=>s.dminus>=e}]; }
-function planStatus(o){ const P=trainPlan(o), st=objState(o.n), man=st.plan&&typeof st.plan==='object'?st.plan:{}, from=toISO(new Date(Date.now()-PLAN_DAYS*864e5));
-  const raw=(DB.sessions||[]).filter(s=>s&&typeof s.date==='string'&&s.date>=from);
-  const ss=raw.map(s=>({date:s.date,dplus:+s.dplus||0,dur:+s.dur||0,sac:+s.sac||0,dminus:+s.dminus||0}));
+function planStatus(o,ref){ const P=trainPlan(o), st=objState(o.n), man=st.plan&&typeof st.plan==='object'?st.plan:{}, from=ref?addDays(ref,-PLAN_DAYS):toISO(new Date(Date.now()-PLAN_DAYS*864e5)); // v38 : ref = jour simulé (analyse de séance) ; sans ref, inchangé
+  const raw=(DB.sessions||[]).filter(s=>s&&typeof s.date==='string'&&s.date>=from&&(!ref||s.date<=ref));
+  const ss=raw.map(s=>({date:s.date,dplus:+s.dplus||0,dur:+s.dur||0,sac:+s.sac||0,dminus:dmEst(s),dmEst:dmIsEst(s)})); // v38 : D− estimé si absent (hors tapis)
   const days=dayTotals(raw).map(d=>{ const packed=raw.filter(s=>s.date===d.date&&(+s.sac||0)>=6);
     return Object.assign({},d,{packDplus:packed.reduce((t,s)=>t+(+s.dplus||0),0),packSac:packed.reduce((m,s)=>Math.max(m,+s.sac||0),0)}); });
   let n=0; P.forEach(x=>{ let hit=null; const pool=x.day?days:ss; for(const s of pool) if(x.m(s)&&(!hit||s.date>hit.date)) hit=s; x.auto=hit; x.man=!!man[x.k]; x.ok=!!(hit||x.man); if(x.ok) n++; });
@@ -1719,29 +1765,39 @@ function jjWxHTML(n){ const wx=wxCache(n,true); if(!wx||!wx.days) return `<div c
   return `<div class="jjwx"><div><b>${now&&now[1]!=null?f(now[1],0):f(d.tmax,0)}°</b>au sommet</div><div><b>${f(mx(4)!=null?mx(4):d.gust,0)}</b>rafales km/h</div><div><b>${mx(3)!=null?f(mx(3),0):(d.pop!=null?f(d.pop,0):'–')} %</b>pluie 4 h</div><div><b>${orage?'⛈️':(now&&now[2]!=null?wxEmo(now[2]):wxEmo(d.code))}</b>${esc(WX_CODES[now&&now[2]!=null?now[2]:d.code]||'—')}</div></div>
     <div class="small ${stale||off?'':'mut'}" style="margin-top:6px">Météo mise à jour à ${hhmm(new Date(wx.fetchedAt))}${stale?' · <b>⚠ ancienne</b>':''}${off?' · 📴 hors ligne':''}${orage?' · <b>⚠ orage prévu : redescends tôt</b>':''}</div>`; }
 const wxEmo=c=>c==null?'–':c>=95?'⛈️':(c>=71&&c<=77)||c===85||c===86?'❄️':c>=51?'🌧️':c>=45?'🌫️':c>=3?'☁️':c>=1?'⛅':'☀️';
-function jjRender(){ const el=$('jjMode'); if(!el||el.hidden) return; const s=jjState(); if(!s){ jjClose(); return; } const o=OBJECTIFS.find(x=>x.n===s.n), now=Date.now();
-  const lim=jjLimit(s,o), rem=lim?lim-now:null, gear=gearStatus(o.n), bag=s.bag||{}, nb=gear.filter(g=>bag[g.k]).length, asc=jjAscentH(o);
+// v38 : partie « minuteur » du mode Jour J, seule rafraîchie toutes les 15 s (le reste de l’écran, dont la liste du sac, n’est pas réécrit)
+function jjParts(s,o,now){ const lim=jjLimit(s,o), rem=lim?lim-now:null, asc=jjAscentH(o);
+  const ph=s.sum?'sum':!s.start?'idle':rem>0?'run':'over';
   const cd= s.sum? `<div class="jjcd ok">✓ ${hhmm(new Date(s.sum))}</div><div class="small" style="text-align:center">Sommet atteint · redescends tranquillement, garde de la marge sur le soleil</div>`
-    : !s.start? `<div class="small mut" style="text-align:center">Montée prévue ≈ ${fmtH(asc)} · demi-tour au plus tard à <b>${hhmm(new Date(now+asc*3600e3+(s.adj||0)*60e3))}</b> si tu pars maintenant</div><button class="btn jjbig" type="button" data-jj="start">▶ Je pars maintenant</button>`
-    : rem>0? `<div class="small mut" style="text-align:center">Demi-tour au plus tard à <b>${hhmm(new Date(lim))}</b> (montée prévue ≈ ${fmtH(asc)})</div><div class="jjcd${rem<30*60e3?' warn':''}" role="timer" aria-live="off">${jjDur(rem)}</div><div class="small mut" style="text-align:center">avant l’heure limite · sommet non atteint = on redescend</div>`
+    : !s.start? `<div class="small mut" style="text-align:center">Montée prévue ≈ ${fmtH(asc)} · demi-tour au plus tard à <b data-jjv="lim">${hhmm(new Date(now+asc*3600e3+(s.adj||0)*60e3))}</b> si tu pars maintenant</div><button class="btn jjbig" type="button" data-jj="start">▶ Je pars maintenant</button>`
+    : rem>0? `<div class="small mut" style="text-align:center">Demi-tour au plus tard à <b data-jjv="lim">${hhmm(new Date(lim))}</b> (montée prévue ≈ ${fmtH(asc)})</div><div class="jjcd${rem<30*60e3?' warn':''}" data-jjv="cd" role="timer" aria-live="off">${jjDur(rem)}</div><div class="small mut" style="text-align:center">avant l’heure limite · sommet non atteint = on redescend</div>`
     : `<div class="jjcd over">Demi-tour</div><div class="small" style="text-align:center"><b>Heure limite dépassée (${hhmm(new Date(lim))}) : redescends maintenant.</b></div>`;
-  const I=OBJ_INFO[o.n]||{}, sun=I.start?sunTimes(new Date(),I.start.ll[0],I.start.ll[1]):null, back=(lim||now+asc*3600e3)+(((o.multi?o.multi.hJ:o.h)||3)-asc)*3600e3;
+  const I=OBJ_INFO[o.n]||{}, sun=I.start?sunTimes(new Date(now),I.start.ll[0],I.start.ll[1]):null, back=(lim||now+asc*3600e3)+(((o.multi?o.multi.hJ:o.h)||3)-asc)*3600e3;
   const night=sun&&sun.set&&!s.sum&&back>+sun.set? `<div class="small" style="color:#fb923c;text-align:center;margin-top:6px">🌙 Retour estimé vers ${hhmm(new Date(back))}, après le coucher du soleil (${hhmm(sun.set)}) : lampe frontale obligatoire, ou avance l’heure limite.</div>` : '';
+  return {ph,cd,night}; }
+function jjTick(){ const el=$('jjMode'); if(!el||el.hidden) return; const s=jjState(); if(!s){ jjClose(); return; } const o=OBJECTIFS.find(x=>x.n===s.n); if(!o) return;
+  const box=el.querySelector('#jjCd'), nb=el.querySelector('#jjNight'); if(!box||!nb){ jjRender(); return; } const P=jjParts(s,o,Date.now());
+  if(box.dataset.ph!==P.ph){ box.innerHTML=P.cd; box.dataset.ph=P.ph; }
+  else { const t=document.createElement('div'); t.innerHTML=P.cd; t.querySelectorAll('[data-jjv]').forEach(n=>{ const c=box.querySelector(`[data-jjv="${n.dataset.jjv}"]`); if(!c) return; if(c.textContent!==n.textContent) c.textContent=n.textContent; if(c.className!==n.className) c.className=n.className; }); }
+  if(nb.innerHTML!==P.night) nb.innerHTML=P.night; }
+function jjRender(){ const el=$('jjMode'); if(!el||el.hidden) return; const s=jjState(); if(!s){ jjClose(); return; } const o=OBJECTIFS.find(x=>x.n===s.n), now=Date.now();
+  const gear=gearStatus(o.n), bag=s.bag||{}, nb=gear.filter(g=>bag[g.k]).length, P=jjParts(s,o,now), cd=`<div id="jjCd" data-ph="${P.ph}">${P.cd}</div>`, night=`<div id="jjNight">${P.night}</div>`;
   el.innerHTML=`<div class="jjin"><div class="card hero-card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow2">Jour J${s.start?' · en cours':''}</div><h2 style="margin:2px 0">${esc(o.sommet)}</h2><div class="small mut">${esc(o.iti)}</div></div>
       ${s.start?`<span class="jjpill">● parti ${hhmm(new Date(s.start))}</span>`:''}<button class="xbtn" type="button" data-jj="close" aria-label="Fermer le mode Jour J">✕</button></div>
       ${cd}${night}${s.start&&!s.sum?`<div class="jjadj"><button class="btn sec" type="button" data-jj="m15">− 15 min</button><button class="btn sec" type="button" data-jj="p15">+ 15 min</button></div>`:''}</div>
-    <div class="card"><h3 style="margin:0 0 8px">🌦️ Météo au sommet</h3>${jjWxHTML(o.n)}</div>
+    <div class="card"><h3 style="margin:0 0 8px">🌦️ Météo au sommet</h3><div id="jjWxB">${jjWxHTML(o.n)}</div></div>
     <div class="card"><h3 style="margin:0 0 8px">🎒 Sac (${nb}/${gear.length})</h3><div class="jjbag">${gear.map(g=>`<button type="button" class="${bag[g.k]?'ok':''}" data-jjbag="${g.k}" aria-pressed="${!!bag[g.k]}">${bag[g.k]?'✓':'☐'} ${esc(g.l.split(' (')[0])}</button>`).join('')||'<span class="small mut">Pas de liste pour ce sommet.</span>'}</div></div>
     <button class="btn jjbig" type="button" data-jj="share">📍 Partager ma position</button>
     ${s.sum?`<button class="btn sec jjbig" type="button" data-jj="end">🏠 Terminer la sortie</button>`:`<button class="btn sec jjbig" type="button" data-jj="sum">🏁 Sommet atteint</button>`}
     <a class="btn sec jjbig jj112" href="tel:112">📞 Secours 112</a>
     <p class="small mut" style="text-align:center">Le partage ouvre le menu du téléphone (SMS, messagerie…) avec un lien geo: et OpenStreetMap ; rien ne passe par un serveur.</p></div>`; }
 function jjOpen(n){ let s=jjState(); if(!s||s.n!==+n) s={n:+n,start:null,sum:null,adj:0,bag:{}}; jjSave(s); const el=$('jjMode'); el.hidden=false; document.body.classList.add('jj-on');
-  jjRender(); el.focus(); clearInterval(jjOpen._t); jjOpen._t=setInterval(jjRender,15000); jjWx(+n); }
+  jjRender(); el.focus(); clearInterval(jjOpen._t); jjOpen._t=setInterval(jjTick,15000); jjWx(+n); } // v38 : minuteur seul (jjTick), pas tout l’écran
 function jjClose(){ const el=$('jjMode'); if(el) el.hidden=true; document.body.classList.remove('jj-on'); clearInterval(jjOpen._t); }
 async function jjWx(n){ jjWx.fail=false; if(navigator.onLine===false) return; const c=wxCache(n,true); if(c&&Date.now()-c.fetchedAt<20*60e3) return;
   const o=OBJECTIFS.find(x=>x.n===+n), I=OBJ_INFO[+n]; if(!o||!I||!I.sum) return;
-  try{ const r=await fetch(wxURL(o,I)); if(!r.ok) throw 0; wxStore(n,parseWx(await r.json(),o,objState(n))); jjRender(); safeWxUpdate(n); }catch(e){ jjWx.fail=true; jjRender(); } }
+  try{ const r=await fetch(wxURL(o,I)); if(!r.ok) throw 0; wxStore(n,parseWx(await r.json(),o,objState(n))); jjWxUpd(n); safeWxUpdate(n); }catch(e){ jjWx.fail=true; jjWxUpd(n); } }
+function jjWxUpd(n){ const b=document.querySelector('#jjMode:not([hidden]) #jjWxB'); if(b) b.innerHTML=jjWxHTML(n); } // v38 : météo seule, sans réécrire l’écran
 function jjShare(){ const s=jjState(), o=s&&OBJECTIFS.find(x=>x.n===s.n);
   if(!navigator.geolocation){ toast('Position indisponible sur cet appareil'); return; } toast('Recherche de ta position…');
   navigator.geolocation.getCurrentPosition(async p=>{ const la=p.coords.latitude.toFixed(5), lo=p.coords.longitude.toFixed(5), acc=Math.round(p.coords.accuracy||0);
@@ -1751,7 +1807,7 @@ function jjShare(){ const s=jjState(), o=s&&OBJECTIFS.find(x=>x.n===s.n);
     try{ await navigator.clipboard.writeText(text+' '+url); toast('Position copiée : colle-la dans un SMS ou un message'); }catch(e){ prompt('Copie ta position :',text+' '+url); } },
     e=>toast(e&&e.code===1?'Position refusée : autorise la localisation pour la partager':'Position introuvable (signal GPS faible ?) : réessaie à découvert'),{enableHighAccuracy:true,timeout:15000,maximumAge:60000}); }
 function jjClick(e){ const b=e.target.closest('[data-jj],[data-jjbag]'); if(!b) return; const s=jjState(); if(!s) return;
-  if(b.dataset.jjbag){ s.bag=s.bag||{}; s.bag[b.dataset.jjbag]=!s.bag[b.dataset.jjbag]; jjSave(s); jjRender(); return; }
+  if(b.dataset.jjbag){ const k=b.dataset.jjbag; s.bag=s.bag||{}; s.bag[k]=!s.bag[k]; jjSave(s); jjRender(); const nb=$('jjMode').querySelector(`[data-jjbag="${k}"]`); if(nb) try{ nb.focus({preventScroll:true}); }catch(e){} return; }
   const k=b.dataset.jj;
   if(k==='close'){ jjClose(); return; }
   if(k==='start'){ s.start=Date.now(); s.sum=null; jjSave(s); haptic(); }
@@ -1816,9 +1872,9 @@ function renderEquip(){
   $('eqKpi').innerHTML=[['articles achetés',nbB+' / '+nb],['budget total',f(tot,2)+' €'],['reste à acheter',f(tot-bought,2)+' €']].map(([k,v])=>`<div class="kpi"><b>${v}</b><small>${k}</small></div>`).join('')
     +`<div class="bw" style="grid-column:1/-1">🎒 <b>Poids de base : ${fmtW(BW.w)}</b> <span class="small mut">(articles cochés, hors eau/nourriture/consommables)</span>${BW.miss?`<div class="small miss">⚠ ${BW.miss} article${BW.miss>1?'s':''} coché${BW.miss>1?'s':''} sans poids renseigné : total sous-estimé. Ajoute leur poids via ✏️.</div>`:`<div class="small mut">Tous les articles cochés ont un poids renseigné.</div>`}</div>`;
   $('eqList').innerHTML=DB.equip.map(c=>{ const st=c.items.reduce((t,i)=>t+(i.price||0),0); const done=c.items.filter(i=>i.bought).length; const cw=catWeight(c);
-    return `<div class="card" data-cat="${c.id}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(c.name)} <span class="small mut">${done}/${c.items.length}${st?' · '+f(st,2)+' €':''}${cw.w?' · 🎒 '+fmtW(cw.w):''}${cw.miss?' · ⚠ '+cw.miss+' sans poids':''}</span></h3>
+    return `<div class="card" data-cat="${esc(c.id)}"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(c.name)} <span class="small mut">${done}/${c.items.length}${st?' · '+f(st,2)+' €':''}${cw.w?' · 🎒 '+fmtW(cw.w):''}${cw.miss?' · ⚠ '+cw.miss+' sans poids':''}</span></h3>
       <div><button class="iconbtn" data-act="rencat" aria-label="Renommer la catégorie">✏️</button><button class="iconbtn" data-act="delcat" aria-label="Supprimer la catégorie">🗑️</button></div></div>
-      ${c.items.map(i=>{ const u=i.url?safeUrl(i.url):null; return `<div class="eq${i.bought?' done':''}" data-item="${i.id}"><input type="checkbox" data-act="tog" ${i.bought?'checked':''} aria-label="Acheté">
+      ${c.items.map(i=>{ const u=i.url?safeUrl(i.url):null; return `<div class="eq${i.bought?' done':''}" data-item="${esc(i.id)}"><input type="checkbox" data-act="tog" ${i.bought?'checked':''} aria-label="Acheté">
         <div class="nm"><b>${esc(i.name)}</b>${i.note?`<div class="small mut">${esc(i.note)}</div>`:''}${u?`<div><a class="eq-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">🔗 Voir / acheter</a></div>`:''}</div>
         ${i.wg?`<span class="pr">⚖️ ${fmtW(i.wg)}</span>`:''}<span class="pr">${i.price!=null?f(i.price,2)+' €':''}</span>
         <button class="iconbtn" data-act="edit" aria-label="Modifier">✏️</button><button class="iconbtn" data-act="del" aria-label="Supprimer">🗑️</button></div>`; }).join('')}
@@ -2087,6 +2143,9 @@ const WALK_TYPES=/^(Marche|Randonnée|Trail|Tapis)/;
 // v34 : totaux d’un jour civil d’après le champ date de chaque séance (YYYY-MM-DD saisi, calendrier local / Europe/Paris).
 // Sert à évaluer A (D+), C (durée) et le D− max sur la meilleure journée, sans modifier le stockage.
 const isMuscu=s=>!!s&&s.type==='Musculation';
+// v38 : D− d’une séance ; s’il n’est pas saisi, estimé = D+ pour une sortie extérieure (boucle / aller-retour), 0 sur tapis (même règle que dayTotals)
+function dmEst(s){ return s.dminus!=null?(+s.dminus||0):(isTapis(s.type)?0:(+s.dplus||0)); }
+function dmIsEst(s){ return s.dminus==null&&!isTapis(s.type)&&(+s.dplus||0)>0; }
 function dayTotals(list){
   const by={};
   for(const s of list||[]){
@@ -2094,7 +2153,7 @@ function dayTotals(list){
     const t=by[k]||(by[k]={date:k,dplus:0,dur:0,durEnd:0,dist:0,dminus:0,n:0});
     t.dplus+=(+s.dplus||0); t.dur+=(+s.dur||0); t.dist+=(+s.dist||0);
     if(!isMuscu(s)) t.durEnd+=(+s.dur||0); // v37 : endurance = durée du jour hors musculation
-    t.dminus+=s.dminus!=null?(+s.dminus||0):(isTapis(s.type)?0:(+s.dplus||0));
+    t.dminus+=dmEst(s);
     t.n++;
   }
   return Object.values(by);
@@ -2129,7 +2188,7 @@ function trainStats(ref){
 // Indice de préparation : A grosse journée (35 %), B volume hebdo (30 %), C endurance (20 %), D régularité (15 %)
 function readiness(o,st){ const M=o.multi, T=M?M.dpJ:o.dplus, H=(M?M.hJ:o.h)||3;
   const a=Math.min(1,st.maxD/(0.65*T)), b=Math.min(1,st.wk/(M?1.5*T:T)), c=Math.min(1,st.longest/(0.6*H*3600)), d=Math.min(1,st.n28/12);
-  const r0=0.35*a+0.3*b+0.2*c+0.15*d, P=planStatus(o); // v29 : le plan du sommet compte pour 30 %
+  const r0=0.35*a+0.3*b+0.2*c+0.15*d, P=planStatus(o,st&&st.simRef); // v29 : le plan du sommet compte pour 30 %
   return {a,b,c,d,r0,plan:P.pct,r:(1-PLAN_W)*r0+PLAN_W*P.pct,T,H}; }
 const rCls=r=>r>=0.8?'green':r>=0.5?'orange':'red', rCol=r=>r>=0.8?'#4ade80':r>=0.5?'#fb923c':'#f87171';
 const rLabel=r=>r>=0.8?'Prêt':r>=0.6?'Presque prêt':r>=0.4?'En progression':'Début de préparation';
@@ -2499,7 +2558,7 @@ function renderSummit(n){
   ${planHTML(o)}
   ${ASC.card(o)}
   <div class="card"><h3>🗓️ Jour J <span class="small mut">(disponible hors-ligne)</span></h3><button class="btn jjbig" type="button" data-jjopen="${o.n}">🚀 Mode Jour J (plein écran)</button><div id="sumDayJ"></div></div>
-  ${cl.filter(c=>c.to>=today).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> du ${dFR(c.from)} au ${dFR(c.to)} : ${esc(c.txt)}</div>`).join('')}
+  ${cl.filter(c=>c.to>=today&&!c.info).map(c=>`<div class="card warnc">⛔ <b>${c.from<=today?'Fermé actuellement':'Fermeture prévue'}</b> ${closureWhen(c,today)} : ${esc(c.txt)}</div>`).join('')}
   <div class="card"><h3>🗺️ Carte</h3><div class="mapf" id="sumStaticMap"><iframe loading="lazy" title="Carte ${esc(o.sommet)}" src="${osmEmbed(I)}" referrerpolicy="no-referrer"></iframe></div>
     <div class="links">${mapLinks(o,I).map(([t,u])=>`<a class="btn sec sm" href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
     <div class="small mut" style="margin-top:6px">Sommet : ${I.sum[0].toFixed(4)}, ${I.sum[1].toFixed(4)} · Départ : ${I.start.ll[0].toFixed(4)}, ${I.start.ll[1].toFixed(4)} (coordonnées OSM approximatives)</div>
@@ -2543,6 +2602,14 @@ const WF=[
  ['stdKg','Poids standard','kg',1,0],['ctrlPoids','Contrôle du poids','kg',1,0],['ctrlGraisse','Contrôle des graisses','kg',1,0],['ctrlMuscle','Contrôle musculaire','kg',1,0]];
 const WFK=Object.fromEntries(WF.map(x=>[x[0],x]));
 const BODY_TYPES=['Mince','Mince musclé','Athlétique','Sous-entraîné','Standard','Standard musclé','Obésité cachée','En surpoids','Corpulent'];
+// v38 : libellés lus par l’OCR Mi Fitness = options du menu de la pesée. Autres libellés reconnus (versions de l’appli) proposés tels quels ;
+// deux synonymes ramenés au libellé du menu. Une valeur déjà enregistrée hors liste reste affichée et conservée (jamais perdue).
+const BODY_TYPES_X=['En forme','Musclé','Maigre','Obèse','En sous-poids'];
+const BODY_SYN={'Mince et musclé':'Mince musclé','Obésité invisible':'Obésité cachée'};
+const BODY_OCR=[...BODY_TYPES,...BODY_TYPES_X,...Object.keys(BODY_SYN)].sort((a,b)=>b.length-a.length); // le plus long d’abord (« Mince musclé » avant « Mince »)
+function bodyCanon(b){ return BODY_SYN[b]||b; }
+function bodyTypeOpts(sel){ const o=b=>`<option${b===sel?' selected':''}>${esc(b)}</option>`, known=BODY_TYPES.includes(sel)||BODY_TYPES_X.includes(sel);
+  return `<option value="">–</option>${BODY_TYPES.map(o).join('')}<optgroup label="Autres libellés Mi Fitness">${BODY_TYPES_X.map(o).join('')}</optgroup>${sel&&!known?`<option selected>${esc(sel)}</option>`:''}`; }
 const SIGNED_W=new Set(['ctrlPoids','ctrlGraisse','ctrlMuscle']);
 function weighsSorted(){ return (DB.weights||[]).slice().sort((a,b)=>(a.date+(a.heure||'')).localeCompare(b.date+(b.heure||''))); }
 function wDelta(cur,prev,k){ return (cur&&prev&&cur[k]!=null&&prev[k]!=null)? cur[k]-prev[k] : null; }
@@ -2559,7 +2626,7 @@ function renderPoids(){
   const toStd=c.stdKg!=null&&c.weight!=null? c.weight-c.stdKg : null;
   const pctStd=c.stdKg? Math.max(0,Math.min(1, 1-Math.max(0,toStd)/Math.max(3,c.weight*0.1))) : null;
   let h=`<div class="card hero-card"><div class="row" style="justify-content:space-between"><div class="eyebrow2">Dernière pesée</div><span class="small mut">${dFR(c.date)}${c.heure?' · '+esc(c.heure):''}</span></div>
-   <div class="wh"><div><div class="wbig"><b data-count="${c.weight}" data-dec="1">${f(c.weight,1)}</b><small>kg</small></div>
+   <div class="wh"><div><div class="wbig"><b data-count="${esc(c.weight)}" data-dec="1">${f(c.weight,1)}</b><small>kg</small></div>
      <div class="row" style="margin-top:4px">${p?`<span class="chip">${deltaHTML(dW,'weight','kg')} vs ${dFR(p.date)}</span>`:''}${p30&&p30!==c&&p30!==p?`<span class="chip">${deltaHTML(d30,'weight','kg')} sur 30 j</span>`:''}${d0!=null&&first!==p?`<span class="chip">${deltaHTML(d0,'weight','kg')} depuis le ${dFR(first.date)}</span>`:''}</div></div>
      ${c.score!=null?`<div style="text-align:center">${ringSVG(c.score/100,78,{suf:'',label:'Score corporel',col:'#7cc8ea',cls:''})}<div class="small mut">score</div></div>`:''}</div>
    ${c.bodyType?`<div class="row" style="margin-top:8px"><span class="tag">Type de corps : ${esc(c.bodyType)}</span>${c.imc!=null?`<span class="tag">IMC ${f(c.imc,1)}</span>`:''}</div>`:''}
@@ -2602,11 +2669,11 @@ function paceTxt(s){ const sp=speed(s); if(!sp) return null; const pc=3600/sp; r
 function cmpHTML(o,C,compact){ if(!C) return ''; const s=C.s, M=o.multi, T=M?M.dpJ:o.dplus, H=((M?M.hJ:o.h)||3)*3600, sp=speed(s), va=vasc(s);
   const head=`<b>${dFR(s.date)}</b> · ${esc(s.lieu||s.type)} <span class="mut">(${C.why})</span>`;
   const chips=[s.dist!=null?f(s.dist,2)+' km':null, s.dplus!=null?f(s.dplus,0)+' m D+':null, s.dur?fmtDur(s.dur):null, s.bpm?'♥ '+s.bpm+(s.bpmMax?' / '+s.bpmMax:''):null, sp?f(sp,1)+' km/h':null, paceTxt(s), va&&s.dplus>0?f(va,0)+' m/h':null].filter(Boolean);
-  if(compact) return `<div class="small" style="margin-top:8px">🥾 Dernière sortie comparable : ${head} — ${chips.slice(0,4).join(' · ')}</div>`;
+  if(compact) return `<div class="small" style="margin-top:8px">🥾 Dernière sortie comparable : ${head} — ${chips.slice(0,4).map(esc).join(' · ')}</div>`;
   const row=(l,v,t,txt)=>{ const r=t>0&&v!=null?v/t:0; return `<span>${l}</span><div class="bar"><i style="--v:${Math.min(1,r).toFixed(3)};background:linear-gradient(90deg,#fb923c,#fdba74)"></i></div><span>${txt}</span>`; };
   const alt=s.altMax!=null?`<span>Altitude max</span><div class="bar"><i style="--v:${Math.min(1,s.altMax/o.altSom).toFixed(3)};background:linear-gradient(90deg,#7cc8ea,#bae6fd)"></i></div><span>${f(s.altMax,0)} / ${f(o.altSom,0)} m</span>`:'';
   const hrN=s.bpm&&s.bpmMax&&s.bpmMax>0? (s.bpm>=0.8*s.bpmMax?' FC moyenne élevée pour l’effort : garde une allure « je peux parler » le jour J.':'') : '';
-  return `<div class="adv-sec"><h4>🥾 Ta dernière sortie comparable</h4><div class="cmp">${head}<div>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>
+  return `<div class="adv-sec"><h4>🥾 Ta dernière sortie comparable</h4><div class="cmp">${head}<div>${chips.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>
     <div class="vs">${row('D+',s.dplus,T,f(s.dplus,0)+' / '+f(T,0)+' m')}${row('Durée',s.dur,H,fmtH((s.dur||0)/3600)+' / '+fmtH(H/3600))}${alt}</div>
     <div class="small mut" style="margin-top:6px">Le jour J : ${s.dplus>0&&T?'≈ '+f(T/s.dplus,1).replace(/,0$/,'')+' × le D+':'—'}${s.dur?' et ≈ '+f(H/s.dur,1).replace(/,0$/,'')+' × la durée':''} de cette sortie.${hrN}</div></div></div>`; }
 // une sortie de référence ajoutée par la synchro (id « ref-… ») qui existe déjà sur l'appareil (même date, même distance ou durée) n'est pas dupliquée :
@@ -2618,7 +2685,7 @@ function dedupeRef(db){ let ch=false; const now=Date.now();
     if(!o.lieu&&r.lieu) o.lieu=r.lieu; o.ref=true; if(r.objs&&!o.objs) o.objs=r.objs; for(const k of Object.keys(r)) if(o[k]==null&&r[k]!=null) o[k]=r[k]; o.updatedAt=now; ch=true; }
   return ch; }
 function refTableHTML(){ const L=DB.sessions.filter(isOutdoorHike).sort(byDateDesc); if(!L.length) return '';
-  return `<div class="card"><h3>⛰️ Sorties en montagne (référence)</h3><div class="scroll"><table class="tbl"><tr><th>Date</th><th style="text-align:left">Lieu</th><th>km</th><th>D+ m</th><th>Durée</th><th>FC moy/max</th><th>km/h</th><th>m/h</th><th>Alt. max</th></tr>${L.map(s=>`<tr><td>${dFR(s.date)}</td><td style="text-align:left;white-space:normal;min-width:96px" title="${esc(s.lieu||'')}">${esc((s.lieu||s.type).split(' – ')[0])}</td><td>${f(s.dist,2)}</td><td>${f(s.dplus,0)}</td><td>${fmtDur(s.dur)}</td><td>${s.bpm?s.bpm+(s.bpmMax?' / '+s.bpmMax:''):'–'}</td><td>${f(speed(s),1)}</td><td>${s.dplus>0?f(vasc(s),0):'–'}</td><td>${f(s.altMax,0)}</td></tr>`).join('')}</table></div>
+  return `<div class="card"><h3>⛰️ Sorties en montagne (référence)</h3><div class="scroll"><table class="tbl"><tr><th>Date</th><th style="text-align:left">Lieu</th><th>km</th><th>D+ m</th><th>Durée</th><th>FC moy/max</th><th>km/h</th><th>m/h</th><th>Alt. max</th></tr>${L.map(s=>`<tr><td>${dFR(s.date)}</td><td style="text-align:left;white-space:normal;min-width:96px" title="${esc(s.lieu||'')}">${esc((s.lieu||s.type).split(' – ')[0])}</td><td>${f(s.dist,2)}</td><td>${f(s.dplus,0)}</td><td>${fmtDur(s.dur)}</td><td>${s.bpm?esc(s.bpm+(s.bpmMax?' / '+s.bpmMax:'')):'–'}</td><td>${f(speed(s),1)}</td><td>${s.dplus>0?f(vasc(s),0):'–'}</td><td>${f(s.altMax,0)}</td></tr>`).join('')}</table></div>
   <div class="small mut" style="margin-top:6px">Repères pour comparer tes séances d’entraînement à de vraies sorties en terrain montagneux (vitesse et m/h incluent les pauses).</div></div>`; }
 /* ---------- Activité quotidienne (carte « Statistiques » Mi Fitness, une entrée par jour) ---------- */
 const DAILY_F=[['pas','Pas','pas'],['kcal','Calories','kcal'],['actMin','Durée de l’activité','min'],['pausesActives','Pauses actives','coups']];
@@ -2695,7 +2762,7 @@ function renderDaily(){ const box=$('evoD'); if(!box) return; const S=dailyStats
       <div class="legend"><span><i style="background:linear-gradient(135deg,#fb923c,#34b38a)"></i>séance</span><span><i style="background:#34b38a"></i>journée active</span><span><i style="background:rgba(124,200,234,.28)"></i>repos</span><span><i style="background:rgba(255,255,255,.05)"></i>pas de données</span></div></div>
     <div class="card"><h3>Moyennes par semaine</h3><div class="scroll"><table class="tbl"><tr><th>Semaine</th><th>Jours</th><th>Pas/j</th><th>kcal/j</th><th>min/j</th><th>Actifs</th><th>Repos</th></tr>${wk.slice().reverse().filter(w=>w.n||w.days.some(d=>S.state(d)==='train')).map(w=>`<tr><td>S${isoWeek(parseISO(w.mon))} ${dFR(w.mon).slice(0,5)}</td><td>${w.n}</td><td>${f(w.pas,0)}</td><td>${f(w.kcal,0)}</td><td>${f(w.min,0)}</td><td>${w.days.filter(d=>/train|active/.test(S.state(d))).length}</td><td>${w.days.filter(d=>S.state(d)==='rest').length}</td></tr>`).join('')}</table></div></div>
     <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:4px"><h3 style="margin:0">Historique (${L.length})</h3><button class="btn sm sec" id="btnExpD2">CSV</button></div>
-      ${L.slice(0,60).map((x,i)=>(i===10?'<details class="small"><summary>Journées plus anciennes ('+(Math.min(60,L.length)-10)+')</summary>':'')+`<div class="drow"><div class="nm"><b>${dayLbl(x.date)}</b> <span class="small mut">${x.date.slice(0,4)}</span><div class="small">${f(x.pas,0)} pas · ${f(x.kcal,0)} kcal · ${dayThird(x)}${S.state(x.date)==='train'?' · ⛰️ séance':''}</div></div><button class="btn sm sec" data-d-edit="${x.date}" aria-label="Modifier">✏️</button><button class="btn sm bad" data-d-del="${x.date}" aria-label="Supprimer">🗑️</button></div>`).join('')}${L.length>10?'</details>':''}
+      ${L.slice(0,60).map((x,i)=>(i===10?'<details class="small"><summary>Journées plus anciennes ('+(Math.min(60,L.length)-10)+')</summary>':'')+`<div class="drow"><div class="nm"><b>${dayLbl(x.date)}</b> <span class="small mut">${x.date.slice(0,4)}</span><div class="small">${f(x.pas,0)} pas · ${f(x.kcal,0)} kcal · ${dayThird(x)}${S.state(x.date)==='train'?' · ⛰️ séance':''}</div></div><button class="btn sm sec" data-d-edit="${esc(x.date)}" aria-label="Modifier">✏️</button><button class="btn sm bad" data-d-del="${esc(x.date)}" aria-label="Supprimer">🗑️</button></div>`).join('')}${L.length>10?'</details>':''}
       ${L.length>60?`<div class="small mut">… ${L.length-60} journées plus anciennes (export CSV)</div>`:''}</div>`;
   chart($('chD1'),lab,[{name:'Pas',type:'bar',color:'#7cc8ea',values:days.map(d=>(dayOf(d)||{}).pas??null)},{name:'Minutes d’activité',type:'line',axis:'right',color:'#fb923c',values:days.map(d=>{ const x=dayOf(d); return x?x.actMin:null; })}]);
   const wkS=wk.slice(-userChartWeeks());
@@ -2957,7 +3024,6 @@ const MiFit = (()=>{
     ['hr',/^frequence cardiaque$/,'int','up'], ['score',/^score corporel/,'int','down'], ['stdKg',/^poids standard/,'d1','down'],
     ['ctrlPoids',/^controle du poids/,'sd1','down'], ['ctrlGraisse',/^controle des graisses/,'sd1','down'], ['ctrlMuscle',/^controle musculaire/,'sd1','down']
   ];
-  const BODY_TYPES=['Mince et musclé','Obésité invisible','En sous-poids','En surpoids','En forme','Athlétique','Musclé','Mince','Maigre','Obèse'];
   // Détecte la case surlignée (orange) du tableau « Type de corps »
   function findHighlight(img, sc, y0, y1){
     const step=4, c=document.createElement('canvas'), w=Math.round(img.naturalWidth/step), h=Math.max(1,Math.round((y1-y0)/sc/step));
@@ -3081,10 +3147,10 @@ const MiFit = (()=>{
             const gg=c.getContext('2d'), dd=gg.getImageData(0,0,c.width,c.height), pp=dd.data; let blk=0; for(let i=0;i<pp.length;i+=4) if(pp[i]<128) blk++;
             if(blk>pp.length/8){ for(let i=0;i<pp.length;i+=4){ pp[i]=pp[i+1]=pp[i+2]=255-pp[i]; } gg.putImageData(dd,0,0); }
             await w.setParameters({tessedit_pageseg_mode:'6', tessedit_char_whitelist:''}); const r=await w.recognize(c); const t=norm(r.data.text);
-            const bt=BODY_TYPES.find(b=>t.includes(norm(b))) || BODY_TYPES.find(b=>norm(b).split(' ').every(x=>t.includes(x)));
-            if(bt) res.fields.bodyType={v:bt,conf:Math.round(r.data.confidence||80)};
+            const bt=BODY_OCR.find(b=>t.includes(norm(b))) || BODY_OCR.find(b=>norm(b).split(' ').every(x=>t.includes(x)));
+            if(bt) res.fields.bodyType={v:bodyCanon(bt),conf:Math.round(r.data.confidence||80)};
             // repli : segments de la passe 1 contenus dans la case
-            if(!bt){ const inC=segs.filter(s=>s.x0>=hl.x-6&&s.x1<=hl.x+hl.w+6&&s.y0>=hl.y-6&&s.y1<=hl.y+hl.h+6).map(s=>s.n).join(' '); const b2=BODY_TYPES.find(b=>inC.includes(norm(b))); if(b2) res.fields.bodyType={v:b2,conf:70}; }
+            if(!bt){ const inC=segs.filter(s=>s.x0>=hl.x-6&&s.x1<=hl.x+hl.w+6&&s.y0>=hl.y-6&&s.y1<=hl.y+hl.h+6).map(s=>s.n).join(' '); const b2=BODY_OCR.find(b=>inC.includes(norm(b))); if(b2) res.fields.bodyType={v:bodyCanon(b2),conf:70}; }
             await w.setParameters({tessedit_pageseg_mode:'7'}); } }
       }
       const SP=Object.assign({},P,{ dint:t=>{ const m=String(t).replace(/[oO](?=\d)|(?<=\d)[oO]/g,'0').replace(/(\d)[\s.\u00a0\u202f'’](?=\d{3}(\D|$))/g,'$1').match(/\d{1,6}/); return m? +m[0] : null; }, sd1:t=>{ const m=String(t).replace(/−/g,'-').match(/([+-]?)\s*(\d{1,3})\s*[.,]\s*(\d)/); return m? +((m[1]==='-'?'-':'')+m[2]+'.'+m[3]) : null; } });
@@ -3210,14 +3276,14 @@ const ASC={
   card(o){ const T=ascTotals(o.n), st=objState(o.n), done=st.statut==='Fait';
     const pr=(lab,v,goal,d,u)=>{ const r=goal?Math.min(1,(v||0)/goal):0; return `<div class="asc-pr"><span class="mut">${lab}</span><div class="bar"><i style="--v:${r.toFixed(3)};background:linear-gradient(90deg,#34b38a,#6ee7b7)"></i></div><b>${f(v||0,d)} / ≈ ${f(goal,d)} ${u}</b></div>`; };
     const tot=[[f(T.dist,1),'km'],[f(T.dplus,0),'m D+'],[fmtDur(T.dur),'durée'],[f(T.dminus,0),'m D-'],[f(T.kcal,0),'kcal'],[f(T.pas,0),'pas']];
-    const sess=T.L.map(s=>{ const ch=[s.dist!=null?f(s.dist,2)+' km':null,s.dplus!=null?f(s.dplus,0)+' m D+':null,s.dur?fmtDur(s.dur):null,s.kcal?f(s.kcal,0)+' kcal':null,s.bpm?'♥ '+s.bpm:null].filter(Boolean).join(' · ');
-      return `<div class="asc-s"><div class="nm"><b>${dFR(s.date)}${s.heure?' '+esc(s.heure):''}</b> <span class="small mut">${esc(s.type)}</span><div class="small">${ch||'–'}</div></div><button class="btn sec sm" data-asc-edit="${s.id}" aria-label="Modifier">✏️</button><button class="btn sec sm" data-asc-rm="${s.id}" aria-label="Retirer de l’objectif" title="Retirer de l’objectif (la séance reste dans le journal)">✕</button></div>`; }).join('');
+    const sess=T.L.map(s=>{ const ch=[s.dist!=null?f(s.dist,2)+' km':null,s.dplus!=null?f(s.dplus,0)+' m D+':null,s.dur?fmtDur(s.dur):null,s.kcal?f(s.kcal,0)+' kcal':null,s.bpm?'♥ '+s.bpm:null].filter(Boolean).map(esc).join(' · ');
+      return `<div class="asc-s"><div class="nm"><b>${dFR(s.date)}${s.heure?' '+esc(s.heure):''}</b> <span class="small mut">${esc(s.type)}</span><div class="small">${ch||'–'}</div></div><button class="btn sec sm" type="button" data-ana="${esc(s.id)}" aria-label="Analyse de la séance du ${dFR(s.date)}" title="Analyse complète">📊</button><button class="btn sec sm" data-asc-edit="${esc(s.id)}" aria-label="Modifier">✏️</button><button class="btn sec sm" data-asc-rm="${esc(s.id)}" aria-label="Retirer de l’objectif" title="Retirer de l’objectif (la séance reste dans le journal)">✕</button></div>`; }).join('');
     return `<div class="card asc-card" id="ascCard"><h3><span>🏁 Mon ascension</span>${done?`<span class="asc-done small">✔ fait${st.dateRealisee?' le '+dFR(st.dateRealisee):''}</span>`:`<span class="small mut">${T.n?'en cours':'pas encore faite'}</span>`}</h3>
-      ${T.n?`<div class="small mut">${T.n} séance${T.n>1?'s':''}${T.days>1?' sur '+T.days+' jours':''} · du ${dFR(T.first)}${T.last!==T.first?' au '+dFR(T.last):''}${T.bpm?' · ♥ moy. '+f(T.bpm,0)+(T.bpmMax?' / max '+T.bpmMax:''):''}${T.altMax!=null?' · alt. max '+f(T.altMax,0)+' m':''}</div>
+      ${T.n?`<div class="small mut">${T.n} séance${T.n>1?'s':''}${T.days>1?' sur '+T.days+' jours':''} · du ${dFR(T.first)}${T.last!==T.first?' au '+dFR(T.last):''}${T.bpm?' · ♥ moy. '+f(T.bpm,0)+(T.bpmMax?' / max '+esc(T.bpmMax):''):''}${T.altMax!=null?' · alt. max '+f(T.altMax,0)+' m':''}</div>
       <div class="asc-tot">${tot.map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>
       ${pr('Distance',T.dist,o.dist,1,'km')}${pr('D+',T.dplus,o.dplus,0,'m')}
       <div style="margin-top:6px">${sess}</div>`:`<div class="small mut" style="margin-top:6px">${done?'Ajoute la ou les séances enregistrées sur ta montre : distances, dénivelés, durées et calories s’additionnent.':'Le jour J, importe la ou les séances de ta montre ici (une par jour ou par tronçon) : tout s’additionne.'}</div>`}
-      <div class="asc-acts"><button class="btn" data-asc-imp="${o.n}">📷 Importer Mi Fitness</button><button class="btn sec" data-asc-man="${o.n}">✏️ Saisir</button><button class="btn sec" data-asc-link="${o.n}">🔗 Séance existante</button>
+      <div class="asc-acts">${T.n?`<button class="btn sec" type="button" data-ana-sum="${o.n}">📊 Bilan de l’ascension</button>`:''}<button class="btn" data-asc-imp="${o.n}">📷 Importer Mi Fitness</button><button class="btn sec" data-asc-man="${o.n}">✏️ Saisir</button><button class="btn sec" data-asc-link="${o.n}">🔗 Séance existante</button>
       ${done?'':`<button class="btn sec" data-asc-done="${o.n}">✔ Marquer comme fait</button>`}</div></div>`; },
   prompt(n,justDone){ const o=OBJECTIFS.find(x=>x.n===+n); if(!o) return;
     $('ascBox').innerHTML=`<h2 id="ascDlgT" style="margin:0 0 4px">${justDone?'Bravo pour '+esc(o.sommet)+' ! 🎉':'Ajouter une séance'}</h2>
@@ -3227,7 +3293,7 @@ const ASC={
   pick(n){ const o=OBJECTIFS.find(x=>x.n===+n), st=objState(n), ref=st.dateRealisee||todayISO();
     const L=DB.sessions.filter(s=>+s.objN!==+n).sort((a,b)=>Math.abs(parseISO(a.date)-parseISO(ref))-Math.abs(parseISO(b.date)-parseISO(ref))||b.date.localeCompare(a.date)).slice(0,25);
     $('ascBox').innerHTML=`<h2 id="ascDlgT" style="margin:0 0 4px">Rattacher à ${esc(o.sommet)}</h2><p class="small mut" style="margin:0 0 6px">Séances les plus proches du ${dFR(ref)}. La séance reste dans ton journal, rien n’est dupliqué.</p>
-      ${L.length?L.map(s=>`<div class="asc-s"><div class="nm"><b>${dFR(s.date)}</b> <span class="small mut">${esc(s.type)}${ascObj(s)?' · déjà sur '+esc(ascObj(s).sommet):''}</span><div class="small">${[s.dist!=null?f(s.dist,2)+' km':null,s.dplus!=null?f(s.dplus,0)+' m D+':null,s.dur?fmtDur(s.dur):null].filter(Boolean).join(' · ')||'–'}</div></div><button class="btn sm" data-asc-pick="${s.id}" data-n="${n}">Ajouter</button></div>`).join(''):'<div class="small mut">Aucune séance enregistrée.</div>'}
+      ${L.length?L.map(s=>`<div class="asc-s"><div class="nm"><b>${dFR(s.date)}</b> <span class="small mut">${esc(s.type)}${ascObj(s)?' · déjà sur '+esc(ascObj(s).sommet):''}</span><div class="small">${[s.dist!=null?f(s.dist,2)+' km':null,s.dplus!=null?f(s.dplus,0)+' m D+':null,s.dur?fmtDur(s.dur):null].filter(Boolean).join(' · ')||'–'}</div></div><button class="btn sm" data-asc-pick="${esc(s.id)}" data-n="${n}">Ajouter</button></div>`).join(''):'<div class="small mut">Aucune séance enregistrée.</div>'}
       <button class="btn sec" data-asc-x>Fermer</button>`; $('ascDlg').classList.add('on'); },
   closeDlg(){ $('ascDlg').classList.remove('on'); },
   refresh(){ renderAll(); },
@@ -3238,14 +3304,260 @@ const ASC={
     if(d.ascImp){ this.closeDlg(); const n=+d.ascImp; if(document.body.classList.contains('sheet-open')) show(curPage); IMP.open(); IMP.target=n; $('impFiles').click(); return true; }
     if(d.ascMan){ this.closeDlg(); const n=+d.ascMan, st=objState(n); FORM_BACK=curPage==='sum'?n:null; fillForm(null); $('f_date').value=st.dateRealisee||todayISO(); $('f_type').value='Randonnée'; updExos(); fillObjSel($('f_obj'),n); show('add'); return true; }
     if(d.ascLink){ this.pick(+d.ascLink); return true; }
-    if(d.ascPick){ const s=DB.sessions.find(x=>x.id===d.ascPick), n=+d.n; if(!s) return true; const prev=this.setObj(s,n); save(); this.closeDlg(); this.refresh();
+    if(d.ascPick){ const s=DB.sessions.find(x=>x.id===d.ascPick), n=+d.n; if(!s) return true; const prev=this.setObj(s,n); save(); this.closeDlg(); this.refresh(); anaAfterSave([s.id]); // v38 : bilan d’ascension
       toastUndo('Séance du '+dFR(s.date)+' ajoutée à '+OBJECTIFS.find(o=>o.n===n).sommet,()=>{ this.setObj(s,prev); save(); this.refresh(); toast('Annulé'); }); return true; }
-    if(d.ascDone){ const n=+d.ascDone, T=ascTotals(n), o=Object.assign(objState(n),{statut:'Fait',dateRealisee:objState(n).dateRealisee||T.last||todayISO(),updatedAt:Date.now()}); DB.objectifs[n]=o; save(); this.refresh(); toast('Bravo ! Objectif marqué fait 🎉'); if(!T.n) setTimeout(()=>this.prompt(n,true),350); return true; }
+    if(d.ascDone){ const n=+d.ascDone, T=ascTotals(n), o=Object.assign(objState(n),{statut:'Fait',dateRealisee:objState(n).dateRealisee||T.last||todayISO(),updatedAt:Date.now()}); DB.objectifs[n]=o; save(); this.refresh(); toast('Bravo ! Objectif marqué fait 🎉'); if(!T.n) setTimeout(()=>this.prompt(n,true),350); else setTimeout(()=>ANA.openSummit(n),350); return true; } // v38 : bilan complet si des séances sont rattachées
     if(d.ascEdit){ const s=DB.sessions.find(x=>x.id===d.ascEdit); if(s){ FORM_BACK=curPage==='sum'?+s.objN:null; fillForm(s); show('add'); } return true; }
     if(d.ascRm){ const s=DB.sessions.find(x=>x.id===d.ascRm); if(!s) return true; const prev=this.setObj(s,null); save(); this.refresh();
       toastUndo('Séance retirée de l’objectif (elle reste dans le journal)',()=>{ this.setObj(s,prev); save(); this.refresh(); toast('Annulé'); }); return true; }
     return false; }
 };
+
+/* ---------- v38 : analyse complète d’une séance & bilan d’ascension ----------
+   100 % local : tout est recalculé à l’affichage à partir des séances existantes ; rien n’est enregistré, rien n’est ajouté au gist. */
+function anaOrder(a,b){ if(a.date!==b.date) return a.date<b.date?-1:1; if(a.heure&&b.heure&&a.heure!==b.heure) return a.heure<b.heure?-1:1;
+  return ((a.updatedAt||0)-(b.updatedAt||0))||String(a.id).localeCompare(String(b.id)); }
+// séances antérieures à s (même jour : heure, sinon ordre d’enregistrement) = « l’état juste avant »
+function anaPrior(s){ return DB.sessions.filter(x=>x&&x.id!==s.id&&typeof x.date==='string'&&anaOrder(x,s)<0); }
+// calcul avec une liste de séances simulée (synchrone, la liste réelle est toujours remise en place)
+function anaWith(list,fn){ const keep=DB.sessions; DB.sessions=list; try{ return fn(); } finally{ DB.sessions=keep; } }
+const anaN=v=>(v!=null&&v!==''&&isFinite(+v))?+v:null, anaP=v=>{ const x=anaN(v); return x!=null&&x>0?x:null; };
+function kmEff(s){ const d=anaN(s.dist), p=anaN(s.dplus); if(d==null&&p==null) return null; const k=(d||0)+(p||0)/100; return k>0?k:null; } // km-effort = km + D+/100
+function anaVam(s){ const p=anaP(s.dplus), t=anaP(s.dur); return p&&t?p/(t/3600):null; }
+function anaSpeed(s){ const d=anaP(s.dist), t=anaP(s.dur); return d&&t?d/(t/3600):null; }
+function anaPace(s){ const sp=anaSpeed(s); if(!sp) return null; const t=Math.round(3600/sp); return t<3600? Math.floor(t/60)+'′'+String(t%60).padStart(2,'0')+'″/km' : null; }
+function anaEI(s){ const k=kmEff(s), t=anaP(s.dur), b=anaP(s.bpm); return k&&t&&b? k/(t/3600)/b*100 : null; } // km-effort/h pour 100 bpm
+function anaRefMax(){ const L=DB.sessions.map(x=>anaP(x.bpmMax)).filter(Boolean); return L.length?{v:Math.max(...L),n:L.length}:null; }
+function anaZone(r){ return r<0.7?'endurance fondamentale':r<0.8?'modérée':'soutenue'; }
+const anaSign=(v,d=0)=>{ const r=Math.round(v*10**d)/10**d; return (r>0?'+':r<0?'−':'±')+f(Math.abs(r),d); };
+const anaRel=(a,b)=>(a!=null&&b!=null&&b!==0)?(a-b)/Math.abs(b)*100:null;
+function anaVal(v,u,d){ return v==null?'–':u==='dur'?fmtDur(v):f(v,d)+(u?'\u00a0'+u:''); }
+function anaGpxDm(pts){ let dm=0,last=null; for(const p of pts){ const e=p[2]; if(e==null||!isFinite(e)) continue; if(last==null){ last=e; continue; } const d=e-last; if(d<=-3){ dm-=d; last=e; } else if(d>=3) last=e; } return Math.round(dm); }
+
+function anaRecords(s,P){ const from=addDays(s.date,-27), out=[];
+  const chk=(lab,val,all,r28,u,d)=>{ if(val==null||!(val>0)) return; all=all.filter(v=>v!=null&&v>0); if(!all.length) return; const m=Math.max(...all);
+    if(val>m){ out.push({lab,val,prev:m,scope:'all',u,d}); return; } r28=r28.filter(v=>v!=null&&v>0); if(r28.length){ const m2=Math.max(...r28); if(val>m2) out.push({lab,val,prev:m2,scope:'28',u,d}); } };
+  const p28=P.filter(x=>x.date>=from), on=(L,fn)=>L.map(fn);
+  chk('D+ sur une sortie',anaP(s.dplus),on(P,x=>anaP(x.dplus)),on(p28,x=>anaP(x.dplus)),'m',0);
+  const same=P.filter(x=>x.date===s.date);
+  if(same.length&&anaP(s.dplus)){ const by={}; for(const x of P) by[x.date]=(by[x.date]||0)+(anaP(x.dplus)||0);
+    const tot=by[s.date]+anaP(s.dplus), ks=Object.keys(by).filter(k=>k!==s.date);
+    chk('D+ sur une journée',tot,ks.map(k=>by[k]),ks.filter(k=>k>=from).map(k=>by[k]),'m',0); }
+  chk('Distance',anaP(s.dist),on(P,x=>anaP(x.dist)),on(p28,x=>anaP(x.dist)),'km',2);
+  if(!isMuscu(s)) chk('Durée d’endurance',anaP(s.dur),on(P,x=>isMuscu(x)?null:anaP(x.dur)),on(p28,x=>isMuscu(x)?null:anaP(x.dur)),'dur');
+  const vOk=x=>(anaP(x.dplus)||0)>=100&&(anaP(x.dur)||0)>=1200, tp=isTapis(s.type);
+  if(vOk(s)) chk(tp?'VAM sur tapis':'VAM en extérieur',anaVam(s),on(P,x=>vOk(x)&&isTapis(x.type)===tp?anaVam(x):null),on(p28,x=>vOk(x)&&isTapis(x.type)===tp?anaVam(x):null),'m/h',0);
+  chk('Sac le plus lourd',anaP(s.sac),on(P,x=>anaP(x.sac)),on(p28,x=>anaP(x.sac)),'kg',1);
+  return out; }
+
+function anaCmp(s,P){ const from=addDays(s.date,-27); let pool=P.filter(x=>x.type===s.type), basis='même type ('+s.type+')';
+  if(!pool.length){ const fm=typeFamily(s.type); pool=P.filter(x=>typeFamily(x.type)===fm&&!isMuscu(x)===!isMuscu(s)); basis='même famille d’activité'; }
+  const m28=pool.filter(x=>x.date>=from), prev=pool.length?pool[pool.length-1]:null;
+  const M=[['D+',x=>anaP(x.dplus),'m',0,1],['Distance',x=>anaP(x.dist),'km',2,1],['Durée',x=>anaP(x.dur),'dur',0,1],['Vitesse',anaSpeed,'km/h',1,1],['VAM',x=>(anaP(x.dplus)||0)>=30?anaVam(x):null,'m/h',0,1],['FC moy.',x=>anaP(x.bpm),'bpm',0,0]];
+  const rows=[]; for(const [lab,fn,u,d,good] of M){ const v=fn(s); if(v==null) continue; const L=m28.map(fn).filter(x=>x!=null), avg=L.length?L.reduce((a,b)=>a+b,0)/L.length:null, pv=prev?fn(prev):null;
+    if(avg==null&&pv==null) continue; rows.push({lab,v,avg,n:L.length,pv,dA:anaRel(v,avg),dP:anaRel(v,pv),u,d,good}); }
+  return {rows,basis,n28:m28.length,prev}; }
+
+function anaCardio(s,P){ const b=anaP(s.bpm), bm=anaP(s.bpmMax), R=anaRefMax(), out={b,bm};
+  if(b&&bm) out.ratio=b/bm;
+  if(b&&R&&R.v>=(bm||0)){ out.ref=R.v; out.refN=R.n; out.pct=b/R.v; out.zone=anaZone(out.pct); }
+  const ei=anaEI(s); if(ei&&!isMuscu(s)&&typeFamily(s.type)!=='corde'){ const from=addDays(s.date,-27);
+    let L=P.filter(x=>x.date>=from&&x.type===s.type).map(anaEI).filter(Boolean), basis='même type';
+    if(L.length<2){ L=P.filter(x=>x.date>=from&&typeFamily(x.type)===typeFamily(s.type)).map(anaEI).filter(Boolean); basis='même famille'; }
+    if(L.length>=2){ const m=L.reduce((a,c)=>a+c,0)/L.length, d=(ei/m-1)*100; out.ei={v:ei,m,n:L.length,d,basis,st:d>=4?'en progrès':d<=-4?'fatigue possible (FC plus haute à effort égal)':'stable'}; } }
+  return out; }
+
+function anaLoad(s,P){ const A=P.concat([s]), sum=(L,k)=>L.reduce((t,x)=>t+(anaN(x[k])||0),0);
+  const w0=toISO(monday(parseISO(s.date))), w1=addDays(w0,6), W=A.filter(x=>x.date>=w0&&x.date<=w1), ym=s.date.slice(0,7), Mo=A.filter(x=>x.date.slice(0,7)===ym);
+  const nx=nextObjective(), tgt=nx?(nx.multi?1.5*nx.multi.dpJ:nx.dplus):null;
+  const a7=sum(A.filter(x=>x.date>=addDays(s.date,-6)),'dplus'), a28=sum(A.filter(x=>x.date>=addDays(s.date,-27)),'dplus'), avgW=a28/4, ratio=avgW>0?a7/avgW:null;
+  const days=new Set(A.map(x=>x.date)); let streak=0; for(let d=s.date; days.has(d); d=addDays(d,-1)) streak++;
+  const kE=kmEff(s)||0, dur=anaP(s.dur)||0, dp=anaP(s.dplus)||0, tips=[];
+  if((ratio!=null&&ratio>=1.5)||streak>=4) tips.push(['😴',`Charge en hausse (${[ratio!=null&&ratio>=1.5?'7 derniers jours = ×\u00a0'+f(ratio,1)+' ta moyenne':null,streak>=4?streak+' jours d’affilée':null].filter(Boolean).join(', ')}) : <b>repos complet</b> ou 30–45 min de marche légère demain.`]);
+  else if(dp>=800||dur>=4*3600||kE>=15) tips.push(['🦵','Grosse sortie : <b>24–48 h de récupération active</b> (marche légère, mobilité), pas d’intensité demain.']);
+  else if(isMuscu(s)) tips.push(['🏋️','Renforcement : laisse <b>48 h</b> avant de re-solliciter les mêmes muscles ; une marche en endurance demain est idéale.']);
+  else if(ratio!=null&&ratio<0.8) tips.push(['📈','Charge légère cette semaine : tu peux enchaîner demain par une <b>séance en côte</b> ou du renforcement.']);
+  else tips.push(['🙂','Charge maîtrisée : <b>séance facile ou renforcement</b> demain.']);
+  if(dur>=2*3600||(anaP(s.kcal)||0)>=800) tips.push(['💧','Réhydrate-toi : ≈ 0,5 L par heure d’effort, avec un peu de sel si tu as beaucoup transpiré.']);
+  if(anaP(s.recup)) tips.push(['⏱️',`Ta montre conseille <b>${f(s.recup,0)} h</b> de récupération.`]);
+  return {week:{from:w0,to:w1,n:W.length,dplus:sum(W,'dplus'),km:sum(W,'dist'),dur:sum(W,'dur')},tgt,nx,month:{ym,n:Mo.length,dplus:sum(Mo,'dplus'),km:sum(Mo,'dist'),dur:sum(Mo,'dur')},a7,avgW,ratio,streak,tips}; }
+
+function anaState(list,ref,objs){ return anaWith(list,()=>{ const st=Object.assign(trainStats(parseISO(ref)),{simRef:ref});
+  return objs.map(o=>{ const R=readiness(o,st); return {o,R,P:planStatus(o,ref)}; }); }); }
+function anaPrep(s,P){ const o=nextObjective(); if(!o) return null;
+  const open=OBJ_BY_DIFF.filter(x=>!['Fait','Prêt'].includes(objState(x.n).statut)), objs=[o,...open.filter(x=>x.n!==o.n)];
+  const B=anaState(P,s.date,objs), A=anaState(P.concat([s]),s.date,objs), b=B[0], a=A[0];
+  const newly=a.P.items.filter((x,i)=>x.ok&&!b.P.items[i].ok), next=a.P.items.find(x=>!x.ok)||null;
+  const unlock=A.map((x,i)=>({o:x.o,b:B[i].R.r,a:x.R.r})).filter(x=>x.b<0.8&&x.a>=0.8);
+  return {o,b:b.R,a:a.R,pb:b.P,pa:a.P,newly,next,unlock}; }
+
+function anaTopoDur(o){ const M=o.multi; return M&&M.hJ&&M.jours? M.hJ*M.jours*3600 : (o.h||0)*3600; }
+function anaSummit(n,s){ const o=OBJECTIFS.find(x=>x.n===+n); if(!o) return null; const T=ascTotals(o.n); if(!T.n) return null;
+  const st=objState(o.n), I=OBJ_INFO[o.n]||{}, M=o.multi, L=T.L, first=L[0];
+  const dmR=L.reduce((t,x)=>t+dmEst(x),0), dmE=L.some(dmIsEst), ar=/aller|boucle/i.test(I.type||'');
+  const g=sanGpx(st.gpx), gm=g?gpxMetrics(g.pts):null, gAlt=g?g.pts.reduce((m,p)=>p[2]!=null&&isFinite(p[2])&&(m==null||p[2]>m)?p[2]:m,null):null;
+  const rows=[['Distance',T.dist,o.dist,gm?gm.dist:null,'km',1],['D+',T.dplus,o.dplus,gm?gm.dplus:null,'m',0],['D−',dmR||null,ar?o.dplus:null,g?anaGpxDm(g.pts):null,'m',0,dmE],
+    ['Durée',T.dur,anaTopoDur(o)||null,null,'dur',0],['Altitude max',T.altMax,o.altSom,gAlt,'m',0]].map(([lab,v,t,gv,u,d,est])=>({lab,v,t,g:gv,u,d,est,dv:v!=null&&t!=null?v-t:null,dp:anaRel(v,t)}));
+  // étapes : par séance ; par jour si plusieurs jours ; la plus exigeante en km-effort
+  const steps=L.map(x=>({s:x,k:kmEff(x)})), byDay={}; for(const x of L){ const d=byDay[x.date]||(byDay[x.date]={date:x.date,n:0,dist:0,dplus:0,dur:0,k:0}); d.n++; d.dist+=anaN(x.dist)||0; d.dplus+=anaN(x.dplus)||0; d.dur+=anaN(x.dur)||0; d.k+=kmEff(x)||0; }
+  const dayL=Object.values(byDay).sort((a,b)=>a.date<b.date?-1:1), hard=T.days>1? dayL.slice().sort((a,b)=>b.k-a.k)[0] : steps.slice().sort((a,b)=>(b.k||0)-(a.k||0))[0];
+  const kE=(T.dist||0)+(T.dplus||0)/100, vam=T.dplus&&T.dur?T.dplus/(T.dur/3600):null, R=anaRefMax(), bpm=anaP(T.bpm);
+  // entraînement des 28 jours avant l’ascension (séances de l’ascension exclues) + sorties de référence antérieures
+  const pre=DB.sessions.filter(x=>x.date<first.date&&x.date>=addDays(first.date,-28)&&+x.objN!==+o.n), preD=dayTotals(pre);
+  const tr={n:pre.length,maxD:Math.max(0,...preD.map(d=>d.dplus||0)),wk:pre.reduce((t,x)=>t+(anaN(x.dplus)||0),0)/4,longest:Math.max(0,...preD.map(d=>d.durEnd||0))};
+  const refs=DB.sessions.filter(x=>isOutdoorHike(x)&&x.date<first.date&&+x.objN!==+o.n).sort((a,b)=>(anaP(b.dplus)||0)-(anaP(a.dplus)||0)), ref=refs[0]||null;
+  const preW=pre.filter(x=>WALK_TYPES.test(x.type)&&anaP(x.bpm)), preBpm=preW.length?preW.reduce((t,x)=>t+(+x.bpm),0)/preW.length:null;
+  const sac=Math.max(0,...L.map(x=>anaP(x.sac)||0))||null, rs=L.map(x=>anaP(x.ress)).filter(Boolean), ress=rs.length?Math.max(...rs):null;
+  // rétrospective : état juste avant la 1re séance de l’ascension
+  const Pb=DB.sessions.filter(x=>+x.objN!==+o.n&&anaOrder(x,first)<0), rb=anaState(Pb,first.date,[o])[0];
+  // progression
+  const done=OBJECTIFS.filter(x=>objState(x.n).statut==='Fait'), isDone=st.statut==='Fait';
+  let cumD=0,cumK=0,topo=0; for(const x of done){ const t=ascTotals(x.n); if(t.n&&t.dplus!=null){ cumD+=t.dplus; cumK+=t.dist||0; } else { cumD+=x.dplus; cumK+=x.dist; topo++; } }
+  const others=done.filter(x=>x.n!==o.n), prevAlt=others.length?Math.max(...others.map(x=>x.altSom)):null, altRec=isDone&&(prevAlt==null||o.altSom>prevAlt);
+  const nxs=OBJ_BY_DIFF.filter(x=>x.n!==o.n&&objState(x.n).statut!=='Fait'), nN=nextObjective(), nx=nN&&nN.n!==o.n?nN:(nxs[0]||null);
+  let proj=null; if(nx){ const Tn=nx.multi?nx.multi.dpJ:nx.dplus, To=M?M.dpJ:o.dplus; proj={o:nx,R:readiness(nx,trainStats(new Date())),x:To?Tn/To:null,alt:nx.altSom-o.altSom,gear:gearStatus(nx.n).filter(x=>x.st!=='ok').map(x=>x.l)}; }
+  const big=(T.dplus||0)>=1200||dmR>=1200||(T.dur||0)>=7*3600||T.days>1, mid=(T.dplus||0)>=600||dmR>=600||(T.dur||0)>=4*3600;
+  const recov=big?'72 h':mid?'48 à 72 h':'48 h';
+  const dayMax=Math.max(0,...dayL.map(d=>d.dplus))||null;
+  return {o,T,st,I,rows,dayMax,g:!!g,steps,dayL,hard,kE,vam,bpm,bpmMax:anaP(T.bpmMax),ref:R,tr,refS:ref,preBpm,sac,ress,rb,done:done.length,isDone,cumD,cumK,topo,altRec,prevAlt,proj,recov,rank:diffRank(o.n)}; }
+
+function anaData(id){ const s=DB.sessions.find(x=>x.id===id); if(!s) return null; const P=anaPrior(s).sort(anaOrder);
+  const day=DB.sessions.filter(x=>x.date===s.date), D={s,P};
+  D.rec=P.length?anaRecords(s,P):[]; D.first=!P.length;
+  D.day=day.length>1?{n:day.length,dplus:day.reduce((t,x)=>t+(anaN(x.dplus)||0),0),dist:day.reduce((t,x)=>t+(anaN(x.dist)||0),0),dur:day.reduce((t,x)=>t+(anaN(x.dur)||0),0)}:null;
+  D.cmp=anaCmp(s,P); D.cardio=anaCardio(s,P); D.load=anaLoad(s,P); D.prep=anaPrep(s,P);
+  D.sum=s.objN&&OBJECTIFS.some(o=>o.n===+s.objN)?anaSummit(+s.objN,s):null; return D; }
+
+/* ----- affichage ----- */
+const anaK=(v,l,cls)=>`<div class="an-k${cls?' '+cls:''}"><b>${v}</b><small>${l}</small></div>`;
+const anaD=(d,good)=>d==null||!isFinite(d)?'<span class="mut">–</span>':`<span class="${Math.abs(d)<2?'mut':good?(d>0?'up':'dn'):''}">${anaSign(d,0)}\u00a0%</span>`;
+function anaPerfHTML(s){ const k=[], sp=anaSpeed(s), pc=anaPace(s), kE=kmEff(s), va=anaVam(s), fm=typeFamily(s.type), tp=isTapis(s.type);
+  if(anaP(s.dist)) k.push([f(s.dist,2)+'\u00a0km','distance']); if(anaP(s.dur)) k.push([fmtDur(s.dur),'durée']);
+  if(sp) k.push([f(sp,1)+'\u00a0km/h','vitesse moy.']); if(pc) k.push([pc.replace('/km',''),'allure /km']);
+  if(anaP(s.dplus)) k.push([f(s.dplus,0)+'\u00a0m','D+']);
+  if(!tp&&(anaP(s.dplus)||anaN(s.dminus)!=null)) k.push([f(dmEst(s),0)+'\u00a0m'+(dmIsEst(s)?'*':''),'D−'+(dmIsEst(s)?' estimé':'')]);
+  if(kE&&fm!=='muscu'&&fm!=='corde') k.push([f(kE,1),'km-effort']);
+  if(va&&(anaP(s.dplus)||0)>=30) k.push([f(va,0)+'\u00a0m/h','VAM']);
+  const inc=tp?(anaN(s.incline)!=null?+s.incline:typeIncline(s.type)):null;
+  if(tp&&inc!=null) k.push([f(inc,1)+'\u00a0%','inclinaison']);
+  else if(anaP(s.dist)&&anaP(s.dplus)) k.push(['≈\u00a0'+f((anaP(s.dplus)+dmEst(s))/(s.dist*1000)*100,1)+'\u00a0%','pente moy. estimée']);
+  if(fm==='corde'){ if(anaP(s.sauts)) k.push([f(s.sauts,0),'sauts']); const spm=anaP(s.cadence)||(anaP(s.sauts)&&anaP(s.dur)?s.sauts/(s.dur/60):null); if(spm) k.push([f(spm,0),'sauts/min']); if(anaN(s.pauses)!=null) k.push([f(s.pauses,0),'pauses']); }
+  if(anaP(s.sac)) k.push([f(s.sac,1)+'\u00a0kg','sac']);
+  let h=k.length?`<div class="an-g">${k.map(([v,l])=>anaK(v,l)).join('')}</div>`:'<div class="small mut">Aucune mesure de distance, durée ou dénivelé.</div>';
+  if(dmIsEst(s)&&!tp) h+=`<div class="small mut an-note">* D− non saisi : estimé égal au D+ (sortie en boucle ou aller-retour), comme pour la préparation.</div>`;
+  if(fm==='muscu') h+=`${s.exos?`<div class="small an-exos">🏋️ ${esc(s.exos)}</div>`:''}<div class="small mut an-note">La musculation renforce sans compter dans la durée d’endurance (critère C et plan « journée longue »).</div>`;
+  return h; }
+function anaCardioHTML(s,C){ const k=[], w=[];
+  if(C.b) k.push([f(C.b,0)+'\u00a0bpm','FC moyenne']); if(C.bm) k.push([f(C.bm,0)+'\u00a0bpm','FC max']); if(C.ratio) k.push([f(C.ratio*100,0)+'\u00a0%','FC moy / max']);
+  if(anaP(s.cadence)&&typeFamily(s.type)!=='corde'){ const [l,u]=cadLabel(s.type); k.push([f(s.cadence,0)+'\u00a0'+u,l.toLowerCase()]); }
+  if(anaP(s.foulee)) k.push([f(s.foulee,0)+'\u00a0cm','foulée']);
+  if(anaN(s.altMin)!=null||anaN(s.altMax)!=null) k.push([(anaN(s.altMin)!=null?f(s.altMin,0):'–')+' → '+(anaN(s.altMax)!=null?f(s.altMax,0):'–')+'\u00a0m','altitude min → max']);
+  if(anaP(s.kcal)||anaP(s.kcalTot)) k.push([(anaP(s.kcal)?f(s.kcal,0):'–')+(anaP(s.kcalTot)?' / '+f(s.kcalTot,0):''),'kcal actives'+(anaP(s.kcalTot)?' / totales':'')]);
+  if(anaP(s.te)) k.push([f(s.te,1)+'/5','effet d’entraînement'+(s.teLabel?' · '+esc(s.teLabel):'')]);
+  if(anaP(s.tl)) k.push([f(s.tl,0),'charge (TL)']); if(anaP(s.recup)) k.push([f(s.recup,0)+'\u00a0h','récup. conseillée']); if(anaP(s.ress)) k.push([f(s.ress,0)+'/10','ressenti']);
+  if(!k.length) return '';
+  if(C.zone) w.push(`Intensité : <b>${C.zone}</b> (${f(C.pct*100,0)} % de ta FC max la plus haute enregistrée, ${f(C.ref,0)} bpm${C.refN<3?' — lecture indicative, peu de mesures':''}).`);
+  if(C.ei) w.push(`Efficience cardio (km-effort/h pour 100 bpm) : <b>${f(C.ei.v,2)}</b> vs ${f(C.ei.m,2)} en moyenne (${C.ei.n} séances, ${C.ei.basis}, 28 j) → ${anaSign(C.ei.d,0)} % : <b>${C.ei.st}</b>.`);
+  return `<div class="an-g">${k.map(([v,l])=>anaK(v,l)).join('')}</div>${w.map(x=>`<div class="an-l"><span>❤️</span><div>${x}</div></div>`).join('')}`; }
+function anaCmpHTML(C){ if(!C.rows.length) return '<div class="small mut">Pas encore de séance comparable (même type) avant celle-ci.</div>';
+  return `<table class="an-t"><tr><th></th><th>Séance</th><th>vs moy. 28 j</th><th>vs précédente</th></tr>${C.rows.map(r=>`<tr><td>${r.lab}</td><td>${anaVal(r.v,r.u,r.d)}</td><td>${anaD(r.dA,r.good)}</td><td>${anaD(r.dP,r.good)}</td></tr>`).join('')}</table>
+    <div class="small mut an-note">Base : ${esc(C.basis)} · ${C.n28} séance${C.n28>1?'s':''} sur 28 j${C.prev?' · précédente le '+dFR(C.prev.date):''}.</div>`; }
+function anaLoadHTML(L){ const W=L.week, Mo=L.month, mo=MOIS_L[+Mo.ym.slice(5)-1];
+  const tg=L.tgt?`<div class="an-pb an-bar" role="img" aria-label="D+ de la semaine : ${Math.round(W.dplus/L.tgt*100)} % de la cible"><i class="a" style="width:${Math.round(Math.min(1,W.dplus/L.tgt)*100)}%"></i></div><div class="small mut">${f(W.dplus,0)} / ${f(L.tgt,0)} m de D+ : cible hebdo pour ${esc(L.nx.sommet)}${L.nx.multi?' (1,5 × le D+ d’une étape)':''}</div>`:'';
+  return `<div class="an-sub">Semaine du ${dFR(W.from)} <span class="mut">(au moment de la séance)</span></div><div class="an-g">${anaK(W.n,'séance'+(W.n>1?'s':''))}${anaK(f(W.dplus,0)+'\u00a0m','D+')}${anaK(f(W.km,1)+'\u00a0km','distance')}</div>${tg}
+    <div class="an-sub">${mo[0].toUpperCase()+mo.slice(1)} ${Mo.ym.slice(0,4)}</div><div class="an-g">${anaK(Mo.n,'séance'+(Mo.n>1?'s':''))}${anaK(f(Mo.dplus,0)+'\u00a0m','D+')}${anaK(f(Mo.km,1)+'\u00a0km','distance')}</div>
+    <div class="an-sub">Charge et récupération</div><div class="an-g">${anaK(f(L.a7,0)+'\u00a0m','D+ 7 derniers j')}${anaK(f(L.avgW,0)+'\u00a0m','moy. hebdo 28 j')}${anaK(L.ratio!=null?'×\u00a0'+f(L.ratio,1):'–','charge aiguë',L.ratio>=1.5?'warn':'')}${anaK(L.streak+'\u00a0j','série en cours')}</div>
+    ${L.tips.map(([i,t])=>`<div class="an-l"><span>${i}</span><div>${t}</div></div>`).join('')}`; }
+function anaPrepHTML(P){ if(!P) return ''; const pc=r=>Math.round(Math.min(1,r)*100), dl=pc(P.a.r)-pc(P.b.r);
+  const pil=[['A','Grosse journée','a'],['B','Volume hebdo','b'],['C','Endurance','c'],['D','Régularité','d']].map(([L,l,k])=>`<div class="an-pil"><span><b>${L}</b> ${l}</span><div class="an-pb"><i class="b" style="width:${pc(P.b[k])}%"></i><i class="a" style="width:${pc(P.a[k])}%"></i></div><b>${pc(P.b[k])}→${pc(P.a[k])}\u00a0%</b></div>`).join('');
+  return `<div class="an-prep">${ringSVG(Math.min(1,P.a.r),78)}<div style="flex:1;min-width:0"><div class="small mut">Prochain objectif</div><b>${esc(P.o.sommet)}</b><div class="small">Indice : <b>${pc(P.b.r)} % → ${pc(P.a.r)} %</b> <span class="${dl>0?'up':'mut'}">(${anaSign(dl,0)} pt${Math.abs(dl)>1?'s':''})</span></div></div></div>${pil}
+    <div class="small mut an-note">Barre foncée = avant la séance, partie claire = gain de la séance. Plan : ${P.pb.done}/5 → <b>${P.pa.done}/5</b> (30 % de l’indice).</div>
+    ${P.newly.map(x=>`<div class="an-l an-new"><span>✅</span><div>Case validée par cette séance : ${esc(x.t)}</div></div>`).join('')}
+    ${P.next?`<div class="an-l"><span>🎯</span><div>Prochaine case : <b>${esc(P.next.t)}</b> <span class="mut">— ${esc(P.next.d)}</span></div></div>`:'<div class="an-l"><span>🏅</span><div>Plan complet pour ce sommet.</div></div>'}
+    ${P.unlock.map(x=>`<div class="an-l an-new"><span>🔓</span><div>« Le chemin des sommets » : préparation de <b>${esc(x.o.sommet)}</b> validée (${pc(x.b)} % → ${pc(x.a)} %, seuil 80 %).</div></div>`).join('')}`; }
+function anaSumHTML(S){ const o=S.o, T=S.T, pc=r=>Math.round(Math.min(1,r)*100);
+  const rows=S.rows.filter(r=>r.v!=null||r.t!=null).map(r=>`<tr><td>${r.lab}</td><td>${anaVal(r.v,r.u,r.d)}${r.est?'*':''}</td><td>${r.t!=null?(r.lab==='D−'?'≈\u00a0':'')+anaVal(r.t,r.u,r.d):'–'}</td><td>${r.dv!=null?(r.u==='dur'?(r.dv<0?'−':'+')+fmtDur(Math.abs(r.dv)):anaSign(r.dv,r.d)):'–'}${r.dp!=null?` <span class="mut">(${anaSign(r.dp,0)}\u00a0%)</span>`:''}</td>${S.g?`<td>${r.g!=null?anaVal(r.g,r.u,r.d):'–'}</td>`:''}</tr>`).join('');
+  const st=T.n>1?`<div class="an-sub">${T.days>1?'Étapes':'Tronçons'} (${T.n} séances${T.days>1?' sur '+T.days+' jours':''})</div><table class="an-t"><tr><th></th><th>km</th><th>D+</th><th>durée</th><th>km-eff.</th></tr>${S.steps.map(x=>`<tr><td>${dFR(x.s.date).slice(0,5)}${x.s.heure?' '+esc(x.s.heure):''} <span class="mut">${esc(x.s.type)}</span></td><td>${f(x.s.dist,1)}</td><td>${f(x.s.dplus,0)}</td><td>${fmtDur(x.s.dur)}</td><td>${f(x.k,1)}</td></tr>`).join('')}<tr class="an-tot"><td>Total</td><td>${f(T.dist,1)}</td><td>${f(T.dplus,0)}</td><td>${fmtDur(T.dur)}</td><td>${f(S.kE,1)}</td></tr></table>
+    <div class="small an-note">💪 ${T.days>1?`Journée la plus exigeante : <b>${dFR(S.hard.date)}</b> (${f(S.hard.k,1)} km-effort, ${f(S.hard.dplus,0)} m D+)`:`Tronçon le plus exigeant : <b>${dFR(S.hard.s.date)}${S.hard.s.heure?' '+esc(S.hard.s.heure):''}</b> (${f(S.hard.k,1)} km-effort)`}.</div>`:'';
+  const ctx=[`Cotation : ${esc(o.diff)} · niveau ${S.rank}/${OBJECTIFS.length} (${diffLabel(diffScore(o).s)}) · ${esc(TECH_TXT[TECH[o.n]||0]||'')}`];
+  if(S.sac) ctx.push(`Sac porté : ${f(S.sac,1)} kg`); if(S.ress) ctx.push(`Ressenti : ${f(S.ress,0)}/10 (effort perçu)`);
+  if(o.altSom>=2500) ctx.push(`Haute altitude (${f(o.altSom,0)} m) : ${T.altMax!=null?'altitude max atteinte '+f(T.altMax,0)+' m':'altitude max non mesurée'}${S.bpm&&S.preBpm?` · FC moy. ${f(S.bpm,0)} bpm, ${anaSign(S.bpm-S.preBpm,0)} bpm vs tes marches d’entraînement (manque d’oxygène : allure plus lente, boire souvent)`:''}`);
+  const tr=S.tr, phys=[`Km-effort total : <b>${f(S.kE,1)}</b>${S.vam?` · VAM moyenne <b>${f(S.vam,0)} m/h</b>`:''}`];
+  if(S.bpm) phys.push(`Cardio : FC moy. <b>${f(S.bpm,0)} bpm</b>${S.bpmMax?` · max ${f(S.bpmMax,0)}`:''}${S.ref?` · ${f(S.bpm/S.ref.v*100,0)} % de ta FC max la plus haute (${f(S.ref.v,0)}) : ${anaZone(S.bpm/S.ref.v)}`:''}`);
+  if(tr.n) phys.push(`28 j avant : ${tr.n} séances · plus grosse journée ${f(tr.maxD,0)} m D+${tr.maxD&&S.dayMax?` (${T.days>1?'sa plus grosse journée':'l’ascension'} = ${S.dayMax/tr.maxD>=1.05?'×\u00a0'+f(S.dayMax/tr.maxD,1):Math.round(S.dayMax/tr.maxD*100)+'\u00a0%'})`:''} · ${f(tr.wk,0)} m D+/sem · plus longue ${fmtH(tr.longest/3600)}`);
+  if(S.refS) phys.push(`Plus grosse sortie de référence avant : ${dFR(S.refS.date)}${S.refS.lieu?' ('+esc(S.refS.lieu)+')':''} — ${f(S.refS.dplus,0)} m D+${anaVam(S.refS)?' · VAM '+f(anaVam(S.refS),0)+' m/h':''}`);
+  const rb=S.rb, retro=`Indice juste avant : <b>${pc(rb.R.r)} %</b> · plan <b>${rb.P.done}/5</b>${S.ress?` · ressenti ${f(S.ress,0)}/10 : ${S.ress<=5?(rb.R.r>=0.6?'effort bien tenu, préparation suffisante':'effort bien tenu malgré une préparation incomplète'):S.ress<=7?'exigeant mais maîtrisé':(rb.R.r<0.6?'très dur : cohérent avec une préparation encore incomplète':'très dur malgré la préparation : récupère bien et vise une marche de plus au prochain cycle')}`:''}.`;
+  const p=S.proj, proj=p?`<div class="an-l"><span>🧭</span><div>Prochain : <b>${esc(p.o.sommet)}</b> — niveau ${diffRank(p.o.n)}/${OBJECTIFS.length} (${diffLabel(diffScore(p.o).s)}) · indice actuel <b>${pc(p.R.r)} %</b>${p.x?` · effort ×\u00a0${f(p.x,1)} le D+${p.o.multi?' (par étape)':''}`:''} · ${p.alt>=0?'+':'−'}${f(Math.abs(p.alt),0)} m d’altitude</div></div>${p.gear.length?`<div class="an-l"><span>🎒</span><div>Matériel encore manquant : ${p.gear.map(esc).join(', ')}</div></div>`:'<div class="an-l"><span>🎒</span><div>Matériel conseillé : tout est prêt.</div></div>'}`:'<div class="an-l"><span>🏆</span><div>Plus aucun objectif ouvert : tous tes sommets sont faits !</div></div>';
+  return `<section class="an-sec an-sum"><h3>🏔️ Bilan complet de l’ascension</h3><div class="an-hd"><b>${esc(o.sommet)}</b> <span class="small mut">· ${esc(o.iti)}</span></div>${S.isDone?'':`<div class="an-l"><span>ℹ️</span><div>Objectif pas encore marqué « Fait » : bilan provisoire. <button class="btn sm" type="button" data-asc-done="${o.n}">✔ Marquer comme fait</button></div></div>`}
+    <div class="an-sub">Réalisé vs topo officiel${S.g?' et trace GPX':''}</div><table class="an-t"><tr><th></th><th>Réalisé</th><th>Topo</th><th>Écart</th>${S.g?'<th>GPX</th>':''}</tr>${rows}</table>
+    ${S.rows.some(r=>r.est)?'<div class="small mut an-note">* D− estimé (= D+) pour les séances sans D− saisi.</div>':''}${st}
+    <div class="an-sub">Analyse physique</div>${phys.map(x=>`<div class="an-l"><span>📈</span><div>${x}</div></div>`).join('')}${ctx.map(x=>`<div class="an-l"><span>🧗</span><div>${x}</div></div>`).join('')}<div class="an-l"><span>🔙</span><div>${retro}</div></div>
+    <div class="an-sub">Progression</div><div class="an-g">${anaK(S.rank+'/'+OBJECTIFS.length,'niveau'+(S.isDone?' validé':''))}${anaK(S.done+'/'+OBJECTIFS.length,'sommets faits')}${anaK(f(S.cumD,0)+'\u00a0m','D+ cumulé'+(S.topo?' *':''))}${anaK(f(S.cumK,1)+'\u00a0km','km cumulés'+(S.topo?' *':''))}</div>
+    ${S.topo?`<div class="small mut an-note">* ${S.topo} sommet${S.topo>1?'s':''} sans séance rattachée : valeurs du topo.</div>`:''}${S.altRec?`<div class="an-l an-new"><span>🏆</span><div>Record d’altitude : <b>${f(o.altSom,0)} m</b>${S.prevAlt!=null?' (précédent '+f(S.prevAlt,0)+' m)':''}</div></div>`:''}
+    ${proj}<div class="an-l"><span>🛌</span><div>Récupération post-ascension : <b>${S.recov}</b> avant une séance soutenue (D+ ${f(T.dplus,0)} m, durée ${fmtDur(T.dur)}${T.days>1?', '+T.days+' jours':''}) : marche légère, étirements, sommeil, hydratation.</div></div></section>`; }
+function anaText(D){ const s=D.s, L=[], sep='—'.repeat(3), S=D.sum, pc=r=>Math.round(Math.min(1,r)*100);
+  if(S){ const T=S.T; L.push(`🏔️ ${S.o.sommet} — bilan de l’ascension${S.isDone?'':' (provisoire)'}`);
+    for(const r of S.rows) if(r.v!=null) L.push(`• ${r.lab} : ${anaVal(r.v,r.u,r.d).replace(/\u00a0/g,' ')}${r.est?' (D− estimé)':''}${r.t!=null?' / topo '+anaVal(r.t,r.u,r.d).replace(/\u00a0/g,' ')+(r.dp!=null?' ('+anaSign(r.dp,0)+' %)':''):''}`);
+    if(T.n>1) L.push(`• ${T.n} séances${T.days>1?' sur '+T.days+' jours':''} · km-effort ${f(S.kE,1)}`); else L.push(`• Km-effort : ${f(S.kE,1)}`);
+    if(S.vam) L.push(`• VAM moyenne : ${f(S.vam,0)} m/h`); if(S.bpm) L.push(`• FC moy. ${f(S.bpm,0)} bpm${S.bpmMax?' · max '+f(S.bpmMax,0):''}`);
+    L.push(`• Indice juste avant : ${pc(S.rb.R.r)} % · plan ${S.rb.P.done}/5`); L.push(`• Sommets faits : ${S.done}/${OBJECTIFS.length} · D+ cumulé ${f(S.cumD,0)} m`);
+    if(S.altRec) L.push(`• Record d’altitude : ${f(S.o.altSom,0)} m`);
+    if(S.proj) L.push(`• Prochain : ${S.proj.o.sommet} (indice ${pc(S.proj.R.r)} %${S.proj.x?', ×'+f(S.proj.x,1)+' le D+':''})`);
+    L.push(`• Récupération : ${S.recov}`, sep); }
+  L.push(`📊 ${s.type} — ${dFR(s.date)}${s.heure?' '+s.heure:''}${s.lieu?' · '+s.lieu:''}`);
+  const pf=[anaP(s.dist)?f(s.dist,2)+' km':null,anaP(s.dur)?fmtDur(s.dur):null,anaP(s.dplus)?'D+ '+f(s.dplus,0)+' m':null,!isTapis(s.type)&&anaP(s.dplus)?'D− '+f(dmEst(s),0)+' m'+(dmIsEst(s)?' (estimé)':''):null,anaSpeed(s)?f(anaSpeed(s),1)+' km/h':null,anaPace(s),kmEff(s)&&!['muscu','corde'].includes(typeFamily(s.type))?'km-effort '+f(kmEff(s),1):null,anaVam(s)&&(anaP(s.dplus)||0)>=30?'VAM '+f(anaVam(s),0)+' m/h':null,anaP(s.sac)?'sac '+f(s.sac,1)+' kg':null].filter(Boolean);
+  if(pf.length) L.push('• '+pf.join(' · ').replace(/\u00a0/g,' '));
+  if(D.day) L.push(`• Journée (${D.day.n} séances) : D+ ${f(D.day.dplus,0)} m · ${f(D.day.dist,1)} km · ${fmtDur(D.day.dur)}`);
+  const C=D.cardio; if(C.b) L.push(`• FC moy. ${f(C.b,0)} bpm${C.bm?' · max '+f(C.bm,0):''}${C.zone?' · intensité '+C.zone:''}${C.ei?' · efficience '+C.ei.st:''}`);
+  if(anaP(s.ress)) L.push(`• Ressenti : ${f(s.ress,0)}/10`);
+  for(const r of D.rec) L.push(`🏅 Record ${r.scope==='all'?'personnel':'sur 28 jours'} — ${r.lab} : ${anaVal(r.val,r.u,r.d).replace(/\u00a0/g,' ')}`);
+  const Ld=D.load; L.push(`• Semaine : ${Ld.week.n} séance${Ld.week.n>1?'s':''} · D+ ${f(Ld.week.dplus,0)} m${Ld.tgt?' / '+f(Ld.tgt,0)+' m (cible)':''} · ${f(Ld.week.km,1)} km`);
+  if(Ld.ratio!=null) L.push(`• Charge aiguë : ×${f(Ld.ratio,1)} · série ${Ld.streak} j`);
+  const P=D.prep; if(P){ L.push(`• Préparation ${P.o.sommet} : ${pc(P.b.r)} % → ${pc(P.a.r)} % · plan ${P.pa.done}/5`); for(const x of P.newly) L.push(`✅ Case validée : ${x.t}`); if(P.next) L.push(`🎯 Prochaine case : ${P.next.t}`); for(const u of P.unlock) L.push(`🔓 Préparation validée : ${u.o.sommet}`); }
+  for(const [,t] of Ld.tips.slice(0,1)) L.push('💡 '+t.replace(/<[^>]+>/g,''));
+  return L.join('\n'); }
+function anaHTML(D){ const s=D.s, d=parseISO(s.date), J=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][d.getDay()];
+  const rec=D.rec.length?`<div class="an-rec">${D.rec.map(r=>`<span>🏅 ${r.scope==='all'?'Record':'Record 28 j'} · ${r.lab} : <b>${anaVal(r.val,r.u,r.d)}</b> <i>(avant ${anaVal(r.prev,r.u,r.d)})</i></span>`).join('')}</div>`:D.first?'<div class="small mut">Première séance enregistrée : les records commenceront à la prochaine.</div>':'<div class="small mut">Pas de record battu cette fois-ci.</div>';
+  const day=D.day?`<div class="an-l"><span>📅</span><div>Journée (${D.day.n} séances) : <b>${f(D.day.dplus,0)} m D+</b> · ${f(D.day.dist,1)} km · ${fmtDur(D.day.dur)}</div></div>`:'';
+  const ca=anaCardioHTML(s,D.cardio);
+  return `${D.sum?anaSumHTML(D.sum):''}
+    <section class="an-sec"><h3>${D.sum?'📊 Séance':'🏁 En-tête &amp; records'}</h3><div class="an-hd"><span class="tag">${esc(s.type)}</span>${s.ref?' <span class="tag ref">⛰︎ réf.</span>':''} <b>${J} ${dFR(s.date)}</b>${s.heure?' · '+esc(s.heure):''}${s.lieu?`<div class="small">📍 ${esc(s.lieu)}</div>`:''}</div>${rec}${day}</section>
+    <section class="an-sec"><h3>⛰️ Performance &amp; dénivelé</h3>${anaPerfHTML(s)}</section>
+    ${ca?`<section class="an-sec"><h3>❤️ Cardio &amp; montre</h3>${ca}</section>`:''}
+    <section class="an-sec"><h3>⚖️ Comparaison</h3>${anaCmpHTML(D.cmp)}</section>
+    <section class="an-sec"><h3>📆 Volume &amp; charge</h3>${anaLoadHTML(D.load)}</section>
+    ${D.prep?`<section class="an-sec"><h3>🎯 Impact sur la préparation</h3>${anaPrepHTML(D.prep)}</section>`:''}
+    ${s.notes?`<div class="small mut an-note">📝 ${esc(s.notes)}</div>`:''}`; }
+
+const ANA={ open_:false, id:null, list:null, last:null,
+  isOpen(){ return this.open_; },
+  show(html,title){ const d=$('anaDlg'), b=$('anaBox'); b.innerHTML=`<div class="ahd"><h2 id="anaT">${title}</h2><button class="xbtn" type="button" id="anaX" data-ana-x aria-label="Fermer l’analyse">✕</button></div>${html}`;
+    b.scrollTop=0; if(!this.open_){ this.open_=true; this.last=document.activeElement; d.hidden=false; document.body.classList.add('ana-open'); try{ history.pushState({ana:1},''); }catch(e){} }
+    setTimeout(()=>{ const x=$('anaX'); if(x) try{ x.focus({preventScroll:true}); }catch(e){} },40); },
+  // analyse d’une séance (et bilan d’ascension si elle est rattachée à un objectif)
+  open(id,back){ const D=anaData(id); if(!D) return false; this.id=id; this.D=D;
+    const foot=`<div class="an-foot">${back&&this.list?'<button class="btn sec" type="button" data-ana-list>‹ Séances</button>':''}<button class="btn" type="button" data-ana-copy>📋 Copier le récap</button><button class="btn sec" type="button" data-ana-x>Fermer</button></div>`;
+    this.show(anaHTML(D)+foot,D.sum?`🏔️ ${esc(D.sum.o.sommet)}`:`📊 Analyse de la séance`); return true; },
+  // bilan d’un objectif (passage au statut « Fait ») : séance principale = la plus exigeante (km-effort)
+  openSummit(n){ const L=ascSessions(n); if(!L.length) return false; const m=L.slice().sort((a,b)=>(kmEff(b)||0)-(kmEff(a)||0)||anaOrder(b,a))[0]; this.list=null; return this.open(m.id); },
+  // plusieurs séances enregistrées d’un coup : sélecteur (la principale en tête)
+  pick(ids){ const L=ids.map(id=>DB.sessions.find(x=>x.id===id)).filter(Boolean); if(!L.length) return false; if(L.length===1){ this.list=null; return this.open(L[0].id); }
+    L.sort((a,b)=>(kmEff(b)||0)-(kmEff(a)||0)||anaOrder(a,b)); this.list=L.map(x=>x.id);
+    this.show(`<p class="small mut" style="margin:0 0 8px">${L.length} séances enregistrées : choisis celle à analyser (la plus exigeante en premier).</p>${L.map((x,i)=>`<button type="button" class="an-pick${i?'':' main'}" data-ana-open="${esc(x.id)}"><b>${i?'':'⭐ '}${esc(x.type)} · ${dFR(x.date)}${x.heure?' '+esc(x.heure):''}</b><small>${[anaP(x.dist)?f(x.dist,2)+' km':null,anaP(x.dplus)?f(x.dplus,0)+' m D+':null,anaP(x.dur)?fmtDur(x.dur):null,ascObj(x)?'🏁 '+esc(ascObj(x).sommet):null].filter(Boolean).join(' · ')}</small></button>`).join('')}<div class="an-foot"><button class="btn sec" type="button" data-ana-x>Fermer</button></div>`,'📊 Analyse des séances'); return true; },
+  close(fromPop){ if(!this.open_) return; this.open_=false; const d=$('anaDlg'); d.hidden=true; $('anaBox').innerHTML=''; document.body.classList.remove('ana-open'); this.D=null;
+    if(!fromPop&&history.state&&history.state.ana){ try{ this.skipPop=true; history.back(); }catch(e){ this.skipPop=false; } }
+    const l=this.last; this.last=null; if(l&&document.contains(l)) try{ l.focus({preventScroll:true}); }catch(e){} },
+  async copy(){ if(!this.D) return; const t=anaText(this.D); let ok=false;
+    try{ if(navigator.clipboard&&window.isSecureContext){ await navigator.clipboard.writeText(t); ok=true; } }catch(e){}
+    if(!ok){ const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;opacity:0;top:0'; document.body.appendChild(ta); ta.select(); try{ ok=document.execCommand('copy'); }catch(e){} ta.remove(); }
+    ANA.copied=t; toast(ok?'Récap copié : colle-le où tu veux':'Copie impossible sur cet appareil'); },
+  click(e){ const t=e.target; if(t.id==='anaDlg'){ this.close(); return; } const b=t.closest('button'); if(!b) return; const d=b.dataset;
+    if('anaX' in d){ this.close(); return; } if('anaCopy' in d){ this.copy(); return; } if('anaList' in d&&this.list){ this.pick(this.list); return; }
+    if(d.anaOpen){ this.open(d.anaOpen,true); return; }
+    if(d.ascDone){ this.close(); ASC.click(e); } }
+};
+// déclencheurs : après l’enregistrement (juste après le rendu), sans bloquer la synchro (aucune écriture, aucune pause)
+function anaAfterSave(ids){ ids=(ids||[]).filter(Boolean); if(!ids.length) return; setTimeout(()=>{ if(ids.length===1) ANA.open(ids[0]); else ANA.pick(ids); },120); }
 
 const IMP={ items:[], running:false, target:null,
   open(){ $('p-imp').scrollTop=0; document.body.classList.add('imp-open'); $('p-imp').setAttribute('aria-hidden','false'); this.render(); },
@@ -3373,7 +3685,7 @@ const IMP={ items:[], running:false, target:null,
     return `<div class="small mut" style="margin-top:6px">${it.editId?'Modification d’une pesée':it.res?'Pesée détectée (Mi Fitness · composition corporelle)':'Nouvelle pesée'}</div>
       <div class="grid" style="margin-top:8px"><div><label for="i_${it.id}_date">Date ${cfBadge(it.cf.date,it.edited.date)}</label><input type="date" id="i_${it.id}_date" data-k="date" value="${esc(v.date||'')}"></div>
        <div><label for="i_${it.id}_heure">Heure ${cfBadge(it.cf.heure,it.edited.heure)}</label><input type="time" id="i_${it.id}_heure" data-k="heure" value="${esc(v.heure||'')}"></div>
-       ${fld('weight')}<div><label for="i_${it.id}_bodyType">Type de corps ${cfBadge(it.cf.bodyType,it.edited.bodyType)}</label><select id="i_${it.id}_bodyType" data-k="bodyType"><option value="">–</option>${BODY_TYPES.map(b=>`<option${b===v.bodyType?' selected':''}>${b}</option>`).join('')}</select></div></div>
+       ${fld('weight')}<div><label for="i_${it.id}_bodyType">Type de corps ${cfBadge(it.cf.bodyType,it.edited.bodyType)}</label><select id="i_${it.id}_bodyType" data-k="bodyType">${bodyTypeOpts(v.bodyType)}</select></div></div>
       <details class="more" ${it.res?'open':''}><summary>Composition détaillée (${WF.length-1} mesures)</summary><div class="grid" style="margin-top:10px">${WF.filter(([k])=>k!=='weight').map(([k])=>fld(k)).join('')}
        <div class="full"><label for="i_${it.id}_notes">Notes</label><input id="i_${it.id}_notes" data-k="notes" value="${esc(v.notes||'')}"></div></div></details>
       ${warns.length?`<div class="tip">⚠️ À vérifier (incohérence entre valeurs) : ${warns.join(', ')}</div>`:''}
@@ -3425,13 +3737,13 @@ const IMP={ items:[], running:false, target:null,
     if(dupNow&&it.mode!=='new'){ const o=dupNow;
       if(it.mode==='merge'){ for(const [k,v] of Object.entries(s)){ if(v==null||v==='') continue; if(k==='notes'){ if(!o.notes) o.notes=v; else if(!o.notes.includes('Mi Fitness')) o.notes+=' · '+v; continue; } if(k==='type'||k==='src') continue; if(o[k]==null||o[k]===''||o[k]===0&&k!=='dplus') o[k]=v; } }
       else { for(const [k,v] of Object.entries(s)) if(v!=null&&v!=='') o[k]=v; }
-      if(s.objN) o.objN=s.objN; o.updatedAt=now; msg='Séance du '+dFR(o.date)+' complétée'; }
+      if(s.objN) o.objN=s.objN; o.updatedAt=now; msg='Séance du '+dFR(o.date)+' complétée'; it.savedId=o.id; }
     else { const base={dist:null,dplus:null,dminus:null,dur:null,bpm:null,bpmMax:null,pas:null,sac:null,sauts:null,ress:null,exos:'',notes:''};
-      DB.sessions.push(Object.assign({id:uid()},base,s,{updatedAt:now})); msg='Séance du '+dFR(s.date)+' ajoutée ('+s.type+')'; }
+      const ns=Object.assign({id:uid()},base,s,{updatedAt:now}); DB.sessions.push(ns); it.savedId=ns.id; msg='Séance du '+dFR(s.date)+' ajoutée ('+s.type+')'; }
     if(s.objN){ const ob=OBJECTIFS.find(x=>x.n===s.objN); if(ob) msg+=' → '+ob.sommet; }
     // mémorise le choix de type pour cette activité Mi Fitness
     if(it.act){ DB.prefs=DB.prefs||{actMap:{}}; DB.prefs.actMap=DB.prefs.actMap||{}; DB.prefs.actMap[actKey(it.act)]={act:it.act,type:it.type,incline:typeFamily(it.type)==='tapis'?(s.incline??null):null,updatedAt:now}; }
-    save(); it.status='saved'; it.msg=msg; if(!silent){ this.render(); toast(msg); renderAll(); } return null; },
+    save(); it.status='saved'; it.msg=msg; if(!silent){ this.render(); toast(msg); renderAll(); anaAfterSave([it.savedId]); } return null; }, // v38 : analyse de la séance validée
   saveWeigh(it,silent){ this.readInputs(it); const r=it.raw||{}, w={}, errs=[];
     const date=(r.date||'').trim(), heure=(r.heure||'').trim(); if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('Date'); if(heure&&!/^\d{2}:\d{2}$/.test(heure)) errs.push('Heure');
     for(const [k,l] of WF){ const x=num((r[k]||'').replace(/^\+/,'').replace(/^[−–]/,'-')); if(x!=null&&(isNaN(x)||(!SIGNED_W.has(k)&&x<0))) errs.push(l); w[k]=x==null||isNaN(x)?null:x; }
@@ -3442,14 +3754,15 @@ const IMP={ items:[], running:false, target:null,
     const now=Date.now(); DB.weights=DB.weights||[]; let msg;
     const target=it.editId? DB.weights.find(x=>x.id===it.editId) : (it.wDup&&it.wMode==='update'? DB.weights.find(x=>x.id===it.wDup.id) : null);
     if(target){ const keep={id:target.id}; for(const k of Object.keys(target)) if(!(k in w)&&!WFK[k]&&k!=='bodyType'&&k!=='heure') keep[k]=target[k];
-      if(!it.editId){ for(const [k] of WF) if(w[k]==null&&target[k]!=null) w[k]=target[k]; }
+      if(!it.editId){ for(const [k] of WF) if(w[k]==null&&target[k]!=null) w[k]=target[k]; if(!w.bodyType&&target.bodyType) w.bodyType=target.bodyType; } // v38 : type de corps non lu → l’ancien est conservé
       const i=DB.weights.indexOf(target); DB.weights[i]=Object.assign(keep,w,{src:it.res?'Mi Fitness':(target.src||'saisie'),updatedAt:now}); msg='Pesée du '+dFR(date)+' mise à jour'; }
     else { DB.weights.push(Object.assign({id:uid()},w,{src:it.res?'Mi Fitness':'saisie',updatedAt:now})); msg='Pesée du '+dFR(date)+' ajoutée ('+f(w.weight,1)+' kg)'; }
     save(); it.status='saved'; it.msg=msg; if(!silent){ this.render(); toast(msg); renderPoids(); } return null; },
   saveAll(){ const L=this.items.filter(x=>x.status==='done'); if(!L.length) return;
     if(!confirm('Enregistrer les '+L.length+' éléments vérifiés ?')) return; snapshot('avant import Mi Fitness',true);
-    const bad=[]; for(const it of L){ const e=this.saveOne(it,true); if(e) bad.push(it.name+' : '+e.join(', ')); }
-    this.render(); renderAll(); renderPoids(); toast((L.length-bad.length)+' enregistré(s)'); if(bad.length) alert('Non enregistrés (valeurs invalides) :\n'+bad.join('\n')); },
+    const bad=[], ids=[]; for(const it of L){ const e=this.saveOne(it,true); if(e) bad.push(it.name+' : '+e.join(', ')); else if(it.savedId&&it.kind!=='weigh'&&it.kind!=='daily') ids.push(it.savedId); }
+    this.render(); renderAll(); renderPoids(); toast((L.length-bad.length)+' enregistré(s)'); if(bad.length) alert('Non enregistrés (valeurs invalides) :\n'+bad.join('\n'));
+    anaAfterSave([...new Set(ids)]); }, // v38 : bilan de la séance (ou sélecteur si plusieurs)
   manualWeigh(w){ const last=weighsSorted().pop(); const it={id:uid(),name:w?'Pesée du '+dFR(w.date):'Saisie manuelle',status:'done',kind:'weigh',res:null,edited:{},cf:{},editId:w?w.id:null,
       v:w?Object.assign({},w):{date:todayISO(),heure:String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0'),stdKg:last?last.stdKg:null}};
     this.items.unshift(it); this.open(); },
@@ -3531,8 +3844,8 @@ function initUI(){
   // feuille : fond, croix, glisser vers le bas, Échap
   $('sheetBg').addEventListener('click',()=>{ if(IMP.isOpen()){ IMP.close(); return; } fillForm(null); show(curPage); });
   $('btnSheetX').addEventListener('click',()=>{ fillForm(null); show(curPage); });
-  addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const c=e.target.closest&&e.target.closest('[data-day-open]'); if(c&&e.target===c){ e.preventDefault(); DAYV.open(); } return; } if(e.key!=='Escape') return; if(DAYV.isOpen()){ DAYV.close(); return; } if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
-  addEventListener('popstate',()=>{ if(DAYV.isOpen()&&!(history.state&&history.state.day)){ DAYV.close(true); return; } if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
+  addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const c=e.target.closest&&e.target.closest('[data-day-open]'); if(c&&e.target===c){ e.preventDefault(); DAYV.open(); } return; } if(e.key!=='Escape') return; if(ANA.isOpen()){ ANA.close(); return; } if(DAYV.isOpen()){ DAYV.close(); return; } if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
+  addEventListener('popstate',()=>{ const hs=history.state; if(ANA.skipPop){ ANA.skipPop=false; if(!ANA.isOpen()||(hs&&hs.ana)) return; } /* v38 : retour provoqué par la fermeture de l’analyse : la page dessous ne bouge pas */ if(ANA.isOpen()){ if(!(hs&&hs.ana)) ANA.close(true); return; } if(hs&&hs.ana) return; /* v38 : entrée « analyse » restante (fermeture puis réouverture rapides) : ignorée */ if(DAYV.isOpen()&&!(history.state&&history.state.day)){ DAYV.close(true); return; } if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
   const sh=$('p-add'), grab=sh.querySelector('.grab'); let y0=null,dy=0;
   grab.addEventListener('pointerdown',e=>{ y0=e.clientY; dy=0; sh.classList.add('dragging'); grab.setPointerCapture(e.pointerId); });
   grab.addEventListener('pointermove',e=>{ if(y0==null) return; dy=Math.max(0,e.clientY-y0); sh.style.transform='translate3d(0,'+dy+'px,0)'; });
@@ -3581,6 +3894,8 @@ function init(){
   $('sumBody').addEventListener('click',e=>{ const j=e.target.closest('[data-jjopen]'); if(j){ jjOpen(+j.dataset.jjopen); return; } planClick(e); });
   ['objList','prepList','prepHero','jAdv','jStep'].forEach(id=>{ $(id).addEventListener('click',sumClick); $(id).addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-sum]')){ e.preventDefault(); openSummit(e.target.dataset.sum); } }); });
   $('objSort').addEventListener('click',e=>{ const b=e.target.closest('[data-osort]'); if(!b) return; try{ localStorage.setItem('sm-objsort',b.dataset.osort); }catch(_){} renderObj(); });
+  $('anaDlg').addEventListener('click',e=>ANA.click(e)); // v38 : analyse ; boutons 📊 du journal et de « Mon ascension »
+  document.addEventListener('click',e=>{ const b=e.target.closest('[data-ana],[data-ana-sum]'); if(!b||b.closest('#anaDlg')) return; e.stopPropagation(); ANA.list=null; if(b.dataset.anaSum) ANA.openSummit(+b.dataset.anaSum); else ANA.open(b.dataset.ana); },true);
   $('objList').addEventListener('click',e=>ASC.click(e)); $('ascDlg').addEventListener('click',e=>{ if(e.target.id==='ascDlg'){ ASC.closeDlg(); return; } ASC.click(e); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('ascDlg').classList.contains('on')) ASC.closeDlg(); }); $('sumBody').addEventListener('click',e=>{ if(ASC.click(e)) return;  if(e.target.closest('[data-sum-back]')){ closeSummit(); return; } if(e.target.closest('[data-gpx-del]')){ removeGpx(curSum); return; } if(e.target.closest('[data-offprep]')){ prepOffline(curSum); return; } if(e.target.closest('[data-wx-refresh]')){ loadSummitWeather(curSum,true); return; } const g=e.target.closest('[data-gear-add]'); if(g){ addGear(g.dataset.gearAdd); renderSummit(curSum); } });
   $('sumBody').addEventListener('change',e=>{ if(e.target.id==='sumGpxFile'){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) handleGpxFile(curSum,f); } });
   $('poidsBody').addEventListener('click',poidsClick);
@@ -3601,20 +3916,22 @@ function init(){
   ['f_dist','f_dur','f_dplus'].forEach(id=>$(id).addEventListener('input',updAuto));
   $('fSess').addEventListener('submit',e=>{ e.preventDefault(); const {s,errs}=readForm();
     if(errs.length){ alert('Valeurs invalides : '+errs.join(', ')); return; }
-    const id=$('f_id').value;
+    const id=$('f_id').value; let sid=id, wasObj=null; // v38 : séance enregistrée → analyse
     s.updatedAt=Date.now();
-    if(id){ const i=DB.sessions.findIndex(x=>x.id===id);
+    if(id){ const i=DB.sessions.findIndex(x=>x.id===id); if(i>=0) wasObj=DB.sessions[i].objN??null;
       // conserve les champs inconnus du formulaire (libellé d'effet, source…) ; n'ajoute pas de champs vides absents
       if(i>=0){ const old=DB.sessions[i]; for(const k of ['heure','incline','objN',...FX]) if(s[k]==null&&old[k]==null) delete s[k]; DB.sessions[i]=Object.assign({},old,s,{id}); }
-      else { for(const k of ['heure','incline','objN',...FX]) if(s[k]==null) delete s[k]; DB.sessions.push(Object.assign({id:uid()},s)); setTimeout(()=>toast('Séance supprimée entre-temps (autre appareil) : recréée avec tes modifications'),2600); } }
-    else { for(const k of ['heure','incline','objN',...FX]) if(s[k]==null) delete s[k]; DB.sessions.push(Object.assign({id:uid()},s)); }
-    save(); const back=FORM_BACK; FORM_BACK=null; fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); if(back){ openSummitNoPush(back); } else show('journal'); });
+      else { for(const k of ['heure','incline','objN',...FX]) if(s[k]==null) delete s[k]; const ns=Object.assign({id:uid()},s); DB.sessions.push(ns); sid=ns.id; setTimeout(()=>toast('Séance supprimée entre-temps (autre appareil) : recréée avec tes modifications'),2600); } }
+    else { for(const k of ['heure','incline','objN',...FX]) if(s[k]==null) delete s[k]; const ns=Object.assign({id:uid()},s); DB.sessions.push(ns); sid=ns.id; }
+    save(); const back=FORM_BACK; FORM_BACK=null; fillForm(null); toast(id?'Séance modifiée':'Séance ajoutée'); if(back){ openSummitNoPush(back); } else show('journal');
+    // v38 : nouvelle séance ou séance tout juste rattachée à un objectif → analyse ouverte ; simple modification → proposée dans le toast
+    if(!id||(s.objN&&+s.objN!==+wasObj)) anaAfterSave([sid]); else toastAct('Séance modifiée','📊 Analyse',()=>{ ANA.list=null; ANA.open(sid); }); });
   $('btnCancel').addEventListener('click',()=>{ const back=FORM_BACK; FORM_BACK=null; fillForm(null); if(back) openSummitNoPush(back); else show('journal'); });
   $('objList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.obj) return; const n=t.dataset.obj, o=Object.assign(objState(n),{[t.dataset.k]:t.value,updatedAt:Date.now()});
     if(t.dataset.k==='statut'&&t.value==='Fait'&&!o.dateRealisee){ o.dateRealisee=todayISO(); const d=t.closest('.card').querySelector('[data-k=dateRealisee]'); if(d) d.value=o.dateRealisee; }
     if(t.dataset.k==='dateRealisee'&&t.value&&o.statut!=='Fait'){ o.statut='Fait'; const d=t.closest('.card').querySelector('[data-k=statut]'); if(d) d.value='Fait'; }
     const wasDone=objState(n).statut==='Fait'; DB.objectifs[n]=o; save(); toast(o.statut==='Fait'&&(t.dataset.k==='statut'||t.dataset.k==='dateRealisee')?'Bravo ! Objectif marqué fait 🎉':'Objectif mis à jour');
-    if(o.statut==='Fait'&&!wasDone) setTimeout(()=>ASC.prompt(+n,true),350); else renderObj(); });
+    if(o.statut==='Fait'&&!wasDone) setTimeout(()=>{ if(ascSessions(+n).length) ANA.openSummit(+n); else ASC.prompt(+n,true); },350); else renderObj(); }); // v38 : bilan si séances liées
   const seg=k=>{ [['sgW','evoW'],['sgM','evoM'],['sgD','evoD']].forEach(([b,p])=>{ $(b).classList.toggle('on',b===k); $(p).style.display=b===k?'':'none'; }); if(k==='sgD') renderDaily(); else renderEvo(); animateIn($('p-evo')); };
   ['sgW','sgM','sgD'].forEach(b=>$(b).addEventListener('click',()=>seg(b)));
   document.addEventListener('click',e=>dailyClick(e));

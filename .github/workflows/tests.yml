@@ -36,7 +36,7 @@ jobs:
           nohup python3 -m http.server 8767 --bind 127.0.0.1 > server.log 2>&1 &
           for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8767/index.html > /dev/null && break; sleep 0.5; done
           curl -fsS http://127.0.0.1:8767/index.html > /dev/null   # v38 : échec explicite si le serveur n'a jamais démarré
-      - name: Suite (520+ tests)
+      - name: Suite (560+ tests)
         env:
           TZ: ${{ matrix.tz }}
           BASE: http://127.0.0.1:8767

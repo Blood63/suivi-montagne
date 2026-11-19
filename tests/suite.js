@@ -7,6 +7,7 @@
 const puppeteer = require(process.env.PUPPETEER || 'puppeteer-core');
 const BASE = process.env.BASE || 'http://localhost:8767';
 const SWC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(v\d+)'/) || [])[1]; // cache de l'appli attendu (lu dans sw.js)
+const IMGC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(img-v\d+)'/) || [])[1]; // v38 : cache des images (stable d'une version à l'autre)
 const SWV = +(SWC.match(/-v(\d+)$/) || [])[1] || 0; // numéro de version du cache (v38 : plus de « v37 » en dur)
 const W = ms => new Promise(r => setTimeout(r, ms));
 // v38 : captures d'écran facultatives (SCREENS_DIR=…) : jamais de chemin absolu en dur (le CI n'a pas /workspace)
@@ -455,9 +456,13 @@ function FIXTURE() {
     ok(await p.evaluate(() => $('f_obj').value === '1' && $('f_type').value === 'Randonnée'), 'saisie manuelle : objectif pré-sélectionné');
     await p.evaluate(() => { $('f_dist').value = '6,5'; $('f_dplus').value = '420'; $('f_dur').value = '2:10:00'; $('f_x_kcal').value = '700'; });
     await p.click('#btnSave'); await W(400);
+    // v38 : l'analyse s'ouvre d'elle-même (séance liée à l'objectif) ; on la ferme comme un utilisateur avant de continuer
+    ok(await p.evaluate(() => ANA.isOpen() && /Bilan complet de l’ascension/.test($('anaBox').textContent)), 'v38 saisie manuelle liée à l’objectif → analyse + bilan ouverts');
+    await p.keyboard.press('Escape'); await W(250);
     // 2e enregistrement : séance déjà existante
     await p.evaluate(() => openSummitNoPush(1)); await p.evaluate(() => document.querySelector('#ascCard [data-asc-link]').click()); await W(200);
     const pickId = await p.evaluate(() => { const b = document.querySelector('#ascBox [data-asc-pick]'); const id = b.dataset.ascPick; b.click(); return id; }); await W(300);
+    ok(await p.evaluate(() => ANA.isOpen()), 'v38 séance rattachée depuis « Mon ascension » → analyse ouverte'); await p.keyboard.press('Escape'); await W(250);
     const r = await p.evaluate(id => { const T = ascTotals(1), x = DB.sessions.find(s => s.id === id); return {n:T.n, dist:T.dist, dplus:T.dplus, kcal:T.kcal, len:DB.sessions.length, page:curPage, card:$('ascCard').textContent, xd:x.dist, xp:x.dplus}; }, pickId);
     ok(r.n === 2 && Math.abs(r.dist - (6.5 + r.xd)) < 1e-9 && r.dplus === 420 + r.xp && r.kcal === 700, 'totaux cumulés sur 2 séances (distance, D+, kcal)', r);
     ok(r.len === n0 + 1, 'séance existante rattachée sans duplication (1 seule séance créée)', [r.len, n0]);
@@ -1047,8 +1052,8 @@ function FIXTURE() {
     ok(await p.evaluate(() => localStorage.getItem(KEY)) === before, 'bandeau : données inchangées (stockage identique octet pour octet)');
     // hors-ligne : décors et randonneur précachés
     await p.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
-    let ks = []; for (let i = 0; i < 40; i++) { ks = await p.evaluate(async SWC => { const c = await caches.open(SWC); return (await c.keys()).map(r => r.url).filter(u => /img\/jeu\//.test(u)); }, SWC); if (ks.length >= 12) break; await W(250); }
-    ok(ks.length === 12, 'service worker : 11 décors + randonneur précachés', ks.length);
+    let ks = []; for (let i = 0; i < 40; i++) { ks = await p.evaluate(async IMGC => { const c = await caches.open(IMGC); return (await c.keys()).map(r => r.url).filter(u => /img\/jeu\//.test(u)); }, IMGC); if (ks.length >= 12) break; await W(250); }
+    ok(ks.length === 12, 'service worker : 11 décors + randonneur précachés (cache images ' + IMGC + ')', ks.length);
     await p.setOfflineMode(true); await p.reload({waitUntil:'domcontentloaded'}); await W(1500);
     const off = await p.evaluate(async () => { show('obj'); await new Promise(r=>setTimeout(r,500)); const st=$('jeuStrip'); for (let i=0;i<12;i++){ st.scrollLeft+=st.scrollWidth/12; await new Promise(r=>setTimeout(r,120)); } await new Promise(r=>setTimeout(r,1200));
       return {drawn:[...document.querySelectorAll('#jeuIn canvas')].filter(c=>c.width>1).length, hk:$('jeuHk').complete&&$('jeuHk').naturalWidth>0}; });
@@ -1705,6 +1710,169 @@ function FIXTURE() {
     ok(SWV >= 37, 'cache SW = ' + SWC + ' (≥ v37)');
     ok(p.errs.length === 0, 'v37 : aucune erreur JS', p.errs); await ctx.close(); }
 
+  // ---------- 36. v38 : correctifs (bandeaux, p4, sw.js, BODY_TYPES, esc, Jour J) + analyse de séance / bilan d'ascension ----------
+  out.push('36. v38 : correctifs + analyse de séance et bilan d’ascension');
+  ok(SWV >= 38 && IMGC === 'suivi-montagne-img-v1', 'cache SW = ' + SWC + ' (≥ v38) + cache images ' + IMGC);
+  { // 36a. sw.js exécuté hors navigateur (bac à sable Node) : réponse 500, cache images img-v1 conservé à la mise à jour, hors-ligne
+    const vm = require('vm'), fs = require('fs'), path = require('path'), src = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+    const ORI = 'https://blood63.github.io', SCOPE = ORI + '/suivi-montagne/';
+    const mkSW = (store, net) => { const H = {}, abs = u => new URL(typeof u === 'string' ? u : u.url, SCOPE).href.split('?')[0];
+      const cache = name => ({ match: async r => { const m = store[name] && store[name].get(abs(r)); return m ? m.clone() : undefined; },
+        put: async (r, res) => { (store[name] = store[name] || new Map()).set(abs(r), res); },
+        addAll: async L => { for (const a of L) { const r = await net(abs(a)); if (!r.ok) throw new Error('addAll ' + a); (store[name] = store[name] || new Map()).set(abs(a), r); } },
+        keys: async () => [...(store[name] || new Map()).keys()].map(u => ({url:u})), delete: async r => (store[name] || new Map()).delete(abs(r)) });
+      const caches = { open: async n => { store[n] = store[n] || new Map(); return cache(n); }, has: async n => !!store[n], keys: async () => Object.keys(store), delete: async n => delete store[n],
+        match: async r => { for (const n of Object.keys(store)) { const m = store[n].get(abs(r)); if (m) return m.clone(); } } };
+      const self = { addEventListener: (t, f) => H[t] = f, registration: {scope:SCOPE}, location: {origin:ORI}, skipWaiting: () => {}, clients: {claim: async () => {}} };
+      vm.runInNewContext(src, {self, caches, fetch: (r) => net(abs(r)), URL, Response, Promise, setTimeout, console});
+      const ev = async (t, extra) => { let p = null; await H[t](Object.assign({waitUntil: x => p = x, respondWith: x => p = x}, extra)); return p; };
+      return {ev, fetch: async (url, mode) => { const r = await ev('fetch', {request: {method:'GET', url: new URL(url, SCOPE).href, mode: mode || 'no-cors'}}); return r; }}; };
+    const swCache = 'suivi-montagne-' + src.match(/PREFIX \+ '(v\d+)'/)[1];
+    const ASSETS = eval(src.match(/const ASSETS = (\[[\s\S]*?\]);/)[1]), imgs = ASSETS.filter(a => /^\.\/img\//.test(a)), U = a => new URL(a, SCOPE).href;
+    let calls = []; const ok200 = async u => { calls.push(u); return new Response('ok:' + u, {status:200}); };
+    // installation sur un appareil qui a déjà la v37 (+ une appli voisine) et déjà toutes les images en cache img-v1
+    const store = {'suivi-montagne-v37': new Map([[U('./index.html'), new Response('old')]]), 'ma-bibliotheque-v3': new Map([[ORI + '/ma-bibliotheque/', new Response('voisin')]]),
+      [IMGC]: new Map(imgs.map(a => [U(a), new Response('img-ancienne:' + a)]).concat([[U('./img/sommets/retiree.webp'), new Response('vieille')]]))};
+    let sw = mkSW(store, ok200); await (await sw.ev('install')); await (await sw.ev('activate'));
+    const imgFetched = calls.filter(u => /\/img\//.test(u)).length;
+    ok(imgFetched === 0 && store[IMGC].size === imgs.length && (await store[IMGC].get(U(imgs[0])).clone().text()).startsWith('img-ancienne'), 'v38 sw.js : mise à jour → cache ' + IMGC + ' conservé, aucune image re-téléchargée, image retirée nettoyée', {imgFetched, n:store[IMGC].size});
+    ok(!store['suivi-montagne-v37'] && !!store[swCache] && !!store['ma-bibliotheque-v3'], 'v38 sw.js : ancien cache v37 supprimé, ' + swCache + ' créé, cache de l’appli voisine intact', Object.keys(store));
+    // réponse 500 du serveur → copie en cache, jamais la page d'erreur ; rien en cache → la vraie réponse
+    sw = mkSW(store, async u => new Response('panne', {status:500}));
+    const r500 = await sw.fetch('./index.html', 'navigate'), t500 = await r500.text(), rNo = await sw.fetch('./inconnu.txt');
+    ok(r500.ok && /^ok:/.test(t500) && rNo.status === 500, 'v38 sw.js : erreur 500 → copie en cache (if r && r.ok) ; sans copie, réponse du serveur', [r500.status, t500.slice(0, 40), rNo.status]);
+    // hors-ligne : images servies par img-v1 (cache d'abord, aucun accès réseau), appli par le cache de version
+    calls = []; sw = mkSW(store, async u => { calls.push(u); throw new TypeError('offline'); });
+    const ri = await sw.fetch('./img/jeu/randonneur.png?v=2'), rp = await sw.fetch('./', 'navigate');
+    ok(ri.ok && /img-ancienne/.test(await ri.text()) && rp.ok && calls.filter(u => /\/img\//.test(u)).length === 0, 'v38 sw.js : hors-ligne → images depuis ' + IMGC + ' (cache d’abord), appli depuis ' + swCache, calls);
+    // cache des images vidé par une autre appli → recréé au message « ensure-cache » ; image absente → réseau puis mise en cache
+    delete store[IMGC]; calls = []; sw = mkSW(store, ok200); await (await sw.ev('message', {data:'ensure-cache'}));
+    ok(store[IMGC] && store[IMGC].size === imgs.length && calls.length === imgs.length, 'v38 sw.js : ensure-cache recrée ' + IMGC + ' (seulement les images manquantes)', calls.length);
+    store[IMGC].delete(U('./img/jeu/rhune.webp')); calls = []; const rn = await sw.fetch('./img/jeu/rhune.webp'); await W(5);
+    ok(rn.ok && calls.length === 1 && store[IMGC].has(U('./img/jeu/rhune.webp')), 'v38 sw.js : image pas encore en cache → réseau, puis gardée dans ' + IMGC, calls);
+  }
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await withFix(p);
+    // 36b. bandeaux « info » hors de .warnc
+    const wc = await p.evaluate(() => { const T = todayISO(), sv = CLOSURES[1]; CLOSURES[1] = [{from:T, to:T, info:true, txt:'INFO-TEST'}, {from:T, to:T, txt:'BLOC-TEST'}];
+      openSummitNoPush(1); const w = [...document.querySelectorAll('#p-sum .warnc')].map(e => e.textContent).join(' | '), all = $('p-sum').textContent; CLOSURES[1] = sv; openSummitNoPush(1); show('journal'); return {w, info:/INFO-TEST/.test(all)}; });
+    ok(/BLOC-TEST/.test(wc.w) && !/INFO-TEST/.test(wc.w) && wc.info, 'v38 fiche sommet : un bandeau « info » n’est plus affiché en carte rouge .warnc (il reste en ℹ️)', wc);
+    // 36c. p4 : D− estimé à partir du D+ hors tapis, cohérent avec dayTotals / trainStats
+    const p4 = await p.evaluate(() => { const prev = DB.sessions, o = OBJECTIFS.find(x => x.n === 1), e = +trainPlan(o).find(x => x.k === 'p4').t.replace(/\D/g, ''), T = todayISO();
+      const mk = (id, type, x) => Object.assign({id, date:T, type, dist:5, dplus:e + 10, dur:3600, updatedAt:1}, x), p4ok = () => !!planStatus(o).items.find(x => x.k === 'p4').auto;
+      DB.sessions = [mk('a', 'Marche')]; const est = p4ok(), dt = dayTotals(DB.sessions)[0].dminus, ts = trainStats(new Date()).maxDm;
+      DB.sessions = [mk('a', 'Tapis 10%')]; const tap = p4ok();
+      DB.sessions = [mk('a', 'Marche', {dminus:20})]; const real = p4ok();
+      DB.sessions = prev; return {e, est, dt, ts, tap, real}; });
+    ok(p4.est && p4.dt === p4.e + 10 && p4.ts === p4.e + 10 && !p4.tap && !p4.real, 'v38 plan p4 : D− absent → estimé = D+ (hors tapis), comme dayTotals/trainStats ; D− saisi ou tapis : pas d’estimation', p4);
+    // 36d. BODY_TYPES alignés (liste Mi Fitness + synonymes, valeur inconnue conservée)
+    const bt = await p.evaluate(() => { const fake = 'Inconnu <b>x</b>'; const h = bodyTypeOpts(fake), d = document.createElement('select'); d.innerHTML = h;
+      return {same: MiFit.BODY_TYPES === BODY_TYPES, ocr: BODY_OCR.length, syn: bodyCanon('Mince et musclé'), syn2: bodyCanon('Obésité invisible'),
+        sel: d.value, opts: d.options.length, grp: !!d.querySelector('optgroup'), longest: BODY_OCR.indexOf('Mince musclé') < BODY_OCR.indexOf('Mince'), all: BODY_TYPES.every(b => BODY_OCR.includes(b)), rd: ['Type corporel Mince et musclé', 'Standard musclé 23,1', 'Obésité invisible', 'Type corporel Mince'].map(x => { const t = MiFit.norm(x), b = BODY_OCR.find(b => t.includes(MiFit.norm(b))); return b ? bodyCanon(b) : null; }) }; });
+    ok(bt.same && bt.syn === 'Mince musclé' && bt.syn2 === 'Obésité cachée' && bt.sel === 'Inconnu <b>x</b>' && bt.grp && bt.longest && bt.all && bt.opts === 1 + 9 + 5 + 1 && JSON.stringify(bt.rd) === JSON.stringify(['Mince musclé', 'Standard musclé', 'Obésité cachée', 'Mince']), 'v38 BODY_TYPES : même liste formulaire / lecture Mi Fitness, synonymes ramenés, valeur inconnue gardée (échappée)', bt);
+    // 36e. XSS via import JSON : id et champs numériques non numériques échappés, données inchangées
+    const X = '"><img src=x onerror="window.__xss=1">';
+    const json = await p.evaluate(X => { const D = JSON.parse(JSON.stringify(DB)), T = todayISO(); D.sessions.push({id:'s' + X, date:T, type:'Marche', dist:5, dplus:300, dur:3600, bpm:'120' + X, bpmMax:'150' + X, cadence:'1' + X, objN:1, notes:X, updatedAt:Date.now()});
+      D.weights.push({id:'w' + X, date:T, heure:'07:00', weight:'80' + X, src:'manuel', updatedAt:Date.now()}); D.daily = (D.daily || []).concat([{date:T, pas:5000, updatedAt:Date.now()}]);
+      if (Array.isArray(D.equip) && D.equip[0]) { const c = JSON.parse(JSON.stringify(D.equip[0])); c.id = 'c' + X; c.items = c.items.slice(0, 1).map(i => Object.assign(i, {id:'i' + X})); D.equip.push(c); }
+      return JSON.stringify(D); }, X);
+    const fp = require('path').join(require('os').tmpdir(), 'v38-xss.json'); require('fs').writeFileSync(fp, json);
+    await (await p.$('#impFile')).uploadFile(fp); await p.waitForFunction(() => $('impDlg') && $('impDlg')._o, {timeout:5000}).catch(() => {}); await p.evaluate(() => $('impMerge').click()); await W(500);
+    const xs = await p.evaluate(async X => { const sid = 's' + X, s = DB.sessions.find(x => x.id === sid), w = DB.weights.find(x => x.id === 'w' + X);
+      for (const pg of ['journal','obj','prep','evo','poids','equip','data']) { show(pg); await new Promise(r => setTimeout(r, 250)); }
+      if (typeof jExpandAll === 'function') { show('journal'); jExpandAll(); }
+      openSummitNoPush(1); await new Promise(r => setTimeout(r, 200)); ANA.open(sid); await new Promise(r => setTimeout(r, 200)); const ana = $('anaBox').textContent; ANA.close(); show('journal');
+      return {xss: window.__xss === 1, bad: document.querySelectorAll('img[src="x"]').length, kept: !!s && s.bpm === '120' + X && s.notes === X, wk: !!w && w.weight === '80' + X, ana: ana.length > 300 }; }, X);
+    ok(!xs.xss && xs.bad === 0 && xs.kept && xs.wk && xs.ana, 'v38 XSS via import JSON : id / FC / poids / matériel échappés partout (Journal, Données, Matériel, fiche, analyse), données gardées telles quelles', xs);
+    ok(p.errs.length === 0, 'v38 correctifs : aucune erreur JS', p.errs); await ctx.close(); }
+  { // 36f. Jour J : seul le compte à rebours est réécrit (le reste de l'écran, dont le focus dans la liste du sac, est conservé)
+    const [ctx, p] = await fresh(BASE + '/index.html');
+    const jj = await p.evaluate(async () => { window.fetch = () => new Promise(() => {}); jjOpen(1); const s = jjState(); s.start = Date.now() - 5 * 60e3; jjSave(s); jjRender();
+      const el = $('jjMode'), q = () => ({bag: el.querySelector('[data-jjbag]'), wx: $('jjWxB'), h2: el.querySelector('h2'), cd: el.querySelector('[data-jjv="cd"]'), lim: el.querySelector('[data-jjv="lim"]')});
+      const A = q(); if (A.bag) A.bag.focus(); const t0 = A.cd && A.cd.textContent, now = Date.now;
+      Date.now = () => now() + 3 * 60e3; jjTick(); Date.now = now; const B = q();
+      const r = {same: Object.keys(A).every(k => A[k] && A[k] === B[k]), focus: !A.bag || document.activeElement === A.bag, changed: B.cd.textContent !== t0, t0, t1: B.cd.textContent};
+      if (A.bag) { A.bag.click(); r.refocus = document.activeElement && document.activeElement.dataset.jjbag === A.bag.dataset.jjbag; } else r.refocus = true;
+      const wx = $('jjWxB'); Date.now = () => now() + 120 * 60e3; jjTick(); Date.now = now; r.over = $('jjCd').dataset.ph === 'over' && /Demi-tour/.test($('jjCd').textContent) && $('jjWxB') === wx;
+      const s3 = jjState(); s3.sum = Date.now(); jjSave(s3); jjTick(); r.phase = $('jjCd').dataset.ph;
+      r.timer = /setInterval\(jjTick,\s*15000\)/.test(String(jjOpen)) && !/setInterval\(jjRender/.test(String(jjOpen)); jjClose(); return r; });
+    ok(jj.same && jj.focus && jj.changed && jj.refocus && jj.over && jj.phase === 'sum' && jj.timer, 'v38 Jour J : minuteur seul rafraîchi toutes les 15 s (sac, météo, titre et focus conservés ; changement de phase géré)', jj);
+    ok(p.errs.length === 0, 'v38 Jour J : aucune erreur JS', p.errs); await ctx.close(); }
+  { // 36g. Analyse de séance : ouverture automatique, valeurs exactes, avant → après, plan, bilan d'ascension, stockage inchangé
+    const [ctx, p] = await fresh(BASE + '/index.html');
+    const T0 = await p.evaluate(() => todayISO()), add = (d, k) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + k); return x.toISOString().slice(0, 10); };
+    const d1 = add(T0, -7), d2 = add(T0, -3);
+    await p.evaluate((d1, d2) => { const D = JSON.parse(JSON.stringify(DB)); D.sessions = [
+        {id:'v38-a', date:d1, type:'Marche', dist:8, dplus:500, dminus:null, dur:7200, bpm:120, bpmMax:150, sac:5, updatedAt:1},
+        {id:'v38-b', date:d2, type:'Marche', dist:10, dplus:800, dminus:null, dur:9000, bpm:125, bpmMax:160, sac:7, updatedAt:1},
+        {id:'v38-r', date:d2, type:'Musculation', dist:null, dplus:null, dminus:null, dur:3600, exos:'squats', updatedAt:1}];
+      localStorage.setItem(KEY, JSON.stringify(D)); }, d1, d2);
+    await p.reload({waitUntil:'networkidle0'});
+    const st0 = await p.evaluate(() => { const o = nextObjective(); return {o:o.n, r:readiness(o, trainStats(new Date())), plan:planStatus(o).items.map(x => x.ok)}; });
+    const gist0 = await p.evaluate(() => JSON.stringify(Object.keys(DB).sort()));
+    // saisie manuelle (formulaire) : 12 km, 900 m D+, 3 h, aujourd'hui
+    await p.evaluate(() => { fillForm(null); show('add'); }); await W(300);
+    await p.evaluate(T => { $('f_date').value = T; $('f_type').value = 'Marche'; $('f_dist').value = '12'; $('f_dplus').value = '900'; $('f_dur').value = '3:00:00'; $('f_bpm').value = '130'; }, T0);
+    await p.click('#btnSave'); await W(500);
+    const A = await p.evaluate(() => { const s = DB.sessions.find(x => x.dist === 12 && x.dplus === 900); const D = anaData(s.id), o = nextObjective();
+      return {open: ANA.isOpen(), txt: $('anaBox').textContent, id: s.id, kE: kmEff(s), vam: anaVam(s), rec: D.rec.map(r => r.lab + ':' + r.scope + ':' + r.prev), week: D.load.week, month: D.load.month, a7: D.load.a7, avgW: D.load.avgW, streak: D.load.streak,
+        cmp: D.cmp.rows.filter(r => r.lab === 'D+').map(r => [r.v, Math.round(r.dA * 10) / 10, Math.round(r.dP * 10) / 10])[0], before: D.prep.b.r, after: D.prep.a.r, newly: D.prep.newly.map(x => x.k), next: D.prep.next && D.prep.next.k,
+        o: D.prep.o.n, nowR: readiness(o, trainStats(new Date())).r, nowPlan: planStatus(o).items.map(x => x.ok), stored: localStorage.getItem(KEY), hasAna: /ana|analy/i.test(Object.keys(DB).join(' ')) }; });
+    ok(A.open && /Analyse de la séance/.test(A.txt), 'v38 saisie manuelle → analyse ouverte automatiquement', A.txt.slice(0, 80));
+    ok(A.kE === 21 && A.vam === 300 && /21(,0)?\s*km-effort/.test(A.txt.replace(/\u00a0/g, ' ')) && /300\s*m\/h\s*VAM/.test(A.txt.replace(/\u00a0/g, ' ')), 'v38 analyse : km-effort (12 + 900/100 = 21,0) et VAM (900 m en 3 h = 300 m/h) exacts', [A.kE, A.vam]);
+    ok(JSON.stringify(A.rec) === JSON.stringify(['D+ sur une sortie:all:800', 'Distance:all:10', 'Durée d’endurance:all:9000']), 'v38 analyse : records exacts (D+ 900 > 800, distance 12 > 10, durée 3 h > 2 h 30 hors muscu ; VAM 300 < 320 non record)', A.rec);
+    const mon = (() => { const x = new Date(T0 + 'T12:00:00Z'), w = (x.getUTCDay() + 6) % 7; return add(T0, -w); })(), inW = d => d >= mon && d <= add(mon, 6);
+    const wk = [[d1, 500, 8], [d2, 800, 10], [d2, 0, 0], [T0, 900, 12]].filter(x => inW(x[0])), mo = [[d1, 500], [d2, 800], [d2, 0], [T0, 900]].filter(x => x[0].slice(0, 7) === T0.slice(0, 7));
+    ok(A.week.n === wk.length && A.week.dplus === wk.reduce((t, x) => t + x[1], 0) && A.week.km === wk.reduce((t, x) => t + x[2], 0) && A.month.n === mo.length && A.month.dplus === mo.reduce((t, x) => t + x[1], 0), 'v38 analyse : volume semaine et mois exacts', [A.week, A.month]);
+    ok(A.a7 === 1700 && A.avgW === 550 && A.streak === 1, 'v38 analyse : charge aiguë (7 derniers jours = 800 + 900 = 1 700 m, moyenne 28 j = 550 m/sem.) et série exactes', [A.a7, A.avgW, A.streak]);
+    ok(A.cmp && A.cmp[0] === 900 && A.cmp[1] === 38.5 && A.cmp[2] === 12.5, 'v38 analyse : comparaison D+ vs moyenne 28 j de la Marche (650 m → +38,5 %) et vs précédente (800 m → +12,5 %)', A.cmp);
+    // avant → après : identique à l'appli réelle avant la saisie et maintenant
+    ok(A.o === st0.o && Math.abs(A.before - st0.r.r) < 1e-9 && Math.abs(A.after - A.nowR) < 1e-9 && A.after > A.before, 'v38 analyse : indice avant → après = indice réel de l’appli avant et après la saisie', [A.before, st0.r.r, A.after, A.nowR.r]);
+    const newly = A.nowPlan.map((x, i) => x && !st0.plan[i] ? 'p' + i : null).filter(Boolean), nxt = A.nowPlan.findIndex(x => !x);
+    ok(JSON.stringify(A.newly) === JSON.stringify(newly) && (A.next || null) === (nxt < 0 ? null : 'p' + nxt), 'v38 analyse : cases du plan nouvellement validées et prochaine case exactes', [A.newly, newly, A.next]);
+    ok(!A.hasAna && await p.evaluate(g => JSON.stringify(Object.keys(DB).sort()) === g && DATA_VERSION === 4, gist0), 'v38 analyse : rien d’ajouté au stockage / gist (mêmes clés), DATA_VERSION = 4');
+    // fermeture en un clic (bouton Fermer) et par Échap, focus rendu
+    await p.evaluate(() => document.querySelector('#anaBox .an-foot [data-ana-x]') ? document.querySelector('#anaBox .an-foot [data-ana-x]').click() : ANA.close()); await W(200);
+    const cl1 = await p.evaluate(() => !ANA.isOpen() && $('anaDlg').hidden);
+    await p.evaluate(() => { show('journal'); renderJournal(); jExpandAll(); }); await W(200);
+    const btn = await p.evaluate(id => { const b = document.querySelector(`#sessList [data-ana="${id}"]`); if (!b) return false; b.click(); return true; }, A.id); await W(250);
+    const opened = await p.evaluate(() => ANA.isOpen()); await p.keyboard.press('Escape'); await W(200);
+    ok(cl1 && btn && opened && await p.evaluate(() => !ANA.isOpen() && !document.body.classList.contains('ana-open')), 'v38 bouton 📊 du Journal ouvre l’analyse ; fermeture par « Fermer » et par Échap', [cl1, btn, opened]);
+    ok(await p.evaluate(s => localStorage.getItem(KEY) === s, A.stored), 'v38 ouvrir / fermer l’analyse : stockage identique octet pour octet');
+    // copier le récap
+    const cp = await p.evaluate(async id => { let got = null; try { Object.defineProperty(navigator, 'clipboard', {value:{writeText: async t => { got = t; }}, configurable:true}); } catch (e) {}
+      ANA.list = null; ANA.open(id); await new Promise(r => setTimeout(r, 150)); await ANA.copy(); await new Promise(r => setTimeout(r, 50)); ANA.close(); return got || ''; }, A.id);
+    ok(/km-effort/.test(cp) && /900/.test(cp) && /Préparation .+ % → .+ %/.test(cp) && !/undefined|NaN/.test(cp), '« Copier le récap » : texte complet sans valeur manquante', cp.slice(0, 160));
+    // import Mi Fitness (une séance) → analyse ; plusieurs séances → sélecteur
+    const mi = await p.evaluate(async () => { const it = {id:'t38', objN:null, name:'x', status:'queued'}; IMP.items.push(it);
+      IMP.prepare(it, {kind:'workout', activity:{v:'Randonnée'}, fields:{date:{v:todayISO(),conf:99}, dist:{v:4.2,conf:99}, dplus:{v:310,conf:99}, dur:{v:5400,conf:99}}});
+      IMP.open(); it.mode = 'new'; IMP.saveOne(it); await new Promise(r => setTimeout(r, 300)); const one = ANA.isOpen() && ANA.id === it.savedId; ANA.close(); IMP.close();
+      anaAfterSave([it.savedId, DB.sessions[0].id]); await new Promise(r => setTimeout(r, 300)); const pick = ANA.isOpen() && document.querySelectorAll('#anaBox [data-ana-open]').length === 2; ANA.close(); return {one, pick, id:it.savedId}; });
+    ok(mi.one && mi.pick, 'v38 import Mi Fitness → analyse ouverte ; plusieurs séances enregistrées → sélecteur', mi);
+    // bilan d'ascension : objectif n°1, deux séances liées (dont une le même jour), comparé au topo
+    const B = await p.evaluate(async () => { const o = OBJECTIFS.find(x => x.n === 1), T = todayISO(); DB.sessions.push({id:'v38-s1', date:T, heure:'09:00', type:'Randonnée', dist:3, dplus:250, dur:3600, bpm:135, objN:1, updatedAt:Date.now()},
+        {id:'v38-s2', date:T, heure:'11:00', type:'Randonnée', dist:2.5, dplus:150, dminus:380, dur:2400, bpm:120, objN:1, updatedAt:Date.now()}); save();
+      ANA.openSummit(1); await new Promise(r => setTimeout(r, 300)); const txt = $('anaBox').textContent.replace(/\u00a0/g, ' '), D = anaData(ANA.id), S = D.sum; ANA.close();
+      return {o:{dist:o.dist, dplus:o.dplus, sommet:o.sommet, iti:o.iti}, cur:ANA.id, txt, rows:S.rows.map(r => [r.lab, r.v, r.t]), n:S.T.n, done:S.done}; });
+    const rd = Object.fromEntries(B.rows.map(r => [r[0], r]));
+    ok(B.cur === 'v38-s1' && B.n === 2 && /Bilan complet de l’ascension/.test(B.txt) && B.txt.includes(B.o.sommet) && B.txt.includes(B.o.iti), 'v38 bilan : ouvert sur la séance principale (plus de km-effort), 2 séances, sommet + itinéraire en titre', [B.cur, B.n]);
+    ok(Math.abs(rd['Distance'][1] - 5.5) < 1e-9 && rd['D+'][1] === 400 && rd['D−'][1] === 630 && rd['Durée'][1] === 6000 && rd['Distance'][2] === B.o.dist && rd['D+'][2] === B.o.dplus, 'v38 bilan : réalisé (5,5 km, 400 m D+, D− 380 + 250 estimé, 1 h 40) vs topo', B.rows);
+    const pct = Math.round((400 - B.o.dplus) / B.o.dplus * 100);
+    ok(B.txt.includes((pct > 0 ? '+' : pct < 0 ? '−' : '±') + Math.abs(pct) + ' %'), 'v38 bilan : écart D+ vs topo en % (' + pct + ' %)', B.txt.slice(0, 200));
+    ok(/Progression/.test(B.txt) && /\/13/.test(B.txt) && /Récupération|récupération/.test(B.txt) && /Prochain :/.test(B.txt), 'v38 bilan : progression X/13, projection sur le sommet suivant, récupération', B.txt.slice(-300));
+    // statut Fait avec séances liées → bilan ; rattachement depuis « Mon ascension » → analyse ; bouton 📊 de la carte
+    const tr = await p.evaluate(async () => { show('obj'); await new Promise(r => setTimeout(r, 200)); const sel = document.querySelector('select[data-obj="1"][data-k="statut"]'); sel.value = 'Fait'; sel.dispatchEvent(new Event('change', {bubbles:true}));
+      await new Promise(r => setTimeout(r, 400)); const fait = ANA.isOpen() && /Bilan complet/.test($('anaBox').textContent) && !$('ascDlg').classList.contains('on'); ANA.close();
+      openSummitNoPush(1); await new Promise(r => setTimeout(r, 200)); const b1 = document.querySelector('#ascCard [data-ana]'), b2 = document.querySelector('#ascCard [data-ana-sum]'); b1 && b1.click(); await new Promise(r => setTimeout(r, 300));
+      const card = ANA.isOpen(); ANA.close(); await new Promise(r => setTimeout(r, 300)); const stay = curPage === 'sum' && !!$('ascCard'); b2 && b2.click(); await new Promise(r => setTimeout(r, 200)); const sum = ANA.isOpen() && /Bilan complet/.test($('anaBox').textContent); ANA.close(); await new Promise(r => setTimeout(r, 300)); return {fait, card, sum, stay, stay2: curPage === 'sum', b1:!!b1, b2:!!b2}; });
+    ok(tr.fait && tr.card && tr.sum, 'v38 déclencheurs : statut « Fait » avec séances liées → bilan ; boutons 📊 et « Bilan de l’ascension » de « Mon ascension »', tr);
+    ok(tr.stay && tr.stay2, 'v38 fermer l’analyse ouverte depuis la fiche du sommet : on reste sur la fiche', tr);
+    // mobile ~400 px (Xiaomi 14T) : pas de débordement horizontal, pied collant visible
+    await p.setViewport({width:407, height:904, deviceScaleFactor:1}); await p.evaluate(() => ANA.openSummit(1)); await W(300);
+    const lay = await p.evaluate(() => { const b = $('anaBox'), r = b.getBoundingClientRect(), wide = [...b.querySelectorAll('*')].filter(e => e.getBoundingClientRect().right > r.right + 1).map(e => e.className || e.tagName).slice(0, 5), ft = b.querySelector('.an-foot').getBoundingClientRect();
+      return {w: Math.round(r.width), sw: b.scrollWidth - b.clientWidth, wide, foot: ft.bottom <= innerHeight + 1 && ft.top < innerHeight}; });
+    await shot(p, 'v38-bilan-407.png'); await p.evaluate(() => ANA.close());
+    ok(lay.sw <= 0 && !lay.wide.length && lay.foot, 'v38 mobile 407 px : feuille d’analyse sans débordement, boutons du bas toujours visibles', lay);
+    ok(p.errs.length === 0, 'v38 analyse : aucune erreur JS', p.errs); await ctx.close(); }
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });
