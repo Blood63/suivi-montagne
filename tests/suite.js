@@ -152,7 +152,9 @@ function FIXTURE() {
   { // v38 : chaque ressource pré-cachée (ASSETS de sw.js) répond en HTTP 200 (sinon l'installation du SW échoue en entier)
     const swSrc = require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8');
     const m = swSrc.match(/const ASSETS = (\[[\s\S]*?\]);/); const ASSETS = m ? Function('return ' + m[1])() : [];
-    const bad = []; for (const a of ASSETS) { try { const r = await fetch(BASE + '/' + a.replace(/^\.\//, '')); if (r.status !== 200) bad.push(a + ' → ' + r.status); } catch (e) { bad.push(a + ' → ' + e.message); } }
+    // module http de Node (et non fetch/undici, qui peut planter sur les réponses HTTP/1.0 de python http.server)
+    const get = u => new Promise(res => { const req = require(u.startsWith('https') ? 'https' : 'http').get(u, {headers:{Connection:'close'}}, r => { r.resume(); r.on('end', () => res(r.statusCode)); r.on('error', e => res(e.message)); }); req.on('error', e => res(e.message)); req.setTimeout(15000, () => { req.destroy(); res('délai dépassé'); }); });
+    const bad = []; for (const a of ASSETS) { const st = await get(BASE + '/' + a.replace(/^\.\//, '')); if (st !== 200) bad.push(a + ' → ' + st); }
     ok(ASSETS.length >= 29 && bad.length === 0, 'les ' + ASSETS.length + ' ressources pré-cachées par sw.js répondent en HTTP 200', bad); }
 
   // ---------- 6. Moteur de conseils ----------
