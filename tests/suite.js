@@ -1330,7 +1330,8 @@ function FIXTURE() {
     ok(all.length === 13 && all.every(x => x.has && x.pos === 1 && x.dif && x.sea && x.ri && x.re && x.wx && x.gpx), 'bloc Sécurité sur les 13 fiches, juste sous l’en-tête (difficulté, saison, risques, repli, météo, rappel GPX)', all.filter(x => !(x.has && x.pos === 1 && x.dif && x.sea && x.ri && x.re && x.wx && x.gpx)));
     ok(all.find(x => x.n === 13).cl, 'bloc Sécurité Puy de la Vache : fermeture des travaux reprise');
     const g = await p.evaluate(() => { openSummitNoPush('12'); return $('safeBlock').innerText; }); ok(/cotation T3/.test(g), 'bloc Sécurité : cotation T reprise (Taillon T3)');
-    await p.evaluate(() => { const a = {}; a[6] = {t:Date.now() - 5*3600e3, data:null}; localStorage.setItem(KEY + '.wx', JSON.stringify(a)); window.fetch = () => new Promise(() => {}); openSummitNoPush('6'); });
+    await p.evaluate(() => { window.fetch = () => new Promise(() => {}); wxStore = () => {}; // v38 : une réponse météo réelle encore en route (fiches ouvertes juste avant) ne doit pas écraser la météo « ancienne » simulée
+      const a = {}; a[6] = {t:Date.now() - 5*3600e3, data:null}; localStorage.setItem(KEY + '.wx', JSON.stringify(a)); openSummitNoPush('6'); });
     const w1 = await p.evaluate(() => $('safeWx').innerText); ok(/Météo mise à jour à \d\d:\d\d/.test(w1) && /ancienne/.test(w1), 'météo du bloc : heure de mise à jour + alerte si ancienne', w1);
     await p.evaluate(() => { const a = {}; a[6] = {t:Date.now() - 10*60e3, data:null}; localStorage.setItem(KEY + '.wx', JSON.stringify(a)); safeWxUpdate(6); });
     const w2 = await p.evaluate(() => $('safeWx').innerText); ok(/il y a 10 min/.test(w2) && !/⚠/.test(w2), 'météo du bloc : récente, sans alerte', w2);
