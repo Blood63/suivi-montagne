@@ -35,7 +35,8 @@ jobs:
         run: |
           nohup python3 -m http.server 8767 --bind 127.0.0.1 > server.log 2>&1 &
           for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8767/index.html > /dev/null && break; sleep 0.5; done
-      - name: Suite (465+ tests)
+          curl -fsS http://127.0.0.1:8767/index.html > /dev/null   # v38 : échec explicite si le serveur n'a jamais démarré
+      - name: Suite (520+ tests)
         env:
           TZ: ${{ matrix.tz }}
           BASE: http://127.0.0.1:8767
@@ -43,7 +44,9 @@ jobs:
           CHROME: /usr/bin/google-chrome
           FRAME_MAX: '400'   # machines partagées : seuils de fluidité plus larges qu'en local (200 / 100)
           FRAME_P95: '200'
-        run: node tests/suite.js | tee suite.log
+        run: |
+          set -o pipefail   # v38 : le code de sortie de node (et non celui de tee) décide du vert/rouge
+          node tests/suite.js | tee suite.log
       - name: Journal de la suite (échecs)
         if: failure()
         run: grep -n "✘" suite.log || true

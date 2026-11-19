@@ -7,7 +7,11 @@
 const puppeteer = require(process.env.PUPPETEER || 'puppeteer-core');
 const BASE = process.env.BASE || 'http://localhost:8767';
 const SWC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(v\d+)'/) || [])[1]; // cache de l'appli attendu (lu dans sw.js)
+const SWV = +(SWC.match(/-v(\d+)$/) || [])[1] || 0; // numéro de version du cache (v38 : plus de « v37 » en dur)
 const W = ms => new Promise(r => setTimeout(r, ms));
+// v38 : captures d'écran facultatives (SCREENS_DIR=…) : jamais de chemin absolu en dur (le CI n'a pas /workspace)
+const SCREENS_DIR = process.env.SCREENS_DIR || '';
+const shot = async (pg, name, o = {}) => { if (!SCREENS_DIR) return; require('fs').mkdirSync(SCREENS_DIR, {recursive:true}); await pg.screenshot(Object.assign({}, o, {path:require('path').join(SCREENS_DIR, name)})); };
 let pass = 0, fail = 0; const out = [];
 // v31 : seuils de fluidité (CPU ralenti ×4) assouplis pour les machines partagées / CI : une image isolée < FRAME_MAX ms (un vrai gel est > 250 ms)
 // ET 95 % des images < FRAME_P95 ms (fluidité soutenue). Surchargeables : FRAME_MAX=… FRAME_P95=…
@@ -145,6 +149,11 @@ function FIXTURE() {
     ok(keys.includes('ma-bibliotheque-v3') && keys.includes('autre-appli'), 'caches des autres applis conservés', keys);
     ok(!keys.includes('suivi-montagne-v4') && !keys.includes('suivi-montagne-v2') && keys.includes(SWC), 'anciens caches de l’appli supprimés, '+SWC+' créé', keys);
     await ctx.close(); }
+  { // v38 : chaque ressource pré-cachée (ASSETS de sw.js) répond en HTTP 200 (sinon l'installation du SW échoue en entier)
+    const swSrc = require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8');
+    const m = swSrc.match(/const ASSETS = (\[[\s\S]*?\]);/); const ASSETS = m ? Function('return ' + m[1])() : [];
+    const bad = []; for (const a of ASSETS) { try { const r = await fetch(BASE + '/' + a.replace(/^\.\//, '')); if (r.status !== 200) bad.push(a + ' → ' + r.status); } catch (e) { bad.push(a + ' → ' + e.message); } }
+    ok(ASSETS.length >= 29 && bad.length === 0, 'les ' + ASSETS.length + ' ressources pré-cachées par sw.js répondent en HTTP 200', bad); }
 
   // ---------- 6. Moteur de conseils ----------
   out.push('6. Conseils « Prochaine ascension » (séances fictives)');
@@ -376,7 +385,6 @@ function FIXTURE() {
     ok(p.errs.length === 0, 'aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 10. Import Mi Fitness : OCR sur les captures + écran de vérification ----------
-  if (process.env.SAMPLES) {
     out.push('10. Import Mi Fitness (OCR dans le navigateur, index.html réel)');
     { const [ctx, p] = await fresh(BASE + '/index.html'); const SYN = require(__dirname + '/synth-card.js');
       const cases = [{date:'2 octobre 2026',kcal:1234,pas:12345,min:87,seed:3,iso:'2026-10-02'},{date:'28 février 2027',kcal:356,pas:8021,min:41,seed:11,c1:'#244a6b',c2:'#6b8fb5',c3:'#c9b38a',iso:'2027-02-28'},
@@ -385,6 +393,8 @@ function FIXTURE() {
       for (const o of cases) { const r = await p.evaluate(async (S, o) => { const bl = await (eval(S))(o); const r = await MiFit.analyze(bl); return {kind: r.kind, f: Object.fromEntries(Object.entries(r.fields).map(([k, x]) => [k, x.v]))}; }, SYN, o);
         ok(r.kind === 'daily' && r.f.date === o.iso && r.f.kcal === o.kcal && r.f.pas === o.pas && r.f.actMin === o.min && r.f.pausesActives === o.pauses, 'carte « Statistiques » synthétique sur photo (' + o.date + (o.pauses != null ? ', variante « Pauses actives »' : '') + ') lue exactement', r); }
       await ctx.close(); }
+  if (process.env.SAMPLES) {
+    out.push('10b. Import Mi Fitness : captures personnelles (SAMPLES)');
     const acc = {};
     { const [ctx, p] = await fresh(BASE + '/index.html');
       for (const [file, T] of Object.entries(TRUTH)) {
@@ -935,12 +945,12 @@ function FIXTURE() {
     ok(fr.open && fr.vis && fr.hist && fr.bars > 20 && fr.svg2, 'appui sur la carte : vue détaillée ouverte, graphiques dessinés après l’animation', fr);
     ok(fr.tOpen < FRAME_MAX && fr.max < FRAME_MAX, 'ouverture fluide (CPU ×4) : rendu initial < ' + FRAME_MAX + ' ms, aucune image bloquée > ' + FRAME_MAX + ' ms', fr);
     const v = await p.evaluate(async () => { const out={}; for (const [k] of DAYV.P) { document.querySelector(`[data-day-p="${k}"]`).click(); await new Promise(r=>setTimeout(r,60));
-        const R=DAYV._R, s=DAYV.stats(R.days,'pas'); out[k]={n:R.n, bars:$('chDV1').querySelectorAll('rect.b').length, kpi:$('dayBox').querySelector('.kpi b').textContent, avg:s.avg==null?'–':f(s.avg,0), rows:$('dayBox').querySelectorAll('.dtbl tr').length-1, nd:s.nd}; }
+        const R=DAYV._R, s=DAYV.stats(R.days,'pas'); out[k]={n:R.n, wk:/moyenne par semaine/.test($('dayBox').innerText), bars:$('chDV1').querySelectorAll('rect.b').length, kpi:$('dayBox').querySelector('.kpi b').textContent, avg:s.avg==null?'–':f(s.avg,0), rows:$('dayBox').querySelectorAll('.dtbl tr').length-1, nd:s.nd}; }
       for (const m of ['kcal','min','pas']) { document.querySelector(`[data-day-m="${m}"]`).click(); await new Promise(r=>setTimeout(r,60)); out[m]=$('dayBox').querySelector('.card h3').textContent; }
       return out; });
     ok(v['7'].n === 7 && v['28'].n === 28 && v['84'].n === 84 && v['182'].n === 182 && v.all.n >= 69 && v.all.n <= 71, 'périodes 7 j / 4 / 12 / 26 sem. / tout', v);
     ok(['7','28','84','182','all'].every(k => v[k].kpi === v[k].avg && v[k].rows === v[k].nd), 'moyennes et tableau jour par jour exacts pour chaque période', v);
-    ok(v['28'].bars >= 20 && v['84'].bars <= 13 && /par semaine/.test(v['84'] ? 'par semaine' : ''), 'jour par jour jusqu’à 45 j, moyennes hebdomadaires au-delà', v);
+    ok(v['28'].bars >= 20 && v['84'].bars <= 13 && v['84'].wk && !v['28'].wk, 'jour par jour jusqu’à 45 j, moyennes hebdomadaires au-delà', v);
     ok(/Calories/.test(v.kcal) && /Minutes/.test(v.min) && /Pas/.test(v.pas), 'choix de l’indicateur : pas, calories, minutes', v);
     const sc = await p.evaluate(async () => { const el=$('chDV1'), svg=el.querySelector('svg'), r=svg.getBoundingClientRect(); const C=el._c;
       const ev=(t,x)=>svg.dispatchEvent(new PointerEvent(t,{bubbles:true,clientX:x,clientY:r.top+r.height/2,pointerId:1}));
@@ -1237,7 +1247,7 @@ function FIXTURE() {
         const s4 = DB.sessions.find(s => s.id === 't-s4'); s4.notes = 'B4 avant suppression'; s4.updatedAt = now + 4; save(); }, now);
       await W(300);
       if (order === 'AB') { const so = await st(A); ok(so.s === 'offline' && /Hors ligne · \d/.test(so.t), 'indicateur : hors ligne + nombre de modifications en attente', so);
-        const off = await A.evaluate(() => syncNow({silent:true})); ok(off === false && G.patches === 2 + 0 || off === false, 'hors ligne : la synchro échoue proprement sans rien écrire'); }
+        const pBefore = G.patches; const off = await A.evaluate(() => syncNow({silent:true})); ok(off === false && G.patches === pBefore, 'hors ligne : la synchro échoue proprement sans rien écrire'); }
       const [X, Y] = order === 'AB' ? [A, B] : [B, A];
       await X.setOfflineMode(false); await W(100); ok(await X.evaluate(() => syncNow({silent:true})), order + ' : 1er appareil reconnecté synchronisé');
       await Y.setOfflineMode(false); await W(100); ok(await Y.evaluate(() => syncNow({silent:true})), order + ' : 2e appareil reconnecté synchronisé');
@@ -1259,10 +1269,10 @@ function FIXTURE() {
         await A.click('#syncBadge'); await W(200);
         const pan = await A.evaluate(() => ({vis:!$('syncPanel').hidden, txt:$('syncPanel').innerText, btn:$('spSync').textContent}));
         ok(er.s === 'error' && pan.vis && /Erreur GitHub \(500/.test(pan.txt) && pan.btn === 'Réessayer' && /Restaurer une copie locale/.test(pan.txt) && /heure de Paris/.test(pan.txt), 'indicateur : erreur + raison courte + bouton Réessayer + lien de restauration', {er, pan});
-        await A.screenshot({path:'/workspace/screens/v28-sync-error.png'});
+        await shot(A, 'v28-sync-error.png');
         G.fail = 0; await A.click('#spSync'); await W(400); const rt = await A.evaluate(() => ({s:$('syncBadge').dataset.s, has:JSON.parse(localStorage.getItem(KEY)).sessions.some(s => s.id === 't-p')}));
         ok(rt.s === 'ok' && JSON.parse(G.content).sessions.some(s => s.id === 't-p'), 'Réessayer : synchro relancée, modification envoyée', rt);
-        await A.screenshot({path:'/workspace/screens/v28-sync-ok-panel.png'});
+        await shot(A, 'v28-sync-ok-panel.png');
         await A.click('#spRestore'); await W(400); const rs = await A.evaluate(() => ({pg:curPage, y:Math.round($('snapCard').getBoundingClientRect().top)}));
         ok(rs.pg === 'data' && rs.y < 300, 'lien « Restaurer une copie locale » : ouvre les copies de sécurité', rs);
         const tn = await A.evaluate(() => $('syncTokNote').textContent); ok(/sensible/.test(tn) && /appareils personnels/.test(tn), 'réglages : avertissement sur le jeton (texte seul)');
@@ -1273,10 +1283,10 @@ function FIXTURE() {
     const [ctx, p] = await fresh(BASE + '/index.html'); await p.setViewport({width:390, height:844, isMobile:true, hasTouch:true});
     const n0 = await p.evaluate(() => ({s:$('syncBadge').dataset.s, t:$('syncBadgeTxt').textContent})); ok(n0.s === 'none' && /off/.test(n0.t), 'indicateur : synchro non configurée', n0);
     await p.click('#syncBadge'); await W(200); const pn = await p.evaluate(() => ({t:$('spBody').innerText, h:$('spSync').hidden})); ok(/Aucun jeton/.test(pn.t) && pn.h, 'panneau non configuré : explication, pas de bouton de synchro', pn);
-    await p.screenshot({path:'/workspace/screens/v28-sync-none.png'}); await p.keyboard.press('Escape'); ok(await p.evaluate(() => $('syncPanel').hidden), 'panneau : fermeture par Échap');
+    await shot(p, 'v28-sync-none.png'); await p.keyboard.press('Escape'); ok(await p.evaluate(() => $('syncPanel').hidden), 'panneau : fermeture par Échap');
     await p.evaluate(() => { saveSyncCfg({token:'ghp_test', gistId:'g3', lastSync:Date.now() - 7*60e3, auto:false}); window.fetch = () => new Promise(() => {}); syncNow({silent:true}); }); await W(200);
     const sy = await p.evaluate(() => ({s:$('syncBadge').dataset.s, t:$('syncBadgeTxt').textContent})); ok(sy.s === 'syncing', 'indicateur : synchro en cours', sy);
-    await p.screenshot({path:'/workspace/screens/v28-sync-syncing.png', clip:{x:0, y:0, width:390, height:160}});
+    await shot(p, 'v28-sync-syncing.png', {clip:{x:0, y:0, width:390, height:160}});
     for (const t of ['journal', 'obj', 'prep', 'evo', 'data']) { await p.evaluate(t => show(t), t); await W(250); const v = await p.evaluate(() => { const r = $('syncBadge').getBoundingClientRect(), h = $('pageTitle').getBoundingClientRect(); return r.width > 30 && r.top >= 0 && r.bottom < 90 && (r.left > h.right || r.top > h.bottom); }); ok(v, 'indicateur visible et sans chevauchement du titre : ' + t); }
     ok(p.errs.length === 0, 'indicateur : aucune erreur JS', p.errs); await ctx.close(); }
   { // imports invalides / énormes : rien n'est modifié
@@ -1455,7 +1465,7 @@ function FIXTURE() {
     ok(R.cnt === 13 && R.cl.c8 === undefined && R.cl.c12 === undefined && !/Laquets|verglas|Petit train|domaine skiable/.test(R.n12 + R.n8), 'Barrhorn, Taillon et autres fiches : aucune fermeture ni note ajoutée', [R.cnt, R.n8, R.n12]);
     ok(/verglas/.test(R.page1) && /16\/11\/2026/.test(R.page1), 'fiche affichée (Puy de Dôme n°1) : alerte et « Vérifié le 16/11/2026 » (v37)', R.page1.slice(0, 300));
     ok(/Laquets/.test(R.page6), 'fiche affichée (Pic du Midi n°6) : mention des Laquets', R.page6.slice(0, 200));
-    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v35'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) === false && /PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache du service worker changé (v37)');
+    ok(!/PREFIX \+ 'v30'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v33'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && !/PREFIX \+ 'v34'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) && /PREFIX \+ 'v35'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')) === false && SWV >= 37, 'cache du service worker changé (' + SWC + ')');
     ok(p.errs.length === 0, 'veille sommets : aucune erreur JS', p.errs); await ctx.close(); }
 
   // ---------- 31. v33 : dates du domaine skiable du Mont-Dore sur les fiches Sancy (n°3 et n°5 seulement) ----------
@@ -1478,7 +1488,7 @@ function FIXTURE() {
     ok(!/19\/12\/2026|21\/03\/2027|domaine skiable du Mont-Dore \(prévu/.test(R.n8 + R.n9), 'Barrhorn et Grande Sassière : notes inchangées', [R.n8, R.n9]);
     ok(/09\/11\/2026/.test(R.page3) && /19\/12\/2026/.test(R.page3), 'fiche affichée n°3 : date vérifiée et dates ski', R.page3.slice(0, 400));
     ok(/09\/11\/2026/.test(R.page5) && /21\/03\/2027/.test(R.page5), 'fiche affichée n°5 : date vérifiée et dates ski', R.page5.slice(0, 400));
-    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
+    ok(SWV >= 37, 'cache SW = ' + SWC + ' (≥ v37)');
     ok(p.errs.length === 0, 'v33 Sancy : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1525,7 +1535,7 @@ function FIXTURE() {
     ok(R.plan.p1same && !R.plan.p1split && R.plan.p1single && /journée/.test(R.plan.p1t), 'plan p1 : 400+300 le même jour valide la cible, pas sur deux jours ; libellé « journée »', R.plan);
     ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
     ok(/somme des séances du même jour/.test(R.expl) && /plus grosse journée/.test(R.win), 'textes Prépa : légende et fenêtre parlent de journée', [R.expl.slice(0, 200), R.win]);
-    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
+    ok(SWV >= 37, 'cache SW = ' + SWC + ' (≥ v37)');
     ok(p.errs.length === 0, 'v34 journée : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1623,7 +1633,7 @@ function FIXTURE() {
     ok(R.R0.a === R.R1.a && R.R0.b === R.R1.b && R.R0.c === R.R1.c && R.R0.d === R.R1.d && R.R0.r0 === R.R1.r0, 'distance / 2 jours : indication seulement, pas de nouveau coefficient dans l’indice', [R.R0, R.R1]);
     ok(/Meilleure journée/.test(R.day8) && /18/.test(R.day8) && /deux jours d’affilée/.test(R.day8) && /Meilleure journée/.test(R.day1) && !/deux jours d’affilée/.test(R.day1), 'repère km sur tous les objectifs ; « deux jours d’affilée » seulement si multi-jours', [R.day8, R.day1]);
     ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
-    ok(/PREFIX \+ 'v37'/.test(sw) && /"short_name": "Suivi Montagne"/.test(man) && !/<\/html>[\s\S]*<html/.test(idx), 'SW à jour, manifeste valide, index.html non découpé');
+    ok(SWV >= 37 && sw.includes("PREFIX + '" + SWC.slice(15) + "'") && /"short_name": "Suivi Montagne"/.test(man) && !/<\/html>[\s\S]*<html/.test(idx), 'SW à jour, manifeste valide, index.html non découpé');
     ok(p.errs.length === 0, 'v35 : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1652,7 +1662,7 @@ function FIXTURE() {
     { const a = await p.evaluate(() => { show('obj'); show('journal'); return {n:document.querySelectorAll('#objList [data-k]').length, unl:Array.from(document.querySelectorAll('#objList [data-k]')).filter(e => !e.getAttribute('aria-label')).length, flt:document.getElementById('fltType').getAttribute('aria-label')}; });
       ok(a.unl === 0 && a.flt === 'Type de séance', 'champs des objectifs (statut, dates) et filtre du journal : nom accessible', a); }
     ok(R.cnt === 13, '13 objectifs, numéros inchangés', R.cnt);
-    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
+    ok(SWV >= 37, 'cache SW = ' + SWC + ' (≥ v37)');
     ok(p.errs.length === 0, 'v36 : aucune erreur JS', p.errs); await ctx.close(); }
 
 
@@ -1689,7 +1699,7 @@ function FIXTURE() {
     ok(R.c1.length === 4 && R.c1.slice(2).every(c => c.info && !c.block) && R.c1[2].from === '2026-11-16' && R.c1[2].to === '2026-11-20' && !R.block1, 'Muletiers n°1 : 2 bandeaux informatifs ajoutés, historique conservé, rien de bloquant', R.c1);
     ok(/ℹ️/.test(R.s1) && !/⛔/.test(R.s1) && /17 h 30/.test(R.card1) && /16\/11\/2026/.test(R.page1), 'Muletiers n°1 : bandeaux ℹ️ et fiche affichée à jour', [R.s1.slice(0, 200), R.card1]);
     ok(R.v === 4, 'DATA_VERSION inchangé (4)', R.v);
-    ok(/PREFIX \+ 'v37'/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8')), 'cache SW = v37');
+    ok(SWV >= 37, 'cache SW = ' + SWC + ' (≥ v37)');
     ok(p.errs.length === 0, 'v37 : aucune erreur JS', p.errs); await ctx.close(); }
 
   await b.close();
