@@ -381,7 +381,7 @@ details.more{margin-top:12px;grid-column:1/-1}details.more>summary{font-size:14p
 #ascDlg{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}
 #ascDlg.on{display:flex}#ascDlg .box{background:#183430;border-top:1px solid rgba(124,200,234,.25);box-shadow:0 -10px 40px rgba(0,0,0,.5);width:100%;max-width:520px;max-height:86vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 #ascDlg .box .btn{width:100%;margin-top:8px}
-/* v38 : analyse complète de séance / bilan d’ascension (feuille du bas, pensée pour ~400 px de large) */
+/* v38 : analyse complète de séance / bilan d’ascension (feuille du bas, pensée pour ~400 px de large) ; v38.1 : record journée sur la journée complète, mois « jusqu’à cette séance », marge au-dessus des boutons, efficience cardio par tranche de pente */
 #anaDlg{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}#anaDlg[hidden]{display:none}
 #anaDlg .ash{background:#10231f;border-top:1px solid rgba(124,200,234,.25);box-shadow:0 -10px 40px rgba(0,0,0,.5);width:100%;max-width:560px;max-height:94vh;max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:22px 22px 0 0;padding:0 12px calc(12px + env(safe-area-inset-bottom));animation:anaUp .3s cubic-bezier(.2,.8,.2,1)}
 @keyframes anaUp{from{transform:translateY(48px);opacity:.5}to{transform:none;opacity:1}}
@@ -417,7 +417,7 @@ body.ana-open{overflow:hidden}
 .an-pil>b{font-size:12px;white-space:nowrap}
 .an-pb{position:relative;height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
 .an-pb i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}.an-pb i.a{background:#a7f3d0}.an-pb i.b{background:linear-gradient(90deg,#1f6f54,#34b38a);z-index:1}
-.an-foot{position:sticky;bottom:0;display:flex;gap:8px;padding:10px 0 2px;background:linear-gradient(0deg,#10231f 78%,rgba(16,35,31,0));z-index:3}.an-foot .btn{flex:1;min-height:46px;padding:10px 8px}
+.an-foot{position:sticky;bottom:0;display:flex;gap:8px;margin-top:10px;padding:10px 0 2px;background:linear-gradient(0deg,#10231f 78%,rgba(16,35,31,0));z-index:3}.an-foot .btn{flex:1;min-height:46px;padding:10px 8px}
 .an-pick{display:block;width:100%;text-align:left;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px;font:inherit}
 .an-pick.main{border-color:rgba(251,146,60,.5)}.an-pick b{display:block;font-size:14.5px}.an-pick small{color:var(--mut);font-size:12.5px}
 .anab{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--txt);border-radius:9px;min-width:32px;height:28px;padding:0 6px;font-size:14px;line-height:1;vertical-align:middle;margin-left:4px}
@@ -3326,6 +3326,9 @@ function kmEff(s){ const d=anaN(s.dist), p=anaN(s.dplus); if(d==null&&p==null) r
 function anaVam(s){ const p=anaP(s.dplus), t=anaP(s.dur); return p&&t?p/(t/3600):null; }
 function anaSpeed(s){ const d=anaP(s.dist), t=anaP(s.dur); return d&&t?d/(t/3600):null; }
 function anaPace(s){ const sp=anaSpeed(s); if(!sp) return null; const t=Math.round(3600/sp); return t<3600? Math.floor(t/60)+'′'+String(t%60).padStart(2,'0')+'″/km' : null; }
+// v38.1 : tranche de terrain d’une séance : tapis → inclinaison ; dehors → pente moyenne estimée (D+ + D−) / distance ; null si inconnue
+function anaBand(s){ if(isTapis(s.type)){ const i=anaN(s.incline)!=null?+s.incline:typeIncline(s.type); return i==null?null:{tp:1,hi:i>=5}; }
+  const d=anaP(s.dist); if(!d) return null; const v=((anaP(s.dplus)||0)+dmEst(s))/(d*1000)*100; return isFinite(v)?{tp:0,hi:v>=5}:null; }
 function anaEI(s){ const k=kmEff(s), t=anaP(s.dur), b=anaP(s.bpm); return k&&t&&b? k/(t/3600)/b*100 : null; } // km-effort/h pour 100 bpm
 function anaRefMax(){ const L=DB.sessions.map(x=>anaP(x.bpmMax)).filter(Boolean); return L.length?{v:Math.max(...L),n:L.length}:null; }
 function anaZone(r){ return r<0.7?'endurance fondamentale':r<0.8?'modérée':'soutenue'; }
@@ -3339,10 +3342,12 @@ function anaRecords(s,P){ const from=addDays(s.date,-27), out=[];
     if(val>m){ out.push({lab,val,prev:m,scope:'all',u,d}); return; } r28=r28.filter(v=>v!=null&&v>0); if(r28.length){ const m2=Math.max(...r28); if(val>m2) out.push({lab,val,prev:m2,scope:'28',u,d}); } };
   const p28=P.filter(x=>x.date>=from), on=(L,fn)=>L.map(fn);
   chk('D+ sur une sortie',anaP(s.dplus),on(P,x=>anaP(x.dplus)),on(p28,x=>anaP(x.dplus)),'m',0);
-  const same=P.filter(x=>x.date===s.date);
-  if(same.length&&anaP(s.dplus)){ const by={}; for(const x of P) by[x.date]=(by[x.date]||0)+(anaP(x.dplus)||0);
-    const tot=by[s.date]+anaP(s.dplus), ks=Object.keys(by).filter(k=>k!==s.date);
-    chk('D+ sur une journée',tot,ks.map(k=>by[k]),ks.filter(k=>k>=from).map(k=>by[k]),'m',0); }
+  // v38.1 : record « journée » = total de la journée complète (toutes ses séances, comme la ligne « Journée » et dayTotals), comparé aux journées précédentes
+  const day=DB.sessions.filter(x=>x&&x.date===s.date);
+  if(day.length>1){ const by={}; for(const x of P) if(x.date!==s.date) by[x.date]=(by[x.date]||0)+(anaP(x.dplus)||0);
+    const tot=day.reduce((t,x)=>t+(anaP(x.dplus)||0),0), ks=Object.keys(by), n0=out.length;
+    chk('D+ sur une journée',tot,ks.map(k=>by[k]),ks.filter(k=>k>=from).map(k=>by[k]),'m',0);
+    if(out.length>n0) out[out.length-1].note=`journée complète, ${day.length} séances`; }
   chk('Distance',anaP(s.dist),on(P,x=>anaP(x.dist)),on(p28,x=>anaP(x.dist)),'km',2);
   if(!isMuscu(s)) chk('Durée d’endurance',anaP(s.dur),on(P,x=>isMuscu(x)?null:anaP(x.dur)),on(p28,x=>isMuscu(x)?null:anaP(x.dur)),'dur');
   const vOk=x=>(anaP(x.dplus)||0)>=100&&(anaP(x.dur)||0)>=1200, tp=isTapis(s.type);
@@ -3362,9 +3367,13 @@ function anaCardio(s,P){ const b=anaP(s.bpm), bm=anaP(s.bpmMax), R=anaRefMax(), 
   if(b&&bm) out.ratio=b/bm;
   if(b&&R&&R.v>=(bm||0)){ out.ref=R.v; out.refN=R.n; out.pct=b/R.v; out.zone=anaZone(out.pct); }
   const ei=anaEI(s); if(ei&&!isMuscu(s)&&typeFamily(s.type)!=='corde'){ const from=addDays(s.date,-27);
-    let L=P.filter(x=>x.date>=from&&x.type===s.type).map(anaEI).filter(Boolean), basis='même type';
-    if(L.length<2){ L=P.filter(x=>x.date>=from&&typeFamily(x.type)===typeFamily(s.type)).map(anaEI).filter(Boolean); basis='même famille'; }
-    if(L.length>=2){ const m=L.reduce((a,c)=>a+c,0)/L.length, d=(ei/m-1)*100; out.ei={v:ei,m,n:L.length,d,basis,st:d>=4?'en progrès':d<=-4?'fatigue possible (FC plus haute à effort égal)':'stable'}; } }
+    // v38.1 : comparaison dans la même tranche de terrain (pente estimée, ou inclinaison sur tapis : < 5 % / ≥ 5 %) ; sinon repli sur la comparaison large, signalé
+    const bd=anaBand(s), W=P.filter(x=>x.date>=from), ty=x=>x.type===s.type, fa=x=>typeFamily(x.type)===typeFamily(s.type), lb=bd?(bd.tp?'inclinaison ':'pente ')+(bd.hi?'≥ 5 %':'< 5 %'):'';
+    const inB=x=>{ const b=anaBand(x); return !!(bd&&b&&b.tp===bd.tp&&b.hi===bd.hi); }, ev=fn=>W.filter(fn).map(anaEI).filter(Boolean);
+    let L=bd?ev(x=>ty(x)&&inB(x)):[], basis='même type, '+lb, mixed=false;
+    if(bd&&L.length<2){ L=ev(x=>fa(x)&&inB(x)); basis='même famille, '+lb; }
+    if(L.length<2){ mixed=true; L=ev(ty); basis='même type'; if(L.length<2){ L=ev(fa); basis='même famille'; } }
+    if(L.length>=2){ const m=L.reduce((a,c)=>a+c,0)/L.length, d=(ei/m-1)*100; out.ei={v:ei,m,n:L.length,d,basis,mixed,st:d>=4?'en progrès':d<=-4?'fatigue possible (FC plus haute à effort égal)':'stable'}; } }
   return out; }
 
 function anaLoad(s,P){ const A=P.concat([s]), sum=(L,k)=>L.reduce((t,x)=>t+(anaN(x[k])||0),0);
@@ -3457,7 +3466,7 @@ function anaCardioHTML(s,C){ const k=[], w=[];
   if(anaP(s.tl)) k.push([f(s.tl,0),'charge (TL)']); if(anaP(s.recup)) k.push([f(s.recup,0)+'\u00a0h','récup. conseillée']); if(anaP(s.ress)) k.push([f(s.ress,0)+'/10','ressenti']);
   if(!k.length) return '';
   if(C.zone) w.push(`Intensité : <b>${C.zone}</b> (${f(C.pct*100,0)} % de ta FC max la plus haute enregistrée, ${f(C.ref,0)} bpm${C.refN<3?' — lecture indicative, peu de mesures':''}).`);
-  if(C.ei) w.push(`Efficience cardio (km-effort/h pour 100 bpm) : <b>${f(C.ei.v,2)}</b> vs ${f(C.ei.m,2)} en moyenne (${C.ei.n} séances, ${C.ei.basis}, 28 j) → ${anaSign(C.ei.d,0)} % : <b>${C.ei.st}</b>.`);
+  if(C.ei) w.push(`Efficience cardio (km-effort/h pour 100 bpm) : <b>${f(C.ei.v,2)}</b> vs ${f(C.ei.m,2)} en moyenne (${C.ei.n} séances, ${C.ei.basis}, 28 j) → ${anaSign(C.ei.d,0)} % : <b>${C.ei.st}</b>${C.ei.mixed?' <span class="mut">(terrains différents, à prendre avec prudence)</span>':''}.`);
   return `<div class="an-g">${k.map(([v,l])=>anaK(v,l)).join('')}</div>${w.map(x=>`<div class="an-l"><span>❤️</span><div>${x}</div></div>`).join('')}`; }
 function anaCmpHTML(C){ if(!C.rows.length) return '<div class="small mut">Pas encore de séance comparable (même type) avant celle-ci.</div>';
   return `<table class="an-t"><tr><th></th><th>Séance</th><th>vs moy. 28 j</th><th>vs précédente</th></tr>${C.rows.map(r=>`<tr><td>${r.lab}</td><td>${anaVal(r.v,r.u,r.d)}</td><td>${anaD(r.dA,r.good)}</td><td>${anaD(r.dP,r.good)}</td></tr>`).join('')}</table>
@@ -3465,7 +3474,7 @@ function anaCmpHTML(C){ if(!C.rows.length) return '<div class="small mut">Pas en
 function anaLoadHTML(L){ const W=L.week, Mo=L.month, mo=MOIS_L[+Mo.ym.slice(5)-1];
   const tg=L.tgt?`<div class="an-pb an-bar" role="img" aria-label="D+ de la semaine : ${Math.round(W.dplus/L.tgt*100)} % de la cible"><i class="a" style="width:${Math.round(Math.min(1,W.dplus/L.tgt)*100)}%"></i></div><div class="small mut">${f(W.dplus,0)} / ${f(L.tgt,0)} m de D+ : cible hebdo pour ${esc(L.nx.sommet)}${L.nx.multi?' (1,5 × le D+ d’une étape)':''}</div>`:'';
   return `<div class="an-sub">Semaine du ${dFR(W.from)} <span class="mut">(au moment de la séance)</span></div><div class="an-g">${anaK(W.n,'séance'+(W.n>1?'s':''))}${anaK(f(W.dplus,0)+'\u00a0m','D+')}${anaK(f(W.km,1)+'\u00a0km','distance')}</div>${tg}
-    <div class="an-sub">${mo[0].toUpperCase()+mo.slice(1)} ${Mo.ym.slice(0,4)}</div><div class="an-g">${anaK(Mo.n,'séance'+(Mo.n>1?'s':''))}${anaK(f(Mo.dplus,0)+'\u00a0m','D+')}${anaK(f(Mo.km,1)+'\u00a0km','distance')}</div>
+    <div class="an-sub">${mo[0].toUpperCase()+mo.slice(1)} ${Mo.ym.slice(0,4)} <span class="mut">(jusqu’à cette séance)</span></div><div class="an-g">${anaK(Mo.n,'séance'+(Mo.n>1?'s':''))}${anaK(f(Mo.dplus,0)+'\u00a0m','D+')}${anaK(f(Mo.km,1)+'\u00a0km','distance')}</div>
     <div class="an-sub">Charge et récupération</div><div class="an-g">${anaK(f(L.a7,0)+'\u00a0m','D+ 7 derniers j')}${anaK(f(L.avgW,0)+'\u00a0m','moy. hebdo 28 j')}${anaK(L.ratio!=null?'×\u00a0'+f(L.ratio,1):'–','charge aiguë',L.ratio>=1.5?'warn':'')}${anaK(L.streak+'\u00a0j','série en cours')}</div>
     ${L.tips.map(([i,t])=>`<div class="an-l"><span>${i}</span><div>${t}</div></div>`).join('')}`; }
 function anaPrepHTML(P){ if(!P) return ''; const pc=r=>Math.round(Math.min(1,r)*100), dl=pc(P.a.r)-pc(P.b.r);
@@ -3508,16 +3517,16 @@ function anaText(D){ const s=D.s, L=[], sep='—'.repeat(3), S=D.sum, pc=r=>Math
   const pf=[anaP(s.dist)?f(s.dist,2)+' km':null,anaP(s.dur)?fmtDur(s.dur):null,anaP(s.dplus)?'D+ '+f(s.dplus,0)+' m':null,!isTapis(s.type)&&anaP(s.dplus)?'D− '+f(dmEst(s),0)+' m'+(dmIsEst(s)?' (estimé)':''):null,anaSpeed(s)?f(anaSpeed(s),1)+' km/h':null,anaPace(s),kmEff(s)&&!['muscu','corde'].includes(typeFamily(s.type))?'km-effort '+f(kmEff(s),1):null,anaVam(s)&&(anaP(s.dplus)||0)>=30?'VAM '+f(anaVam(s),0)+' m/h':null,anaP(s.sac)?'sac '+f(s.sac,1)+' kg':null].filter(Boolean);
   if(pf.length) L.push('• '+pf.join(' · ').replace(/\u00a0/g,' '));
   if(D.day) L.push(`• Journée (${D.day.n} séances) : D+ ${f(D.day.dplus,0)} m · ${f(D.day.dist,1)} km · ${fmtDur(D.day.dur)}`);
-  const C=D.cardio; if(C.b) L.push(`• FC moy. ${f(C.b,0)} bpm${C.bm?' · max '+f(C.bm,0):''}${C.zone?' · intensité '+C.zone:''}${C.ei?' · efficience '+C.ei.st:''}`);
+  const C=D.cardio; if(C.b) L.push(`• FC moy. ${f(C.b,0)} bpm${C.bm?' · max '+f(C.bm,0):''}${C.zone?' · intensité '+C.zone:''}${C.ei?' · efficience '+C.ei.st+(C.ei.mixed?' (terrains différents, à prendre avec prudence)':''):''}`);
   if(anaP(s.ress)) L.push(`• Ressenti : ${f(s.ress,0)}/10`);
-  for(const r of D.rec) L.push(`🏅 Record ${r.scope==='all'?'personnel':'sur 28 jours'} — ${r.lab} : ${anaVal(r.val,r.u,r.d).replace(/\u00a0/g,' ')}`);
+  for(const r of D.rec) L.push(`🏅 Record ${r.scope==='all'?'personnel':'sur 28 jours'} — ${r.lab}${r.note?' ('+r.note+')':''} : ${anaVal(r.val,r.u,r.d).replace(/\u00a0/g,' ')}`);
   const Ld=D.load; L.push(`• Semaine : ${Ld.week.n} séance${Ld.week.n>1?'s':''} · D+ ${f(Ld.week.dplus,0)} m${Ld.tgt?' / '+f(Ld.tgt,0)+' m (cible)':''} · ${f(Ld.week.km,1)} km`);
   if(Ld.ratio!=null) L.push(`• Charge aiguë : ×${f(Ld.ratio,1)} · série ${Ld.streak} j`);
   const P=D.prep; if(P){ L.push(`• Préparation ${P.o.sommet} : ${pc(P.b.r)} % → ${pc(P.a.r)} % · plan ${P.pa.done}/5`); for(const x of P.newly) L.push(`✅ Case validée : ${x.t}`); if(P.next) L.push(`🎯 Prochaine case : ${P.next.t}`); for(const u of P.unlock) L.push(`🔓 Préparation validée : ${u.o.sommet}`); }
   for(const [,t] of Ld.tips.slice(0,1)) L.push('💡 '+t.replace(/<[^>]+>/g,''));
   return L.join('\n'); }
 function anaHTML(D){ const s=D.s, d=parseISO(s.date), J=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][d.getDay()];
-  const rec=D.rec.length?`<div class="an-rec">${D.rec.map(r=>`<span>🏅 ${r.scope==='all'?'Record':'Record 28 j'} · ${r.lab} : <b>${anaVal(r.val,r.u,r.d)}</b> <i>(avant ${anaVal(r.prev,r.u,r.d)})</i></span>`).join('')}</div>`:D.first?'<div class="small mut">Première séance enregistrée : les records commenceront à la prochaine.</div>':'<div class="small mut">Pas de record battu cette fois-ci.</div>';
+  const rec=D.rec.length?`<div class="an-rec">${D.rec.map(r=>`<span>🏅 ${r.scope==='all'?'Record':'Record 28 j'} · ${r.lab}${r.note?` <i>(${r.note})</i>`:''} : <b>${anaVal(r.val,r.u,r.d)}</b> <i>(avant ${anaVal(r.prev,r.u,r.d)})</i></span>`).join('')}</div>`:D.first?'<div class="small mut">Première séance enregistrée : les records commenceront à la prochaine.</div>':'<div class="small mut">Pas de record battu cette fois-ci.</div>';
   const day=D.day?`<div class="an-l"><span>📅</span><div>Journée (${D.day.n} séances) : <b>${f(D.day.dplus,0)} m D+</b> · ${f(D.day.dist,1)} km · ${fmtDur(D.day.dur)}</div></div>`:'';
   const ca=anaCardioHTML(s,D.cardio);
   return `${D.sum?anaSumHTML(D.sum):''}
@@ -3532,7 +3541,7 @@ function anaHTML(D){ const s=D.s, d=parseISO(s.date), J=['dimanche','lundi','mar
 const ANA={ open_:false, id:null, list:null, last:null,
   isOpen(){ return this.open_; },
   show(html,title){ const d=$('anaDlg'), b=$('anaBox'); b.innerHTML=`<div class="ahd"><h2 id="anaT">${title}</h2><button class="xbtn" type="button" id="anaX" data-ana-x aria-label="Fermer l’analyse">✕</button></div>${html}`;
-    b.scrollTop=0; if(!this.open_){ this.open_=true; this.last=document.activeElement; d.hidden=false; document.body.classList.add('ana-open'); try{ history.pushState({ana:1},''); }catch(e){} }
+    b.scrollTop=0; if(!this.open_){ this.open_=true; this.last=document.activeElement; d.hidden=false; document.body.classList.add('ana-open'); if(!this.skipPop) try{ history.pushState({ana:1},''); }catch(e){} } // v38.1 : retour encore en cours (fermeture juste avant) → l’entrée est remise à l’arrivée du retour
     setTimeout(()=>{ const x=$('anaX'); if(x) try{ x.focus({preventScroll:true}); }catch(e){} },40); },
   // analyse d’une séance (et bilan d’ascension si elle est rattachée à un objectif)
   open(id,back){ const D=anaData(id); if(!D) return false; this.id=id; this.D=D;
@@ -3545,7 +3554,7 @@ const ANA={ open_:false, id:null, list:null, last:null,
     L.sort((a,b)=>(kmEff(b)||0)-(kmEff(a)||0)||anaOrder(a,b)); this.list=L.map(x=>x.id);
     this.show(`<p class="small mut" style="margin:0 0 8px">${L.length} séances enregistrées : choisis celle à analyser (la plus exigeante en premier).</p>${L.map((x,i)=>`<button type="button" class="an-pick${i?'':' main'}" data-ana-open="${esc(x.id)}"><b>${i?'':'⭐ '}${esc(x.type)} · ${dFR(x.date)}${x.heure?' '+esc(x.heure):''}</b><small>${[anaP(x.dist)?f(x.dist,2)+' km':null,anaP(x.dplus)?f(x.dplus,0)+' m D+':null,anaP(x.dur)?fmtDur(x.dur):null,ascObj(x)?'🏁 '+esc(ascObj(x).sommet):null].filter(Boolean).join(' · ')}</small></button>`).join('')}<div class="an-foot"><button class="btn sec" type="button" data-ana-x>Fermer</button></div>`,'📊 Analyse des séances'); return true; },
   close(fromPop){ if(!this.open_) return; this.open_=false; const d=$('anaDlg'); d.hidden=true; $('anaBox').innerHTML=''; document.body.classList.remove('ana-open'); this.D=null;
-    if(!fromPop&&history.state&&history.state.ana){ try{ this.skipPop=true; history.back(); }catch(e){ this.skipPop=false; } }
+    if(!fromPop&&!this.skipPop&&history.state&&history.state.ana){ try{ this.skipPop=true; history.back(); }catch(e){ this.skipPop=false; } } // v38.1 : un seul retour à la fois (fermer / rouvrir / fermer très vite ne recule jamais au-delà de la page)
     const l=this.last; this.last=null; if(l&&document.contains(l)) try{ l.focus({preventScroll:true}); }catch(e){} },
   async copy(){ if(!this.D) return; const t=anaText(this.D); let ok=false;
     try{ if(navigator.clipboard&&window.isSecureContext){ await navigator.clipboard.writeText(t); ok=true; } }catch(e){}
@@ -3845,7 +3854,7 @@ function initUI(){
   $('sheetBg').addEventListener('click',()=>{ if(IMP.isOpen()){ IMP.close(); return; } fillForm(null); show(curPage); });
   $('btnSheetX').addEventListener('click',()=>{ fillForm(null); show(curPage); });
   addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const c=e.target.closest&&e.target.closest('[data-day-open]'); if(c&&e.target===c){ e.preventDefault(); DAYV.open(); } return; } if(e.key!=='Escape') return; if(ANA.isOpen()){ ANA.close(); return; } if(DAYV.isOpen()){ DAYV.close(); return; } if(IMP.isOpen()){ IMP.close(); return; } if(document.body.classList.contains('sheet-open')){ fillForm(null); show(curPage); } else if(curPage==='sum') closeSummit(); });
-  addEventListener('popstate',()=>{ const hs=history.state; if(ANA.skipPop){ ANA.skipPop=false; if(!ANA.isOpen()||(hs&&hs.ana)) return; } /* v38 : retour provoqué par la fermeture de l’analyse : la page dessous ne bouge pas */ if(ANA.isOpen()){ if(!(hs&&hs.ana)) ANA.close(true); return; } if(hs&&hs.ana) return; /* v38 : entrée « analyse » restante (fermeture puis réouverture rapides) : ignorée */ if(DAYV.isOpen()&&!(history.state&&history.state.day)){ DAYV.close(true); return; } if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
+  addEventListener('popstate',()=>{ const hs=history.state; if(ANA.skipPop){ ANA.skipPop=false; if(ANA.isOpen()&&!(hs&&hs.ana)) try{ history.pushState({ana:1},''); }catch(e){} return; } /* v38 : retour provoqué par la fermeture de l’analyse : la page dessous ne bouge pas ; v38.1 : analyse rouverte entre-temps (ex. « Marquer comme fait ») → elle reste ouverte */ if(ANA.isOpen()){ if(!(hs&&hs.ana)) ANA.close(true); return; } if(hs&&hs.ana) return; /* v38 : entrée « analyse » restante (fermeture puis réouverture rapides) : ignorée */ if(DAYV.isOpen()&&!(history.state&&history.state.day)){ DAYV.close(true); return; } if(curPage==='sum'&&!(history.state&&history.state.sum)) show(sumFrom||'obj'); else if(history.state&&history.state.sum&&curPage!=='sum') openSummitNoPush(history.state.sum); });
   const sh=$('p-add'), grab=sh.querySelector('.grab'); let y0=null,dy=0;
   grab.addEventListener('pointerdown',e=>{ y0=e.clientY; dy=0; sh.classList.add('dragging'); grab.setPointerCapture(e.pointerId); });
   grab.addEventListener('pointermove',e=>{ if(y0==null) return; dy=Math.max(0,e.clientY-y0); sh.style.transform='translate3d(0,'+dy+'px,0)'; });

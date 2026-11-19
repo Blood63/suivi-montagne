@@ -6,9 +6,9 @@
    + truth.json (valeurs attendues). Captures et valeurs personnelles : jamais commitées. */
 const puppeteer = require(process.env.PUPPETEER || 'puppeteer-core');
 const BASE = process.env.BASE || 'http://localhost:8767';
-const SWC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(v\d+)'/) || [])[1]; // cache de l'appli attendu (lu dans sw.js)
+const SWC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(v\d+(?:\.\d+)?)'/) || [])[1]; // cache de l'appli attendu (lu dans sw.js)
 const IMGC = 'suivi-montagne-' + (require('fs').readFileSync(require('path').join(__dirname, '..', 'sw.js'), 'utf8').match(/PREFIX \+ '(img-v\d+)'/) || [])[1]; // v38 : cache des images (stable d'une version à l'autre)
-const SWV = +(SWC.match(/-v(\d+)$/) || [])[1] || 0; // numéro de version du cache (v38 : plus de « v37 » en dur)
+const SWV = +(SWC.match(/-v(\d+(?:\.\d+)?)$/) || [])[1] || 0; // v38.1 : numéro décimal accepté (38.1) // numéro de version du cache (v38 : plus de « v37 » en dur)
 const W = ms => new Promise(r => setTimeout(r, ms));
 // v38 : captures d'écran facultatives (SCREENS_DIR=…) : jamais de chemin absolu en dur (le CI n'a pas /workspace)
 const SCREENS_DIR = process.env.SCREENS_DIR || '';
@@ -1316,12 +1316,12 @@ function FIXTURE() {
     const [ctx, p] = await fresh(BASE + '/swupd/index.html'); await withFix(p); const before = await p.evaluate(() => localStorage.getItem(KEY));
     await p.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; }); await p.reload({waitUntil:'networkidle0'}); await W(800);
     const sw0 = fs.readFileSync(path.join(D, 'sw.js'), 'utf8'); // nouvelle version dont un fichier ne se télécharge pas (coupure pendant l'installation)
-    fs.writeFileSync(path.join(D, 'sw.js'), sw0.replace(/PREFIX \+ '(v\d+)'/, "PREFIX + '$1-upd'").replace("const ASSETS = ['./',", "const ASSETS = ['./img/jeu/absent-" + Date.now() + ".webp', './',"));
+    fs.writeFileSync(path.join(D, 'sw.js'), sw0.replace(/PREFIX \+ '(v\d+(?:\.\d+)?)'/, "PREFIX + '$1-upd'").replace("const ASSETS = ['./',", "const ASSETS = ['./img/jeu/absent-" + Date.now() + ".webp', './',"));
     const u1 = await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); try { await r.update(); } catch (e) {} await new Promise(r => setTimeout(r, 2500)); return {keys:await caches.keys(), waiting:!!r.waiting, inst:!!r.installing, ctrl:!!navigator.serviceWorker.controller}; });
     ok(u1.keys.includes(SWC) && u1.ctrl && !u1.waiting && !u1.inst, 'mise à jour SW interrompue (fichier non téléchargé) : l’ancienne version reste active, cache intact', u1);
     await p.setOfflineMode(true); await p.reload({waitUntil:'domcontentloaded'}); await W(1200);
     const o1 = await p.evaluate(() => ({ok:typeof DB === 'object' && !!$('pageTitle') && !!document.querySelector('#p-journal'), same:localStorage.getItem(KEY)})); ok(o1.ok && o1.same === before, 'après l’échec : l’appli s’ouvre hors ligne, données inchangées', o1.ok);
-    await p.setOfflineMode(false); fs.writeFileSync(path.join(D, 'sw.js'), sw0.replace(/PREFIX \+ '(v\d+)'/, "PREFIX + '$1-upd'"));
+    await p.setOfflineMode(false); fs.writeFileSync(path.join(D, 'sw.js'), sw0.replace(/PREFIX \+ '(v\d+(?:\.\d+)?)'/, "PREFIX + '$1-upd'"));
     await p.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update()).catch(() => {})).catch(() => {});
     let u2 = []; for (let i = 0; i < 40; i++) { await W(300); try { u2 = await p.evaluate(() => caches.keys()); } catch (e) { continue; } if (u2.some(x => /-upd$/.test(x)) && !u2.includes(SWC)) break; }
     ok(u2.some(x => /-upd$/.test(x)) && !u2.includes(SWC), 'mise à jour reprise : nouvelle version installée, ancien cache nettoyé', u2);
@@ -1727,7 +1727,7 @@ function FIXTURE() {
       vm.runInNewContext(src, {self, caches, fetch: (r) => net(abs(r)), URL, Response, Promise, setTimeout, console});
       const ev = async (t, extra) => { let p = null; await H[t](Object.assign({waitUntil: x => p = x, respondWith: x => p = x}, extra)); return p; };
       return {ev, fetch: async (url, mode) => { const r = await ev('fetch', {request: {method:'GET', url: new URL(url, SCOPE).href, mode: mode || 'no-cors'}}); return r; }}; };
-    const swCache = 'suivi-montagne-' + src.match(/PREFIX \+ '(v\d+)'/)[1];
+    const swCache = 'suivi-montagne-' + src.match(/PREFIX \+ '(v\d+(?:\.\d+)?)'/)[1];
     const ASSETS = eval(src.match(/const ASSETS = (\[[\s\S]*?\]);/)[1]), imgs = ASSETS.filter(a => /^\.\/img\//.test(a)), U = a => new URL(a, SCOPE).href;
     let calls = []; const ok200 = async u => { calls.push(u); return new Response('ok:' + u, {status:200}); };
     // installation sur un appareil qui a déjà la v37 (+ une appli voisine) et déjà toutes les images en cache img-v1
@@ -1873,6 +1873,61 @@ function FIXTURE() {
     await shot(p, 'v38-bilan-407.png'); await p.evaluate(() => ANA.close());
     ok(lay.sw <= 0 && !lay.wide.length && lay.foot, 'v38 mobile 407 px : feuille d’analyse sans débordement, boutons du bas toujours visibles', lay);
     ok(p.errs.length === 0, 'v38 analyse : aucune erreur JS', p.errs); await ctx.close(); }
+  // ---------- 37. v38.1 : record journée complète, mois « jusqu'à cette séance », marge des boutons, efficience par tranche de terrain ----------
+  out.push('37. v38.1 : record journée complète, mois, marge du bas, efficience cardio par terrain');
+  ok(SWV >= 38.1, 'cache SW = ' + SWC + ' (≥ v38.1)');
+  { const [ctx, p] = await fresh(BASE + '/index.html'); await p.setViewport({width:407, height:904});
+    const R = await p.evaluate(async () => { const T = todayISO(), d = k => addDays(T, k), o = {}, prev = DB.sessions;
+      const mk = (id, date, heure, type, dist, dplus, dur, bpm, x) => Object.assign({id, date, heure, type, dist, dplus, dminus:null, dur, bpm, updatedAt:1}, x || {});
+      // 1. record « D+ sur une journée » = journée complète (3 séances), même chiffre que la ligne « Journée »
+      DB.sessions = [mk('j0', d(-3), '09:00', 'Marche', 6, 400, 7200, 120), mk('j1', d(-1), '10:00', 'Marche', 5, 300, 5400, 125), mk('j2', d(-1), '14:00', 'Marche', 4, 200, 4000, 125), mk('j3', d(-1), '17:00', 'Marche', 2, 50, 1800, 110), mk('j4', T, '08:00', 'Marche', 3, 20, 2400, 100)];
+      const D = anaData('j2'), r = D.rec.find(x => x.lab === 'D+ sur une journée'), r1 = anaData('j1').rec.find(x => x.lab === 'D+ sur une journée');
+      ANA.list = null; ANA.open('j2'); await new Promise(r => setTimeout(r, 100)); const box = $('anaBox'), txt = box.textContent.replace(/\u00a0/g, ' ');
+      o.rec = r && {val:r.val, prev:r.prev, note:r.note, day:D.day.dplus, first:r1 && r1.val, txt:/Record · D\+ sur une journée \(journée complète, 3 séances\) : 550 m/.test(txt) && /Journée \(3 séances\) : 550 m D\+/.test(txt), copy:/D\+ sur une journée \(journée complète, 3 séances\) : 550 m/.test(anaText(D))};
+      // 2. mois compté jusqu'à la séance, et dit
+      o.month = {n:D.load.month.n, label:[...box.querySelectorAll('.an-sub')].some(e => /\(jusqu’à cette séance\)/.test(e.textContent) && /\d{4}/.test(e.textContent)), same:D.load.month.ym === T.slice(0, 7)};
+      // 3. marge au-dessus de la barre « Copier le récap / Fermer » (bas du défilement, 407 px)
+      box.scrollTop = box.scrollHeight; await new Promise(r => setTimeout(r, 200)); const ft = box.querySelector('.an-foot');
+      const lastEl = [...box.querySelectorAll('*')].filter(e => !ft.contains(e) && e.children.length === 0 && e.textContent.trim()).pop();
+      o.foot = {mt:getComputedStyle(ft).marginTop, gap:Math.round(ft.getBoundingClientRect().top - lastEl.getBoundingClientRect().bottom), sw:box.scrollWidth - box.clientWidth}; ANA.close();
+      // 4. efficience cardio : même tranche de pente (< 5 % / ≥ 5 %), sinon repli signalé
+      const ei = x => (x.dist + x.dplus / 100) / (x.dur / 3600) / x.bpm * 100;
+      const flat = [mk('f1', d(-10), '', 'Marche', 6, 30, 3600, 110), mk('f2', d(-8), '', 'Marche', 6, 40, 3600, 105), mk('f3', d(-6), '', 'Marche', 5, 20, 3000, 108)];
+      const steep = [mk('s1', d(-9), '', 'Marche', 4, 300, 5400, 140), mk('s2', d(-5), '', 'Marche', 5, 400, 6600, 145)], cur = mk('s3', d(-1), '', 'Marche', 4, 350, 5400, 142, {sac:4});
+      DB.sessions = [...flat, ...steep, cur]; const C = anaData('s3').cardio.ei, mS = steep.reduce((t, x) => t + ei(x), 0) / 2;
+      ANA.open('s3'); await new Promise(r => setTimeout(r, 100)); const h1 = $('anaBox').textContent; ANA.close();
+      o.band = {basis:C.basis, n:C.n, m:C.m, exp:mS, mixed:C.mixed, d:C.d, expD:(ei(cur) / mS - 1) * 100, noWarn:!/terrains différents/.test(h1), shown:/pente ≥ 5 %/.test(h1)};
+      DB.sessions = [...flat, steep[0], cur]; const C2 = anaData('s3').cardio.ei, mAll = [...flat, steep[0]].reduce((t, x) => t + ei(x), 0) / 4;
+      ANA.open('s3'); await new Promise(r => setTimeout(r, 100)); const h2 = $('anaBox').textContent; ANA.close();
+      o.fall = {basis:C2.basis, n:C2.n, m:C2.m, exp:mAll, mixed:C2.mixed, warn:/terrains différents, à prendre avec prudence/.test(h2), copy:/terrains différents, à prendre avec prudence/.test(anaText(anaData('s3')))};
+      // tapis : tranche d'inclinaison (Tapis 10 % ≈ Tapis 12 %, pas Tapis 2 %)
+      DB.sessions = [mk('t1', d(-6), '', 'Tapis 10%', 4, 400, 3600, 130), mk('t2', d(-4), '', 'Tapis 10%', 4, 400, 3600, 128), mk('t3', d(-5), '', 'Tapis 2%', 6, 120, 3600, 115), mk('t4', d(-3), '', 'Tapis 2%', 6, 120, 3600, 112), mk('t5', d(-1), '', 'Tapis 12%', 4, 480, 3600, 135)];
+      const C3 = anaData('t5').cardio.ei; o.tapis = {basis:C3.basis, n:C3.n, m:C3.m, exp:(ei(DB.sessions[0]) + ei(DB.sessions[1])) / 2, mixed:C3.mixed};
+      o.band.fn = [anaBand({type:'Marche', dist:2, dplus:60}), anaBand({type:'Marche', dist:2, dplus:40}), anaBand({type:'Tapis 6%'}), anaBand({type:'Tapis 2%', incline:8}), anaBand({type:'Marche'})];
+      DB.sessions = prev; return o; });
+    ok(R.rec && R.rec.val === 550 && R.rec.day === 550 && R.rec.prev === 400 && R.rec.note === 'journée complète, 3 séances' && R.rec.first === 550 && R.rec.txt && R.rec.copy, 'v38.1 record « D+ sur une journée » = journée complète (550 m, comme la ligne « Journée »), libellé « (journée complète, 3 séances) »', R.rec);
+    ok(R.month.n === (R.month.same ? 3 : R.month.n) && R.month.label, 'v38.1 titre du mois « (jusqu’à cette séance) »', R.month);
+    ok(R.foot.mt === '10px' && R.foot.gap >= 10 && R.foot.sw <= 0, 'v38.1 bas de l’analyse à 407 px : la dernière ligne reste à ≥ 10 px des boutons', R.foot);
+    ok(R.band.basis === 'même type, pente ≥ 5 %' && R.band.n === 2 && Math.abs(R.band.m - R.band.exp) < 1e-9 && Math.abs(R.band.d - R.band.expD) < 1e-9 && !R.band.mixed && R.band.noWarn && R.band.shown, 'v38.1 efficience cardio : comparée aux seules marches en pente ≥ 5 % (moyenne exacte)', R.band);
+    ok(JSON.stringify(R.band.fn) === JSON.stringify([{tp:0,hi:true}, {tp:0,hi:false}, {tp:1,hi:true}, {tp:1,hi:true}, null]), 'v38.1 tranches : pente estimée (D+ + D− estimé) / distance, inclinaison sur tapis (saisie prioritaire), inconnue sans distance', R.band.fn);
+    ok(R.fall.mixed && R.fall.basis === 'même type' && R.fall.n === 4 && Math.abs(R.fall.m - R.fall.exp) < 1e-9 && R.fall.warn && R.fall.copy, 'v38.1 efficience : moins de 2 séances dans la tranche → comparaison large + « terrains différents, à prendre avec prudence »', R.fall);
+    ok(R.tapis.basis === 'même famille, inclinaison ≥ 5 %' && R.tapis.n === 2 && Math.abs(R.tapis.m - R.tapis.exp) < 1e-9 && !R.tapis.mixed, 'v38.1 efficience sur tapis : même tranche d’inclinaison (Tapis 10 % pour un Tapis 12 %, pas Tapis 2 %)', R.tapis);
+    // bilan provisoire → « ✔ Marquer comme fait » : l'analyse se ferme et se rouvre aussitôt ; elle doit rester ouverte (retour d'historique encore en route)
+    const md = await p.evaluate(async () => { const o = OBJECTIFS.find(x => objState(x.n).statut !== 'Fait'), T = todayISO();
+      DB.sessions.push({id:'md1', date:T, heure:'09:00', type:'Randonnée', dist:4, dplus:300, dur:5400, bpm:130, objN:o.n, updatedAt:Date.now()}); save();
+      ANA.openSummit(o.n); await new Promise(r => setTimeout(r, 200)); const b = document.querySelector('#anaBox [data-asc-done]'), prov = /provisoire/.test($('anaBox').textContent);
+      b.click(); await new Promise(r => setTimeout(r, 600)); const r = {prov, btn:!!b, open:ANA.isOpen(), fait:objState(o.n).statut === 'Fait', bilan:/Bilan complet/.test($('anaBox').textContent) && !/provisoire/.test($('anaBox').textContent), st:!!(history.state && history.state.ana)};
+      ANA.close(); await new Promise(r => setTimeout(r, 300)); r.closed = !ANA.isOpen() && !(history.state && history.state.ana); return r; });
+    ok(md.prov && md.btn && md.open && md.fait && md.bilan && md.st && md.closed, 'v38.1 bilan provisoire → « Marquer comme fait » : le bilan définitif reste ouvert (plus refermé par le retour d’historique), puis se ferme normalement', md);
+    // ouvrir / fermer très vite (20 fois) : jamais de retour au-delà de la page, historique propre
+    const url0 = await p.evaluate(() => location.href);
+    const rq = await p.evaluate(async () => { window.__alive = 1; const id = DB.sessions[0].id; for (let i = 0; i < 20; i++) { ANA.list = null; ANA.open(id); ANA.close(); }
+      ANA.open(id); await new Promise(r => setTimeout(r, 600)); const r = {open:ANA.isOpen(), st:!!(history.state && history.state.ana)}; ANA.close(); await new Promise(r => setTimeout(r, 400));
+      r.closed = !ANA.isOpen() && !(history.state && history.state.ana); return r; });
+    const alive = await p.evaluate(() => window.__alive === 1 && location.href);
+    ok(rq.open && rq.st && rq.closed && alive === url0, 'v38.1 ouvrir / fermer l’analyse 20 fois très vite : la page reste en place, l’historique reste cohérent', [rq, alive]);
+    ok(await p.evaluate(() => DATA_VERSION === 4), 'v38.1 : DATA_VERSION = 4');
+    ok(p.errs.length === 0, 'v38.1 : aucune erreur JS', p.errs); await ctx.close(); }
   await b.close();
   console.log(out.join('\n')); console.log(`\n${pass} réussis, ${fail} échoués`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });
